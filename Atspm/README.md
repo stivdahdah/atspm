@@ -205,6 +205,8 @@ Keep your private `.env`, certificates, and database backups when updating. **Do
 
 ## Optional settings
 
+For every Compose setting, defaults, WatchDog command-line options, and migration from older `.env` files, see the **[advanced configuration reference](CONFIGURATION.md)**. You can skip it for the quick local installation above.
+
 <details>
 <summary>Email delivery and WatchDog</summary>
 

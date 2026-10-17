@@ -54,3 +54,28 @@ database migrations, and upstream interfaces are unchanged.
   SMTP, external identity providers, controller import, and production
   deployment were not exercised. No full unit-test rerun was needed for this
   documentation-only correction.
+
+## Advanced reference validation
+
+The subsequent `Atspm/CONFIGURATION.md` addition keeps the quick installation
+sample intact and documents all 85 Compose input variables, including the 40
+database context overrides and 19 forwarded WatchDog settings. Checks compared
+rendered Compose JSON with the documented database, SMTP, core, collection,
+and WatchDog defaults; verified the copyable database/SMTP examples on every
+intended service; and confirmed that legacy/unforwarded keys have no effect.
+No rendered secrets were published.
+
+Additional WatchDog options and literal defaults were checked against the
+configuration class and `generate --help` output. Local links/README anchors
+and bundled browser setting names were checked against their source files.
+WatchDog help exited 0. EventLogUtility help exited 0 in a temporary Linux
+SDK container using the existing Release binaries. A direct Windows utility
+help attempt failed before argument parsing because its existing startup code
+requires Windows Event Log permissions; no permissions were changed. The
+documented installation uses Linux containers.
+
+No scans, email delivery, device downloads, or external database connections
+were performed. This is documentation/configuration validation, not operational
+validation of WatchDog thresholds or external services. Application source and
+Compose runtime behavior are unchanged, so the previous fresh-installation
+results above remain applicable; the full build/test suite was not repeated.
