@@ -35,6 +35,9 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.HostedServices
             var repo = scope.ServiceProvider.GetService<IDeviceRepository>();
 
             var workflow = new DecodeEventLogWorkflow(scope.ServiceProvider.GetService<IServiceScopeFactory>(), 50000, cancellationToken);
+            await workflow.Initialize();
+            // Archives have already been persisted; consume them so output can complete.
+            workflow.Output.LinkTo(DataflowBlock.NullTarget<CompressedEventLogBase>());
 
             Console.WriteLine($"path: {_options.Value.Path}");
 
@@ -78,7 +81,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.HostedServices
 
             workflow.Input.Complete();
 
-            await Task.WhenAll(workflow.Steps.Select(s => s.Completion));
+            await Task.WhenAll(workflow.Steps.Select(s => s.Completion).Append(workflow.Output.Completion));
         }
     }
 }
