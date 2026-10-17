@@ -1,6 +1,7 @@
-import { getLocation, Location } from '@/api/config'
+import { getLocation, SearchLocation as Location } from '@/api/config'
 import {
   PedatLocationData,
+  PedestrianTimeUnit,
   useGetPedestrianAggregationLocationData,
 } from '@/api/reports'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -8,8 +9,13 @@ import RightSidebar from '@/components/RightSidebar'
 import { ActiveTransportationOptions } from '@/features/activeTransportation/components/ActiveTransportationOptions'
 import PedatChartsContainer from '@/features/activeTransportation/components/PedatChartsContainer'
 import PedestrianActivityInfoPanel from '@/features/activeTransportation/components/PedestrianActivityInfoPanel'
+import {
+  readPedestrianLocation,
+  readPedestrianTimeUnit,
+  roundPedestrianData,
+  type PedestrianLocation,
+} from '@/features/activeTransportation/reportModel'
 import { dateToTimestamp } from '@/utils/dateTime'
-import { roundTo } from '@/utils/numberFormat'
 import { DropResult } from '@hello-pangea/dnd'
 import { zodResolver } from '@hookform/resolvers/zod'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
@@ -29,14 +35,19 @@ import { z } from 'zod'
 
 const activeTransportationSchema = z.object({
   locations: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-      approaches: z.array(z.any()),
-      locationIdentifier: z.string(),
+    z.custom<PedestrianLocation>((value) => {
+      if (typeof value !== 'object' || value == null) return false
+      return (
+        'id' in value &&
+        typeof value.id === 'number' &&
+        Number.isInteger(value.id) &&
+        'locationIdentifier' in value &&
+        typeof value.locationIdentifier === 'string' &&
+        !!value.locationIdentifier
+      )
     })
   ),
-  timeUnit: z.number(),
+  timeUnit: z.nativeEnum(PedestrianTimeUnit),
   startDate: z.date(),
   endDate: z.date(),
   phase: z
@@ -75,7 +86,7 @@ const phaseParser = createParser<number | 'All'>({
 
 async function resolveLocationsByIdentifier(
   identifiers: string[]
-): Promise<Location[]> {
+): Promise<PedestrianLocation[]> {
   const ids = identifiers
     .map((s) => s?.trim())
     .filter((s): s is string => Boolean(s))
@@ -96,7 +107,19 @@ async function resolveLocationsByIdentifier(
   const found = resp?.value ?? []
 
   const byIdentifier = new Map(found.map((l) => [l.locationIdentifier, l]))
-  return ids.map((id) => byIdentifier.get(id)).filter(Boolean) as Location[]
+  return ids.flatMap((id) => {
+    const location = byIdentifier.get(id)
+    return location
+      ? [
+          readPedestrianLocation({
+            ...location,
+            areas: location.areas?.flatMap((area) =>
+              area.id == null ? [] : [area.id]
+            ),
+          }),
+        ]
+      : []
+  })
 }
 
 const ActiveTransportation = () => {
@@ -138,7 +161,7 @@ const ActiveTransportation = () => {
   const phase = watch('phase')
 
   useEffect(() => {
-    setValue('timeUnit', qs.timeUnit)
+    setValue('timeUnit', readPedestrianTimeUnit(qs.timeUnit))
     setValue('startDate', qs.start)
     setValue('endDate', qs.end)
     setValue('phase', qs.phase ?? null)
@@ -193,14 +216,14 @@ const ActiveTransportation = () => {
   const setLocations = (newLocations: Location[]) => {
     const hadNoLocations = errorState.type === 'NO_LOCATIONS'
 
-    setValue('locations', newLocations)
+    setValue('locations', newLocations.map(readPedestrianLocation))
 
     if (hadNoLocations && newLocations.length > 0) {
       setErrorState({ type: 'NONE' })
     }
   }
 
-  const handleLocationDelete = (location: Location) => {
+  const handleLocationDelete = (location: PedestrianLocation) => {
     const newLocations = locations.filter((loc) => loc.id !== location.id)
     setValue('locations', newLocations)
   }
@@ -213,7 +236,7 @@ const ActiveTransportation = () => {
     setValue('locations', newLocations)
   }
 
-  const handleUpdateLocation = (updatedLocation: Location) => {
+  const handleUpdateLocation = (updatedLocation: PedestrianLocation) => {
     const updatedLocations = locations.map((loc) =>
       loc.id === updatedLocation.id ? updatedLocation : loc
     )
@@ -257,48 +280,7 @@ const ActiveTransportation = () => {
       },
     })
 
-    charts.forEach((location) => {
-      location.averageDailyVolume = roundTo(location.averageDailyVolume, 0)
-
-      location.averageVolumeByHourOfDay.forEach((item) => {
-        item.volume = roundTo(item.volume, 0)
-      })
-
-      location.averageVolumeByDayOfWeek.forEach((item) => {
-        item.volume = roundTo(item.volume, 0)
-      })
-
-      location.averageVolumeByMonthOfYear.forEach((item) => {
-        item.volume = roundTo(item.volume, 0)
-      })
-
-      location.rawData?.forEach((item) => {
-        item.pedestrianCount = roundTo(item.pedestrianCount, 0)
-      })
-
-      location.statisticData.count = roundTo(location.statisticData?.count, 0)
-      location.statisticData.max = roundTo(location.statisticData?.max, 0)
-      location.statisticData.min = roundTo(location.statisticData?.min, 0)
-      location.statisticData.totalVolume = roundTo(
-        location.statisticData?.totalVolume,
-        0
-      )
-      location.statisticData.mean = roundTo(location.statisticData?.mean, 0)
-      location.statisticData.std = roundTo(location.statisticData?.std, 0)
-      location.statisticData.fiftiethPercentile = roundTo(
-        location.statisticData?.fiftiethPercentile,
-        0
-      )
-      location.statisticData.seventyFifthPercentile = roundTo(
-        location.statisticData?.seventyFifthPercentile,
-        0
-      )
-      location.statisticData.twentyFifthPercentile = roundTo(
-        location.statisticData?.twentyFifthPercentile,
-        0
-      )
-    })
-    setData(charts)
+    setData(charts.map(roundPedestrianData))
   }
 
   return (
@@ -343,7 +325,11 @@ const ActiveTransportation = () => {
       </Box>
 
       {data && (
-        <PedatChartsContainer data={data} phase={phase} timeUnit={timeUnit} />
+        <PedatChartsContainer
+          data={data}
+          phase={phase == null ? 'All' : String(phase)}
+          timeUnit={timeUnit}
+        />
       )}
     </ResponsivePageLayout>
   )

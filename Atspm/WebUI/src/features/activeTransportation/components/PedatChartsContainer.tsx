@@ -225,7 +225,7 @@ const PedatChartsContainer = ({
   data,
   phase,
   timeUnit,
-}: PedatChartsContainerProps) => {
+}: Omit<PedatChartsContainerProps, 'timeUnit'> & { timeUnit?: number }) => {
   const [tabIndex, setTabIndex] = useState(0)
   const [isStaging, setIsStaging] = useState(false)
   const stagingRef = useRef<HTMLDivElement>(null)
@@ -368,7 +368,7 @@ const PedatChartsContainer = ({
     }
   }
 
-  const timeUnitString = timeUnitToString(timeUnit)
+  const timeUnitString = timeUnitToString(timeUnit ?? 0)
 
   return (
     <Box>

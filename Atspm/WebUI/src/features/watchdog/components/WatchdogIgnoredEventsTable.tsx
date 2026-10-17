@@ -1,6 +1,7 @@
 import ATSPMDialog from '@/components/ATSPMDialog'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
+import type { WatchdogIgnoreEventResponse } from '@/features/watchdog/api/watchdogIgnoreEvents'
 import {
   useDeleteWatchdogIgnoreEvents,
   useEditWatchdogIgnoreEvents,
@@ -12,29 +13,13 @@ import { Box, Button, TextField } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
 
-type ComponentType = 'Location' | 'Approach' | 'Detector' | null
-
-type WatchdogIgnoreEvent = {
-  id: number
-  locationId: number
-  locationIdentifier: string
-  start: string
-  end: string | null
-  issueType: string
-  componentType: ComponentType
-  componentId: number | null
-  phase: number | null
-  created?: string
-  modified?: string
-  createdBy?: string
-  modifiedBy?: string
-}
+type WatchdogIgnoreEvent = WatchdogIgnoreEventResponse & { id: number }
 
 function componentLabel(e: WatchdogIgnoreEvent) {
   if (!e.componentType) return 'Location'
   if (e.componentType === 'Location')
     return `Location (${e.componentId ?? '—'})`
-  if (e.componentType === 'Approach')
+  if (e.componentType === 'Approach' || e.componentType === 1)
     return `Approach (${e.componentId ?? '—'})`
   return `Detector (${e.componentId ?? '—'})`
 }
@@ -154,7 +139,9 @@ export default function WatchdogIgnoredEvents() {
   const { mutateAsync: deleteIgnore } = useDeleteWatchdogIgnoreEvents()
 
   const rows = useMemo(() => {
-    const value = (data?.value ?? []) as WatchdogIgnoreEvent[]
+    const value = (data?.value ?? []).flatMap((event) =>
+      event.id == null ? [] : [{ ...event, id: event.id }]
+    )
     return value.slice().sort((a, b) => {
       const ak = `${a.locationIdentifier}-${a.componentType ?? 'Global'}-${
         a.componentId ?? -1
@@ -170,6 +157,7 @@ export default function WatchdogIgnoredEvents() {
 
   const tableData = rows.map((r) => ({
     ...r,
+    name: r.locationIdentifier ?? String(r.id),
     component: componentLabel(r),
     phaseDisplay: r.phase ?? '—',
     endDisplay: r.end ?? '—',

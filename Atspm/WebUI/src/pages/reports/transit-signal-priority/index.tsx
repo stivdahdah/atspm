@@ -1,7 +1,6 @@
 import {
-  Approach,
   SearchLocation as Location,
-  useGetLocationLatestVersionOfAllLocations,
+  useGetLocationLocationsForSearch,
   useGetMeasureType,
   useGetMeasureTypeMeasureOptionPresetsFromKey,
 } from '@/api/config'
@@ -13,7 +12,12 @@ import MultipleLocationsSelect, {
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import MultiDayCalendar from '@/components/date-selection/MultiDayCalendar'
 import TspReport from '@/features/tspReport/components/TspReport'
-import { DropResult } from '@hello-pangea/dnd'
+import {
+  readSavedTspOptions,
+  readTspLocation,
+  type TspLocation,
+  type TspReportOptions,
+} from '@/features/tspReport/reportModel'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import { LoadingButton } from '@mui/lab'
 import {
@@ -26,21 +30,16 @@ import {
   MenuItem,
   Paper,
   Select,
+  SelectChangeEvent,
 } from '@mui/material'
 import { AxiosError } from 'axios'
 import { startOfYesterday, subDays } from 'date-fns'
 import { useState } from 'react'
-
-export interface TspLocation extends Location {
-  approaches: Approach[]
-  designatedPhases: number[]
-}
-
-export const getPhases = (location: TspLocation) => {
-  return Array.from(
-    new Set(location.approaches?.map((a) => a.protectedPhaseNumber) || [])
-  ).sort((a, b) => a - b)
-}
+export { getPhases } from '@/features/tspReport/reportModel'
+export type {
+  TspLocation,
+  TspReportOptions,
+} from '@/features/tspReport/reportModel'
 
 export type TspErrorState =
   | { type: 'NONE' }
@@ -48,11 +47,6 @@ export type TspErrorState =
   | { type: 'MISSING_PHASES'; locationIDs: Set<string> }
   | { type: '400' }
   | { type: 'UNKNOWN'; message: string }
-
-export interface TspReportOptions {
-  selectedDays: Date[]
-  locations: TspLocation[]
-}
 
 export default function TspReportPage() {
   const [reportOptions, setReportOptions] = useState<TspReportOptions>({
@@ -66,13 +60,21 @@ export default function TspReportPage() {
     mutateAsync: fetchTspReport,
     isLoading: loadingReport,
   } = useGetTransitSignalPriorityReportData()
-  const { data: locationsData } = useGetLocationLatestVersionOfAllLocations()
+  const { data: locationsData } = useGetLocationLocationsForSearch()
   const locations = locationsData?.value || []
   const { data: measureTypesData } = useGetMeasureType()
   const measureTypes = measureTypesData?.value || []
   const { data: savedOptionsData } =
     useGetMeasureTypeMeasureOptionPresetsFromKey(
-      measureTypes.find((m) => m.abbreviation === 'TSP')?.id
+      measureTypes.find((m) => m.abbreviation === 'TSP')?.id ?? 0,
+      undefined,
+      {
+        query: {
+          enabled: measureTypes.some(
+            (m) => m.abbreviation === 'TSP' && m.id != null
+          ),
+        },
+      }
     )
   const savedOptions = savedOptionsData?.value || []
 
@@ -106,18 +108,13 @@ export default function TspReportPage() {
     return null
   }
 
-  function setLocations(locations: TspLocation[]) {
+  function setLocations(locations: Location[]) {
     const hadNoLocations = errorState.type === 'NO_LOCATIONS'
-    locations.forEach((loc) => {
-      const phases = getPhases(loc)
-      if (phases.includes(2) && phases.includes(6)) {
-        loc.designatedPhases = [2, 6]
-      }
-    })
-    setReportOptions((prev) => ({ ...prev, locations }))
-    if (hadNoLocations && locations.length > 0) {
-      setErrorState({ type: 'NONE' })
-    }
+    setReportOptions((prev) => ({
+      ...prev,
+      locations: locations.map(readTspLocation),
+    }))
+    if (hadNoLocations && locations.length > 0) setErrorState({ type: 'NONE' })
   }
 
   function handleLocationDelete(location: TspLocation) {
@@ -126,48 +123,55 @@ export default function TspReportPage() {
     )
   }
 
-  function handleReorderLocations(dropResult: DropResult) {
-    if (!dropResult.destination) return
-    const items = Array.from(reportOptions.locations)
-    const [reorderedItem] = items.splice(dropResult.source.index, 1)
-    items.splice(dropResult.destination.index, 0, reorderedItem)
-    setLocations(items)
-  }
-
   const handleSavedReportParametersChange = async (
-    e: React.ChangeEvent<{ value: unknown }>
+    e: SelectChangeEvent<number>
   ) => {
-    const selectedParameters = savedOptions.find(
-      (option) => option.id === Number(e.target.value)
-    )
-    if (selectedParameters) {
-      setSelectedReport(selectedParameters.id)
-      const locationsWithApproaches = await getLocationWithApproaches(
-        selectedParameters.option.locationsAndPhases.map((loc) => {
-          return locations.find(
-            (l) => l.locationIdentifier === loc.locationIdentifier
-          )
-        })
-      )
-      const locationsWithApproachesWithPhases = locationsWithApproaches.map(
-        (loc) => {
-          return {
-            ...loc,
-            designatedPhases: selectedParameters.option.locationsAndPhases.find(
-              (l) => l.locationIdentifier === loc.locationIdentifier
-            )?.designatedPhases,
-          }
-        }
-      )
-      setReportOptions({
-        selectedDays: selectedParameters.option.dates.map(
-          (date) => new Date(date)
-        ),
-        locations: locationsWithApproachesWithPhases,
-      })
-    } else {
+    const selectedId = Number(e.target.value)
+    if (selectedId === 0) {
       setSelectedReport(0)
       setLocations([])
+      return
+    }
+    const selectedParameters = savedOptions.find(
+      (option) => option.id === selectedId
+    )
+    if (!selectedParameters) return
+    try {
+      const options = readSavedTspOptions(selectedParameters.option)
+      const selectedLocations = options.locationsAndPhases.map((saved) => {
+        const location = locations.find(
+          (item) => item.locationIdentifier === saved.locationIdentifier
+        )
+        if (!location)
+          throw new Error(
+            `Saved location ${saved.locationIdentifier} is unavailable.`
+          )
+        return location
+      })
+      const loaded = await getLocationWithApproaches(selectedLocations)
+      setReportOptions({
+        selectedDays: options.dates.map((date) => new Date(date)),
+        locations: loaded.map((location) =>
+          readTspLocation({
+            ...location,
+            designatedPhases:
+              options.locationsAndPhases.find(
+                (saved) =>
+                  saved.locationIdentifier === location.locationIdentifier
+              )?.designatedPhases ?? [],
+          })
+        ),
+      })
+      setSelectedReport(selectedId)
+      setErrorState({ type: 'NONE' })
+    } catch (error) {
+      setErrorState({
+        type: 'UNKNOWN',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Unable to load saved report parameters.',
+      })
     }
   }
 
@@ -273,7 +277,6 @@ export default function TspReportPage() {
               locations={reportOptions.locations}
               onLocationDelete={handleLocationDelete}
               onDeleteAllLocations={() => setLocations([])}
-              onLocationsReorder={handleReorderLocations}
               onUpdateLocation={handleUpdateLocation}
               errorState={errorState}
             />

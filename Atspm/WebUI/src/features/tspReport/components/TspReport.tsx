@@ -1,6 +1,6 @@
 import { postMeasureOptionPreset, useGetMeasureType } from '@/api/config'
 import { TransitSignalPriorityResult } from '@/api/reports'
-import { TspReportOptions } from '@/pages/reports/transit-signal-priority'
+import type { TspReportOptions } from '@/features/tspReport/reportModel'
 import { useNotificationStore } from '@/stores/notifications'
 import DownloadIcon from '@mui/icons-material/Download'
 import SaveIcon from '@mui/icons-material/Save'
@@ -301,7 +301,7 @@ export default function TspReport({ report, reportOptions }: TspReportProps) {
 
             const rows =
               locationReport.transitSignalPlans?.flatMap((plan) =>
-                plan.phases?.map((phase) => ({
+                (plan.phases ?? []).map((phase) => ({
                   plan: plan.planNumber,
                   numberOfCycles: plan.numberOfCycles,
                   phaseNumber: phase.phaseNumber,
@@ -314,7 +314,10 @@ export default function TspReport({ report, reportOptions }: TspReportProps) {
                   maxExtension: round(phase.maxExtension),
                   priorityMin: round(phase.priorityMin),
                   priorityMax: round(phase.priorityMax),
-                  minGreen: round(Math.round(phase.minGreen as number), 0),
+                  minGreen:
+                    phase.minGreen == null
+                      ? undefined
+                      : Math.round(phase.minGreen),
                   yellow: round(phase.yellow),
                   redClearance: round(phase.redClearance),
                   minTime: round(phase.minTime),
@@ -342,8 +345,10 @@ export default function TspReport({ report, reportOptions }: TspReportProps) {
 
             const designatedPhasesLookup = Object.fromEntries(
               rows
-                .filter((r) =>
-                  location?.designatedPhases?.includes(r.phaseNumber)
+                .filter(
+                  (r) =>
+                    r.phaseNumber != null &&
+                    location?.designatedPhases?.includes(r.phaseNumber)
                 )
                 .map((r) => [`${r.plan}-${r.phaseNumber}`, true])
             )
@@ -447,9 +452,9 @@ function round(value: number | undefined, roundedNumber?: number) {
 export function exportToExcel(
   report: TransitSignalPriorityResult[],
   locations: {
-    locationIdentifier: string
-    primaryName?: string
-    secondaryName?: string
+    locationIdentifier?: string | null
+    primaryName?: string | null
+    secondaryName?: string | null
   }[]
 ) {
   const workbook = XLSX.utils.book_new()
@@ -462,7 +467,7 @@ export function exportToExcel(
     const sheetName = matchedLoc ? `${matchedLoc.locationIdentifier}` : 'Sheet'
     const rows =
       locationReport.transitSignalPlans?.flatMap((plan) =>
-        plan.phases?.map((phase) => ({
+        (plan.phases ?? []).map((phase) => ({
           plan: plan.planNumber,
           numberOfCycles: plan.numberOfCycles,
           phaseNumber: phase.phaseNumber,
@@ -475,7 +480,8 @@ export function exportToExcel(
           maxExtension: round(phase.maxExtension),
           priorityMin: round(phase.priorityMin),
           priorityMax: round(phase.priorityMax),
-          minGreen: round(Math.round(phase.minGreen as number)),
+          minGreen:
+            phase.minGreen == null ? undefined : Math.round(phase.minGreen),
           yellow: round(phase.yellow),
           redClearance: round(phase.redClearance),
           minTime: round(phase.minTime),

@@ -2,7 +2,7 @@ import {
   getLocationFromKey,
   SearchLocation as Location,
   Route,
-  useGetLocationLatestVersionOfAllLocations,
+  useGetLocationLocationsForSearch,
   useGetRoute,
 } from '@/api/config'
 import { Filters } from '@/features/locations/components/selectLocation'
@@ -49,13 +49,10 @@ const MultipleLocationsSelect = ({
   fillAvailableHeight = false,
 }: MultipleLocationsSelectProps) => {
   const { data: routesData } = useGetRoute({ expand: 'routeLocations' })
-  const { data: locationsData } = useGetLocationLatestVersionOfAllLocations()
+  const { data: locationsData } = useGetLocationLocationsForSearch()
 
   const routes = useMemo(() => routesData?.value || [], [routesData])
-  const locations = useMemo(
-    () => locationsData?.value || [],
-    [locationsData]
-  ) as Location[]
+  const locations = useMemo(() => locationsData?.value || [], [locationsData])
 
   const [selectedLocation, setSelectedLocation] = useState<Location>()
   const [selectedRoute, setSelectedRoute] = useState<Route>()
@@ -319,7 +316,11 @@ export const getLocationWithApproaches = async (locations: Location[]) => {
           expand: 'approaches',
         })
         // Preserve search-only fields (numeric area IDs and chart filters).
-        return { ...loc, approaches: response.value[0]?.approaches ?? [] }
+        return {
+          ...loc,
+          approaches: response.value[0]?.approaches ?? [],
+          pedsAre1to1: response.value[0]?.pedsAre1to1,
+        }
       })
   )
 }

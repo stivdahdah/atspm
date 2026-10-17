@@ -1,4 +1,5 @@
-import { Location } from '@/api/config'
+import { SearchLocation as Location } from '@/api/config'
+import type { PedestrianTimeUnit } from '@/api/reports'
 import MultipleLocationsSelect from '@/components/MultipleLocationsSelect/MultipleLocationsSelect'
 import SelectDateTime from '@/components/selectTimeSpan'
 import { StyledPaper } from '@/components/StyledPaper'
@@ -14,26 +15,29 @@ import {
   Paper,
   Select,
 } from '@mui/material'
+import type { PedestrianLocation, PedestrianPhase } from '../reportModel'
+import { readPedestrianTimeUnit } from '../reportModel'
 
 interface ActiveTransportationOptionsProps {
   errorState: ATErrorState
-  locations: Location[]
-  timeUnit: string
+  locations: PedestrianLocation[]
+  timeUnit: PedestrianTimeUnit
   startDate: Date
   endDate: Date
-  phase?: number | ''
+  phase: PedestrianPhase
   setLocations: (locations: Location[]) => void
-  setTimeUnit: (unit: string) => void
+  setTimeUnit: (unit: PedestrianTimeUnit) => void
   setStartDate: (date: Date) => void
   setEndDate: (date: Date) => void
-  setPhase: (phase: number | '') => void
-  onLocationDelete: (location: Location) => void
+  setPhase: (phase: PedestrianPhase) => void
+  onLocationDelete: (location: PedestrianLocation) => void
   onReorderLocations: (dropResult: DropResult) => void
-  onUpdateLocation: (updatedLocation: Location) => void
+  onUpdateLocation: (updatedLocation: PedestrianLocation) => void
 }
 
 export const ActiveTransportationOptions = ({
   locations,
+  errorState,
   timeUnit,
   startDate,
   endDate,
@@ -64,6 +68,7 @@ export const ActiveTransportationOptions = ({
               onLocationDelete={onLocationDelete}
               onDeleteAllLocations={() => setLocations([])}
               onUpdateLocation={onUpdateLocation}
+              errorState={errorState}
               phase={phase}
               setPhase={setPhase}
             />
@@ -86,7 +91,9 @@ export const ActiveTransportationOptions = ({
             <Select
               value={timeUnit}
               label="Time Unit"
-              onChange={(e) => setTimeUnit(e.target.value)}
+              onChange={(e) =>
+                setTimeUnit(readPedestrianTimeUnit(Number(e.target.value)))
+              }
               inputProps={{ id: 'time-unit-input' }}
             >
               <MenuItem value={0}>Hour</MenuItem>

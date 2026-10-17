@@ -23,6 +23,15 @@ import { ApiResponse } from '@/types'
 import { AxiosHeaders } from 'axios'
 import Cookies from 'js-cookie'
 
+export type WatchdogIgnoreEventResponse = Omit<
+  WatchdogIgnoreEvents,
+  'issueType' | 'componentType' | 'end'
+> & {
+  issueType?: WatchdogIgnoreEvents['issueType'] | string
+  componentType?: WatchdogIgnoreEvents['componentType'] | string | null
+  end?: string | null
+}
+
 const route = '/WatchDogIgnoreEvent'
 const token = Cookies.get('token')
 const headers: AxiosHeaders = new AxiosHeaders({
@@ -31,7 +40,7 @@ const headers: AxiosHeaders = new AxiosHeaders({
 })
 
 export function useGetWatchdogIgnoreEvents() {
-  return useGetRequest<ApiResponse<WatchdogIgnoreEvents>>({ route })
+  return useGetRequest<ApiResponse<WatchdogIgnoreEventResponse>>({ route })
 }
 
 export function useCreateWatchdogIgnoreEvents() {

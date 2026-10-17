@@ -1,27 +1,26 @@
 import { useLocationStore } from '@/features/locations/components/editLocation/locationStore'
 import WatchDogDatePopup from '@/features/locations/components/editLocation/WatchDogDatePopup'
+import type { WatchdogIgnoreEventResponse } from '@/features/watchdog/api/watchdogIgnoreEvents'
 import {
   useCreateWatchdogIgnoreEvents,
   useDeleteWatchdogIgnoreEvents,
   useEditWatchdogIgnoreEvents,
   useGetWatchdogIgnoreEvents,
 } from '@/features/watchdog/api/watchdogIgnoreEvents'
+import { ConfigEnum, useConfigEnums } from '@/hooks/useConfigEnums'
 import { useNotificationStore } from '@/stores/notifications'
 import { toUTCDateStamp } from '@/utils/dateTime'
 import { Box, Button, Divider, Paper, Typography } from '@mui/material'
-import { addDays, format } from 'date-fns'
-import { useEffect, useState } from 'react'
+import { addDays, format, isValid } from 'date-fns'
+import { useState } from 'react'
 
 interface WatchdogEditorProps {
   hasEditPermission: boolean
 }
 
 interface WatchdogOption {
-  id: number
-  locationId: number
-  locationIdentifier: string
-  start: string
-  end: string
+  label: string
+  description: string
   issueType: WatchDogIssueTypes
 }
 
@@ -83,7 +82,7 @@ const watchdogOptions = [
 const WatchdogEditor = ({ hasEditPermission }: WatchdogEditorProps) => {
   const { addNotification } = useNotificationStore()
   const { location } = useLocationStore()
-  const [ignoreEvents, setIgnoreEvents] = useState<WatchdogOption[]>([])
+  const { data: issueTypes } = useConfigEnums(ConfigEnum.WatchDogIssueTypes)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedOption, setSelectedOption] = useState<null | WatchdogOption>(
     null
@@ -106,14 +105,18 @@ const WatchdogEditor = ({ hasEditPermission }: WatchdogEditorProps) => {
   const { mutateAsync: deleteWatchdogIgnoreEvents } =
     useDeleteWatchdogIgnoreEvents()
 
-  useEffect(() => {
-    if (watchdogIgnoreEvents?.value) {
-      const filteredEvents = watchdogIgnoreEvents.value.filter(
-        (event) => event.locationIdentifier === location?.locationIdentifier
-      )
-      setIgnoreEvents(filteredEvents)
-    }
-  }, [watchdogIgnoreEvents, location?.locationIdentifier])
+  const ignoreEvents = (watchdogIgnoreEvents?.value ?? []).filter(
+    (event) => event.locationIdentifier === location?.locationIdentifier
+  )
+  const matchesIssue = (
+    event: WatchdogIgnoreEventResponse,
+    issue: WatchDogIssueTypes
+  ) =>
+    event.issueType != null &&
+    (event.issueType === issue ||
+      issueTypes?.some(
+        (member) => member.name === issue && member.value === event.issueType
+      ))
 
   const handlePillClick = (
     option: WatchdogOption,
@@ -123,13 +126,13 @@ const WatchdogEditor = ({ hasEditPermission }: WatchdogEditorProps) => {
 
     setAnchorEl(event.currentTarget)
     setSelectedOption(option)
-    const ignoreEvent = ignoreEvents.find(
-      (e) => e.issueType === option.issueType
+    const ignoreEvent = ignoreEvents.find((e) =>
+      matchesIssue(e, option.issueType)
     )
     if (ignoreEvent) {
-      setStartDate(new Date(ignoreEvent.start))
-      setEndDate(new Date(ignoreEvent.end))
-      setSelectedIgnoreEventId(ignoreEvent.id)
+      setStartDate(new Date(ignoreEvent.start ?? ''))
+      setEndDate(new Date(ignoreEvent.end ?? ''))
+      setSelectedIgnoreEventId(ignoreEvent.id ?? null)
     } else {
       setStartDate(new Date())
       setEndDate(addDays(new Date(), 1))
@@ -138,54 +141,81 @@ const WatchdogEditor = ({ hasEditPermission }: WatchdogEditorProps) => {
   }
 
   const handleIgnoreEvent = async () => {
-    if (startDate && endDate && selectedOption) {
-      const existingEvent = ignoreEvents.find(
-        (e) => e.issueType === selectedOption.issueType
-      )
+    if (!hasEditPermission || !location) return
+    if (
+      startDate &&
+      endDate &&
+      isValid(startDate) &&
+      isValid(endDate) &&
+      startDate <= endDate &&
+      selectedOption
+    ) {
+      try {
+        const existingEvent = ignoreEvents.find((e) =>
+          matchesIssue(e, selectedOption.issueType)
+        )
 
-      if (existingEvent) {
-        await editWatchdogIgnoreEvents({
-          data: {
+        if (existingEvent) {
+          if (existingEvent.id == null)
+            throw new Error('Ignore event ID is missing.')
+          await editWatchdogIgnoreEvents({
+            data: {
+              locationId: location?.id,
+              locationIdentifier: location?.locationIdentifier,
+              issueType: selectedOption.issueType.toString(),
+              start: toUTCDateStamp(startDate),
+              end: toUTCDateStamp(endDate),
+            },
+            id: existingEvent.id,
+          })
+          addNotification({
+            title: 'Watchdog Ignore Event Updated',
+            type: 'success',
+          })
+        } else {
+          await addWatchdogIgnoreEvents({
             locationId: location?.id,
             locationIdentifier: location?.locationIdentifier,
             issueType: selectedOption.issueType.toString(),
             start: toUTCDateStamp(startDate),
             end: toUTCDateStamp(endDate),
-          },
-          id: existingEvent.id,
-        })
+          })
+          addNotification({
+            title: 'Watchdog Ignore Event Added',
+            type: 'success',
+          })
+        }
+
+        await refetch()
+        setAnchorEl(null)
+      } catch {
         addNotification({
-          title: 'Watchdog Ignore Event Updated',
-          type: 'success',
-        })
-      } else {
-        await addWatchdogIgnoreEvents({
-          locationId: location?.id,
-          locationIdentifier: location?.locationIdentifier,
-          issueType: selectedOption.issueType.toString(),
-          start: toUTCDateStamp(startDate),
-          end: toUTCDateStamp(endDate),
-        })
-        addNotification({
-          title: 'Watchdog Ignore Event Added',
-          type: 'success',
+          title: 'Failed to save Watchdog ignore event',
+          type: 'error',
         })
       }
-
-      await refetch()
-      setAnchorEl(null)
+    } else {
+      addNotification({ title: 'Select a valid date range', type: 'error' })
     }
   }
 
   const handleRemoveIgnore = async () => {
-    if (selectedIgnoreEventId) {
-      await deleteWatchdogIgnoreEvents(selectedIgnoreEventId)
-      addNotification({
-        title: 'Watchdog Ignore Event Removed',
-        type: 'success',
-      })
-      await refetch()
-      setAnchorEl(null)
+    if (!hasEditPermission) return
+    if (selectedIgnoreEventId != null) {
+      try {
+        await deleteWatchdogIgnoreEvents(selectedIgnoreEventId)
+        addNotification({
+          title: 'Watchdog Ignore Event Removed',
+          type: 'success',
+        })
+        await refetch()
+        setAnchorEl(null)
+      } catch {
+        addNotification({
+          title: 'Failed to remove Watchdog ignore event',
+          type: 'error',
+        })
+      }
     }
   }
 
@@ -203,17 +233,16 @@ const WatchdogEditor = ({ hasEditPermission }: WatchdogEditorProps) => {
         Watchdog Options
       </Typography>
       {watchdogOptions.map((option, index) => {
-        const isIgnored = ignoreEvents.some(
-          (event) => event.issueType === option.issueType
+        const ignoreEvent = ignoreEvents.find((e) =>
+          matchesIssue(e, option.issueType)
         )
-        const ignoreEvent = ignoreEvents.find(
-          (e) => e.issueType === option.issueType
-        )
-        const pillLabel = isIgnored
-          ? `Inactive from ${format(
-              new Date(ignoreEvent.start),
-              'MM/dd/yyyy'
-            )} to ${format(new Date(ignoreEvent.end), 'MM/dd/yyyy')}`
+        const isIgnored = !!ignoreEvent
+        const start = new Date(ignoreEvent?.start ?? '')
+        const end = new Date(ignoreEvent?.end ?? '')
+        const pillLabel = ignoreEvent
+          ? isValid(start) && isValid(end)
+            ? `Inactive from ${format(start, 'MM/dd/yyyy')} to ${format(end, 'MM/dd/yyyy')}`
+            : 'Ignored (date unavailable)'
           : 'active'
 
         return (
