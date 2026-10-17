@@ -8,6 +8,8 @@ The recovery helper and [recovery guide](../Atspm/BACKUP-RESTORE.md) cover the d
 
 Two separate recovery projects used new volumes and non-conflicting loopback web ports. The original installation remained running. Recovery reused the matching locally built application images; a cold image build from the archived source was not repeated in this drill.
 
+The follow-up [recovery from archived source](recovery-from-source-validation-2026-10-18.md) covers rebuilding all eight application/tool images without existing application images, restoring synthetic traffic records, and checking charts and exports.
+
 ## Checks
 
 - Backed up all six non-template databases using custom-format `pg_dump` archives, validated their archive listings, and saved global roles, private configuration, certificates and matching Git source.
