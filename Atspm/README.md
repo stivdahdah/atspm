@@ -169,9 +169,11 @@ The installer should show **`Exited (0)`**, meaning its one-time job finished su
 
 ## 5. Open ATSPM and sign in
 
-Open **[https://localhost:3443](https://localhost:3443)** on the same computer.
+Open **[https://localhost:3443/login](https://localhost:3443/login)** on the same computer to go straight to the login form.
 
 Accept the browser's warning for the self-signed local certificate. Sign in with **`ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`**. The installer already created the account; registration is not needed for that admin.
+
+If you opened the dashboard first, open the navigation menu at the top left, then the user icon and **Log in**. After signing in, the **Admin** menu should appear. Open **Admin > Users** to check that your account is listed with the **Admin** role.
 
 **You are ready to configure locations and import event data.** Empty charts are expected until you add data. See the [database installer guide](DatabaseInstaller/README.md) for transfer and test-data commands.
 
