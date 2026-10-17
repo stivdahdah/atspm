@@ -16,6 +16,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Oracle.EntityFrameworkCore" Version="8.23.60" />
+		<!-- Keep Oracle's transitive PKCS dependency on the patched .NET 8 version. -->
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
 	</ItemGroup>
 

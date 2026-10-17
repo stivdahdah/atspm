@@ -2,15 +2,23 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+Use **Node.js 24.22.0 LTS** for local development. The version is recorded in
+`.nvmrc` and used by every stage of the Dockerfile. With `nvm` on Linux/macOS,
+run `nvm install` and `nvm use` from this directory; otherwise install that version
+from [Node.js](https://nodejs.org/en/download). Docker installations do not need
+Node.js on the host; follow the [installation guide](../README.md).
+
+Install the locked dependencies, then run the development server:
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
+
+Use `npm test -- --runInBand` and `npm run build` to check changes. Keep
+`package-lock.json` committed with dependency changes. When updating Node,
+update `.nvmrc`, the Dockerfile, and the `package.json` engine range together,
+and validate the new LTS patch before publishing an image.
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

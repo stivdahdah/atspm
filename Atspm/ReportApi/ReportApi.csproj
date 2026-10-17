@@ -18,6 +18,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoFixture" Version="4.18.1" />
+		<!-- Fare's netstandard2.0 build avoids vulnerable legacy System.* packages. -->
+		<PackageReference Include="Fare" Version="2.2.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
