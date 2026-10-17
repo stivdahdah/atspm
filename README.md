@@ -15,4 +15,4 @@ cd atspm
 
 Then follow the [local installation guide](Atspm/README.md). Existing clones can update with `git switch main` and `git pull --ff-only origin main` after saving local changes. Building from this source includes the fork's changes; upstream release downloads and images may not include them yet.
 
-Development uses focused `enhancement/` branches, with separate pull requests into this fork and upstream. See [Contributing](CONTRIBUTING.md) for the build, test, review, and upstream-sync workflow. The [integration validation record](docs/validation-2026-10-17.md) lists the remaining application test failures and evaluation limits; this development branch is not a production certification.
+Development uses focused `enhancement/` branches. See [Contributing](CONTRIBUTING.md) for the build, test, integration, PR approval, and upstream-sync workflow. The [regression validation record](docs/application-test-repairs-2026-10-17.md) documents the resolved application failures, current test results, existing skipped coverage, and evaluation limits.

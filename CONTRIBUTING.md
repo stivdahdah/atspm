@@ -51,7 +51,7 @@ foreach ($project in @('ApplicationTests', 'InfrastructureTests', 'DatabaseInsta
 if ($checkFailed) { throw 'Validation failed. Review the build output and test results before merging.' }
 ```
 
-Do not suppress failures or skip required checks to obtain a passing result. Record exact passed, failed, and skipped counts. If failures already exist on the base, compare the failing cases on the base and candidate under the same environment; resolve new regressions and document remaining failures. The [17 October 2026 integration results](docs/validation-2026-10-17.md) record the current comparison and limitations. They are historical evidence, not a permanent exception for future changes.
+Do not suppress failures or skip required checks to obtain a passing result. Record exact passed, failed, and skipped counts. If failures already exist on the base, compare the failing cases on the base and candidate under the same environment; resolve new regressions and document remaining failures. The [application regression repair results](docs/application-test-repairs-2026-10-17.md) record the latest checks and limitations; the [earlier integration results](docs/validation-2026-10-17.md) retain the original baseline comparison. These records are historical evidence, not a permanent exception for future changes.
 
 Database migration tests require separate opt-in configuration: `ATSPM_MIGRATION_TEST_POSTGRES` and `ATSPM_MIGRATION_TEST_SQLSERVER`. Use disposable test databases only; the tests create and drop databases. Without these variables, the two live test methods return without accessing a database, although the test runner counts them as passed. Report live database execution separately; see the [installer test instructions](Atspm/DatabaseInstaller/README.md).
 
@@ -72,9 +72,11 @@ git diff --check
 git push -u origin enhancement/describe-the-change
 ```
 
-For this fork, open a PR with **base repository `stivdahdah/atspm`, base branch `main`**. Review the combined diff and results, then merge when ready. Keep `main` history intact; do not force-push it.
+Before opening any new PR, obtain explicit approval from the repository owner. Prepare the target repository/base branch, title, description, and validation summary first so the approval covers a concrete contribution. Authorization to implement, push, or merge does not authorize opening a PR.
 
-For upstream, open a separate PR with **base repository `OpenSourceTransportation/ATSPM`, base branch `main`**, using the focused contribution branch from the fork. Address review feedback on that branch. Keep it available while its upstream PR is open, even after the change is integrated into the fork. Bring later corrections into the fork as well.
+For this fork, the PR target is **base repository `stivdahdah/atspm`, base branch `main`**. After approval, open the PR, review the combined diff and results, and merge when authorized. If the owner explicitly authorizes a direct merge instead, validate the enhancement branch and merge it into the fork's `main` without a PR, provided repository safeguards permit it. Keep `main` history intact; do not force-push it or bypass required checks.
+
+For upstream, prepare a separate PR with **base repository `OpenSourceTransportation/ATSPM`, base branch `main`**, using the focused contribution branch from the fork. Obtain approval before opening it. Address review feedback on that branch. Keep it available while its upstream PR is open, even after the change is integrated into the fork. Bring later corrections into the fork as well.
 
 ## 4. Bring upstream updates into the fork
 
@@ -87,4 +89,4 @@ git switch -c enhancement/sync-upstream-YYYYMMDD origin/main
 git merge upstream/main
 ```
 
-Resolve conflicts deliberately, rerun affected and combined checks, and open a PR into **this fork's `main`**. Use a fresh date or suffix for each sync branch. Do not reset the fork to upstream or force-sync away its improvements. Once upstream accepts a contribution, include that upstream merge through this same process; do not apply its patch a second time.
+Resolve conflicts deliberately, rerun affected and combined checks, and prepare a PR into **this fork's `main`** for approval before opening it. An explicitly authorized direct merge follows the same validation and safeguards. Use a fresh date or suffix for each sync branch. Do not reset the fork to upstream or force-sync away its improvements. Once upstream accepts a contribution, include that upstream merge through this same process; do not apply its patch a second time.

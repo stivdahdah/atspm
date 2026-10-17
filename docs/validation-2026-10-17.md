@@ -1,5 +1,7 @@
 # Fork integration validation — 17 October 2026
 
+**Historical integration baseline:** the 44 application failures below were subsequently resolved. See the [application regression repair record](application-test-repairs-2026-10-17.md) for the current passing backend results and remaining skipped coverage.
+
 This integration combines the twenty focused contributions proposed in [upstream PRs #7–#26](https://github.com/opensourcetransportation/atspm/pulls?q=is%3Apr+author%3Astivdahdah). It preserves the fork's contribution instructions and adds a repeatable development and integration workflow.
 
 The runtime source matches the combined tree at `204fefca1dd0771fb64106d8a1afba8c26f72d4f`, based on upstream `5c7d96285567a1a136f5f4bdf5a6c5f0c5d35735`. Every published contribution head was checked as an ancestor of the integration candidate. No conflicts occurred during integration.

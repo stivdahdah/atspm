@@ -8,3 +8,4 @@
 - Keep public titles and descriptions focused on the problem, behavior, validation, and compatibility. Omit billing, Actions-minute usage, and development-tool commentary. Report material limitations honestly.
 - Preserve open upstream PR branches and both repositories' history. Merge upstream updates through an `enhancement/` integration branch; never reset or force-push the fork's `main` to synchronize it.
 - Follow the build, validation, integration, and synchronization workflow in [CONTRIBUTING.md](CONTRIBUTING.md). Publishing code does not authorize deployment or release publication.
+- Obtain explicit user approval before opening any new pull request, into either this fork or upstream. First prepare the target repository/base branch, title, description, and validation summary for review. Permission to implement, push, or merge is not permission to open a PR. An explicitly authorized direct merge into the fork is allowed when repository safeguards permit it.
