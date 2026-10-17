@@ -13,10 +13,10 @@ export const PrioritySummaryChartOptions = ({
   chartDefaults,
   handleChartOptionsUpdate,
 }: PrioritySummaryChartOptionsProps) => {
-  const [binSize, setBinSize] = useState(15)
+  const [binSize, setBinSize] = useState('15')
 
   const handleBinSizeChange = (event: SelectChangeEvent<string>) => {
-    const newBinSize = event.target.value
+    const newBinSize = String(event.target.value)
     setBinSize(newBinSize)
 
     handleChartOptionsUpdate({

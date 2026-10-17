@@ -204,29 +204,19 @@ function transformDetailsData(data: LocationDetail) {
   return chartOptions
 }
 
-interface ChartDataEntry {
-  0: string
-  1: number | null
-}
+type PreemptPoint = [string, number]
 
-type PremptStuf = ChartDataEntry[]
-
-function getSeries(key: keyof Cycle, cycles: Cycle[]): PremptStuf {
-  return cycles.map((cycle) => {
-    let value: number
-
-    if (cycle[key] == null) return
-
-    if (typeof cycle[key] === 'string' && Date.parse(cycle[key] as string)) {
-      value =
-        (Date.parse(cycle[key] as string) - Date.parse(cycle.inputOn)) / 1000
-    } else if (typeof cycle[key] === 'number') {
-      value = cycle[key] as number
-    } else {
-      value = 0
-    }
-
-    return [cycle.inputOn, value]
+function getSeries(
+  key: Exclude<keyof Cycle, 'inputOn'>,
+  cycles: Cycle[]
+): PreemptPoint[] {
+  return cycles.flatMap<PreemptPoint>((cycle) => {
+    const inputTime = Date.parse(cycle.inputOn)
+    const raw = cycle[key]
+    if (raw == null || !Number.isFinite(inputTime)) return []
+    const value =
+      typeof raw === 'number' ? raw : (Date.parse(raw) - inputTime) / 1000
+    return Number.isFinite(value) ? [[cycle.inputOn, value]] : []
   })
 }
 
@@ -289,8 +279,8 @@ function transformSummaryData(data: PreemptServiceSummary) {
 
   const series = createSeries()
 
-  const requestArr: PremptStuf = []
-  const servicetArr: PremptStuf = []
+  const requestArr: [string, string][] = []
+  const servicetArr: [string, string][] = []
   requestAndServices.forEach((entry) => {
     const preemptionNumber = entry.preemptionNumber.toString()
     entry.requests.forEach((request) =>

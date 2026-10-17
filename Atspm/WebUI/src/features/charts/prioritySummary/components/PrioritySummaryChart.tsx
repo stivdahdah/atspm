@@ -57,7 +57,8 @@ export default function PrioritySummaryDetailsChart({
     chartInstance.current.setOption(effectiveOption, settings)
 
     chartInstance.current.off('click')
-    chartInstance.current.on('click', async (p) => {
+    const chart = chartInstance.current
+    const handleClick = async (p: import('echarts').ECElementEvent) => {
       if (isDrilled) return
 
       const isPrioritySummaryBar =
@@ -74,16 +75,22 @@ export default function PrioritySummaryDetailsChart({
 
       const seriesIsRequest = p?.seriesName?.includes('TSP Request')
 
-      const locationIdentifier = seriesIsRequest
-        ? (d[4] as string)
-        : (d[7] as string)
-      const start = seriesIsRequest ? (d[5] as string) : (d[8] as string)
-      const end = seriesIsRequest ? (d[6] as string) : (d[9] as string)
+      const locationIdentifier = seriesIsRequest ? d[4] : d[7]
+      const start = seriesIsRequest ? d[5] : d[8]
+      const end = seriesIsRequest ? d[6] : d[9]
 
-      if (!locationIdentifier || !start || !end) return
+      if (
+        typeof locationIdentifier !== 'string' ||
+        !locationIdentifier ||
+        typeof start !== 'string' ||
+        typeof end !== 'string' ||
+        !Number.isFinite(Date.parse(start)) ||
+        !Number.isFinite(Date.parse(end))
+      )
+        return
 
       try {
-        chartInstance.current?.showLoading()
+        chart.showLoading()
 
         const detailsResponse = await getPriorityDetailsReportData({
           locationIdentifier,
@@ -94,15 +101,22 @@ export default function PrioritySummaryDetailsChart({
         const transformed = transformPriorityDetailsData(detailsResponse)
         const nextOption = transformed?.data?.charts?.[0]?.chart
 
-        if (nextOption) {
+        if (
+          nextOption &&
+          chartInstance.current === chart &&
+          !chart.isDisposed()
+        ) {
           setOverrideOption(nextOption)
-          chartInstance.current?.setOption(nextOption, { notMerge: true })
+          chart.setOption(nextOption, { notMerge: true })
         }
       } catch (err) {
         console.error('Priority Details drilldown failed:', err)
       } finally {
-        chartInstance.current?.hideLoading()
+        if (!chart.isDisposed()) chart.hideLoading()
       }
+    }
+    chart.on('click', (p) => {
+      void handleClick(p)
     })
   }, [effectiveOption, settings, theme, isDrilled])
 
@@ -139,7 +153,6 @@ export default function PrioritySummaryDetailsChart({
         ...style,
       }}
       role="presentation"
-      aria-hidden="true"
     >
       <div id={id} ref={chartRef} style={{ width: '100%', height: '100%' }} />
 

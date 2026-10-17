@@ -14,11 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import {
-  DetectorEventDto,
-  IndianaEvent,
-  PriorityDetailsResult,
-} from '@/api/reports'
+import { PriorityDetailsResult } from '@/api/reports'
 import {
   createDisplayProps,
   createGrid,
@@ -44,9 +40,19 @@ import {
   CustomSeriesRenderItemAPI,
   CustomSeriesRenderItemParams,
   graphic,
+  type CustomSeriesRenderItem,
   type EChartsOption,
   type SeriesOption,
+  type XAXisComponentOption,
 } from 'echarts'
+
+import { cartesianBounds, categoryBandSize } from './priorityDetails.rendering'
+
+type DetailRow = PriorityDetailsResult & {
+  start: string
+  end: string
+  phaseNumber: number
+}
 
 type CycleIndication = {
   name: string
@@ -96,10 +102,10 @@ type IndicationName = (typeof CYCLE_INDICATIONS)[number]['name']
 function getIndicationDetails(
   value: number
 ): { name: IndicationName; color: string } | null {
-  const found = CYCLE_INDICATIONS.find((x) => x.codes.includes(value))
-  return found
-    ? { name: found.name as IndicationName, color: found.color }
-    : null
+  const found = CYCLE_INDICATIONS.find((x) =>
+    x.codes.some((code) => code === value)
+  )
+  return found ? { name: found.name, color: found.color } : null
 }
 
 export interface RawPriorityDetailsResponse {
@@ -107,9 +113,32 @@ export interface RawPriorityDetailsResponse {
 }
 
 export default function transformPriorityDetailsData(
-  response: RawPriorityDetailsResponse
+  response: RawPriorityDetailsResponse | PriorityDetailsResult[]
 ): TransformedChartResponse {
-  const rows = response ?? []
+  const input = Array.isArray(response) ? response : response.data
+  const rows: DetailRow[] = (input ?? []).flatMap((row) => {
+    if (
+      !row.start ||
+      !row.end ||
+      row.phaseNumber == null ||
+      !Number.isFinite(row.phaseNumber)
+    )
+      return []
+    const start = Date.parse(row.start),
+      end = Date.parse(row.end)
+    return Number.isFinite(start) && Number.isFinite(end) && end >= start
+      ? [
+          {
+            ...row,
+            start: row.start,
+            end: row.end,
+            phaseNumber: row.phaseNumber,
+          },
+        ]
+      : []
+  })
+  if (!rows.length)
+    return { type: ChartType.PriorityDetails, data: { charts: [] } }
 
   const chart = transformCyclesOnly(rows)
 
@@ -121,7 +150,7 @@ export default function transformPriorityDetailsData(
   }
 }
 
-function transformCyclesOnly(rows: PriorityDetailsResult[]): EChartsOption {
+function transformCyclesOnly(rows: DetailRow[]): EChartsOption {
   const first = rows[0]
   const locationDescription = first?.locationDescription ?? ''
   const locationIdentifier = first?.locationIdentifier ?? ''
@@ -136,7 +165,7 @@ function transformCyclesOnly(rows: PriorityDetailsResult[]): EChartsOption {
     dateRange,
   })
 
-  const xAxis = {
+  const xAxis: XAXisComponentOption = {
     type: 'time',
     show: false,
     min: chartStartIso,
@@ -152,8 +181,6 @@ function transformCyclesOnly(rows: PriorityDetailsResult[]): EChartsOption {
     series: prioritySeries,
     legendItems,
   } = buildPriorityOverlay(rows)
-
-  yAxisTop.gridIndex = 0
 
   const yAxisBottom = createYAxis(false, {
     type: 'category',
@@ -281,7 +308,7 @@ function transformCyclesOnly(rows: PriorityDetailsResult[]): EChartsOption {
   return chartOptions
 }
 
-function buildRowCategories(rows: PriorityDetailsResult[]): string[] {
+function buildRowCategories(rows: DetailRow[]): string[] {
   const out: string[] = []
   const seen = new Set<string>()
 
@@ -295,11 +322,11 @@ function buildRowCategories(rows: PriorityDetailsResult[]): string[] {
   return out
 }
 
-function categoryOfRow(r: PriorityDetailsResult): string {
+function categoryOfRow(r: DetailRow): string {
   return r.isPhaseOverLap ? `O${r.phaseNumber}` : `${r.phaseNumber}`
 }
 
-function getChartRangeMs(rows: PriorityDetailsResult[]) {
+function getChartRangeMs(rows: DetailRow[]) {
   if (!rows.length) {
     return {
       chartStartMs: 0,
@@ -328,7 +355,7 @@ function getChartRangeMs(rows: PriorityDetailsResult[]) {
 }
 
 function buildCycleTimelineSeries(
-  rows: PriorityDetailsResult[],
+  rows: DetailRow[],
   categories: string[]
 ): SeriesOption[] {
   const indexByCategory = new Map<string, number>()
@@ -344,7 +371,7 @@ function buildCycleTimelineSeries(
   >()
 
   for (const ind of CYCLE_INDICATIONS) {
-    buckets.set(ind.name as IndicationName, [])
+    buckets.set(ind.name, [])
   }
 
   for (const row of rows) {
@@ -359,11 +386,12 @@ function buildCycleTimelineSeries(
       const curr = cycles[i]
       const next = i < cycles.length - 1 ? cycles[i + 1] : null
 
+      if (curr.value == null || !curr.start) continue
       const details = getIndicationDetails(curr.value)
       if (!details) continue
 
       const startMs = Date.parse(curr.start)
-      const endMs = next ? Date.parse(next.start) : rowEndMs
+      const endMs = next ? Date.parse(next.start ?? '') : rowEndMs
       if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) continue
       if (endMs <= startMs) continue
 
@@ -378,8 +406,8 @@ function buildCycleTimelineSeries(
     }
   }
 
-  return CYCLE_INDICATIONS.map((ind) => {
-    const name = ind.name as IndicationName
+  return CYCLE_INDICATIONS.map<SeriesOption>((ind) => {
+    const name = ind.name
     return {
       name,
       type: 'custom',
@@ -391,19 +419,22 @@ function buildCycleTimelineSeries(
       data: buckets.get(name) ?? [],
       itemStyle: { color: ind.color },
       z: 1,
-    } as SeriesOption
+    }
   })
 }
 
-function renderCycleRect(
+const renderCycleRect: CustomSeriesRenderItem = (
   params: CustomSeriesRenderItemParams,
   api: CustomSeriesRenderItemAPI
-) {
+) => {
   const categoryIndex = api.value(0)
   const start = api.coord([api.value(1), categoryIndex])
   const end = api.coord([api.value(2), categoryIndex])
 
-  const height = api.size([0, 1])[1] * 0.6
+  const bounds = cartesianBounds(params.coordSys)
+  const band = categoryBandSize(api)
+  if (!bounds || band == null) return undefined
+  const height = band * 0.6
 
   const rectShape = graphic.clipRectByRect(
     {
@@ -412,12 +443,7 @@ function renderCycleRect(
       width: end[0] - start[0],
       height,
     },
-    {
-      x: params.coordSys.x,
-      y: params.coordSys.y,
-      width: params.coordSys.width,
-      height: params.coordSys.height,
-    }
+    bounds
   )
 
   return (
@@ -431,7 +457,7 @@ function renderCycleRect(
 }
 
 function buildCycleEventMarkersOnCyclesSeries(
-  rows: PriorityDetailsResult[],
+  rows: DetailRow[],
   categories: string[]
 ): SeriesOption[] {
   const indexByCategory = new Map<string, number>()
@@ -447,7 +473,7 @@ function buildCycleEventMarkersOnCyclesSeries(
     const rowIndex = indexByCategory.get(categoryOfRow(row))
     if (rowIndex == null) continue
 
-    const tspEvents = (row.tspEvents ?? []) as IndianaEvent[]
+    const tspEvents = row.tspEvents ?? []
     if (!tspEvents.length) continue
 
     for (const e of tspEvents) {
@@ -458,6 +484,7 @@ function buildCycleEventMarkersOnCyclesSeries(
         continue
       }
 
+      if (!e.timestamp) continue
       const tMs = Date.parse(e.timestamp)
       if (!Number.isFinite(tMs)) continue
 
@@ -514,7 +541,7 @@ function buildCycleEventMarkersOnCyclesSeries(
 }
 
 function buildDetectorOnOffOnCyclesSeries(
-  rows: PriorityDetailsResult[],
+  rows: DetailRow[],
   categories: string[]
 ): SeriesOption[] {
   const indexByCategory = new Map<string, number>()
@@ -529,16 +556,19 @@ function buildDetectorOnOffOnCyclesSeries(
 
   const onSeriesData: seriesDataPoint[] = []
   const offSeriesData: seriesDataPoint[] = []
-  const lineSeriesData: seriesDataPoint[][] = []
+  const lineSeriesData: {
+    coords: [number, number][]
+    detectorName: string | null | undefined
+    on: string
+    off: string
+  }[] = []
 
   for (const row of rows ?? []) {
     const rowLabel = categoryOfRow(row)
     const rowIndex = indexByCategory.get(rowLabel)
     if (rowIndex == null) continue
 
-    const detectors = row.priorityAndPreemptionEvents as
-      | DetectorEventDto[]
-      | undefined
+    const detectors = row.priorityAndPreemptionEvents
     if (!detectors?.length) continue
 
     const basic = detectors.map((d) => ({
@@ -548,7 +578,8 @@ function buildDetectorOnOffOnCyclesSeries(
 
     basic.forEach((detector) => {
       detector?.events?.forEach((event) => {
-        if (!event.detectorOn) return
+        if (!event.detectorOn || !Number.isFinite(Date.parse(event.detectorOn)))
+          return
 
         onSeriesData.push({
           value: [event.detectorOn, rowIndex],
@@ -557,7 +588,12 @@ function buildDetectorOnOffOnCyclesSeries(
           off: event.detectorOff,
         })
 
-        if (!event.detectorOff) return
+        if (
+          !event.detectorOff ||
+          !Number.isFinite(Date.parse(event.detectorOff)) ||
+          Date.parse(event.detectorOff) < Date.parse(event.detectorOn)
+        )
+          return
 
         offSeriesData.push({
           value: [event.detectorOff, rowIndex],
@@ -568,20 +604,15 @@ function buildDetectorOnOffOnCyclesSeries(
 
         // Only connect when both exist
         if (event.detectorOn && event.detectorOff) {
-          lineSeriesData.push([
-            {
-              coord: [event.detectorOn, rowIndex],
-              detectorName: detector.name,
-              on: event.detectorOn,
-              off: event.detectorOff,
-            },
-            {
-              coord: [event.detectorOff, rowIndex],
-              detectorName: detector.name,
-              on: event.detectorOn,
-              off: event.detectorOff,
-            },
-          ])
+          lineSeriesData.push({
+            coords: [
+              [Date.parse(event.detectorOn), rowIndex],
+              [Date.parse(event.detectorOff), rowIndex],
+            ],
+            detectorName: detector.name,
+            on: event.detectorOn,
+            off: event.detectorOff,
+          })
         }
       })
     })
