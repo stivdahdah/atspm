@@ -14,14 +14,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { RouteLocation } from '@/api/config'
 
 import axios from 'axios'
 
 export const fetchRouteDistance = async (
-  routeLocations: RouteLocation[],
+  routeLocations: { longitude?: number; latitude?: number }[],
   profile = 'driving'
 ) => {
+  if (
+    routeLocations.length < 2 ||
+    routeLocations.some(
+      (rl) => !Number.isFinite(rl.longitude) || !Number.isFinite(rl.latitude)
+    )
+  ) {
+    throw new Error(
+      'At least two locations with valid coordinates are required.'
+    )
+  }
   const coordinates = routeLocations
     .map((rl) => `${rl.longitude},${rl.latitude}`)
     .join(';')

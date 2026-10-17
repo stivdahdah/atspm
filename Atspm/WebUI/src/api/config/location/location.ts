@@ -1182,7 +1182,7 @@ export const getLocationFromKey = (
 ) => {
       
       
-      return configRequest<Location>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/Location/${key}`, method: 'GET',
         params, signal
     },

@@ -43,6 +43,10 @@ export interface Product {
 }
 
 export interface Device {
+  created?: string | null
+  createdBy?: string | null
+  modified?: string | null
+  modifiedBy?: string | null
   id: number | null
   loggingEnabled: boolean
   ipaddress: string

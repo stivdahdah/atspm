@@ -12,7 +12,6 @@ import { useLocationStore } from '@/features/locations/components/editLocation/l
 import { getLocation } from '@/pages/admin/locations/[[...id]]'
 import { useNotificationStore } from '@/stores/notifications'
 import { dateToTimestamp } from '@/utils/dateTime'
-import { removeAuditFields } from '@/utils/removeAuditFields'
 import SaveIcon from '@mui/icons-material/Save'
 import {
   Box,
@@ -28,9 +27,9 @@ import {
   Typography,
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers'
-import { format, parseISO } from 'date-fns'
 import { ChangeEvent } from 'react'
 import { useQueryClient } from 'react-query'
+import { locationGeneralToDto } from './editorModel'
 
 const LocationGeneralOptionsEditor = () => {
   const { location, handleLocationEdit, setLocation } = useLocationStore()
@@ -44,6 +43,7 @@ const LocationGeneralOptionsEditor = () => {
   const { mutateAsync: updateGeneralInfo } = usePutLocationFromKey()
 
   const handleAreaDelete = (id: number | string) => {
+    if (!location) return
     setLocation({
       ...location,
       areas: location?.areas?.filter((area) => area.id !== id),
@@ -51,6 +51,7 @@ const LocationGeneralOptionsEditor = () => {
   }
 
   const handleDateChange = (value: Date | null) => {
+    if (!location) return
     if (!value) return
 
     setLocation({
@@ -60,6 +61,7 @@ const LocationGeneralOptionsEditor = () => {
   }
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!location) return
     const { name, checked } = e.target
     setLocation({
       ...location,
@@ -68,13 +70,14 @@ const LocationGeneralOptionsEditor = () => {
   }
 
   const handleAreaChange = (e: SelectChangeEvent<unknown>) => {
+    if (!location) return
     const { value } = e.target
 
     const areas = []
     for (const id of value as number[]) {
       const area = areasData?.value.find((area) => area.id === id)
       if (area) {
-        areas.push(area)
+        areas.push({ ...area, id })
       }
     }
 
@@ -98,28 +101,14 @@ const LocationGeneralOptionsEditor = () => {
   }
 
   const handleSaveGeneralLocation = async () => {
-    const { approaches, region, jurisdiction, devices, ...generalInfo } =
-      location
-
-    generalInfo.start = format(parseISO(location.start), 'yyyy-MM-dd')
-
-    const generalInfoDto = removeAuditFields(generalInfo)
-    generalInfoDto.areas = location?.areas?.map(removeAuditFields)
-
+    if (!location) return
     try {
-      updateGeneralInfo(
-        {
-          key: location.id,
-          data: generalInfoDto,
-        },
-        {
-          onSuccess: async () => {
-            queryClient.invalidateQueries()
-            const updatedLocation = await getLocation(location.id)
-            setLocation(updatedLocation)
-          },
-        }
-      )
+      await updateGeneralInfo({
+        key: location.id,
+        data: locationGeneralToDto(location),
+      })
+      await queryClient.invalidateQueries()
+      setLocation(await getLocation(location.id))
       addNotification({
         type: 'success',
         title: 'Location saved successfully',
@@ -352,7 +341,7 @@ const LocationGeneralOptionsEditor = () => {
                   <CustomSelect
                     label="Region"
                     name="regionId"
-                    value={location.regionId}
+                    value={location.regionId ?? undefined}
                     data={regionsData?.value}
                     onChange={(e) => handleSelectChange('regionId', e)}
                     displayProperty="description"
@@ -363,7 +352,7 @@ const LocationGeneralOptionsEditor = () => {
                   <CustomSelect
                     label="Jurisdiction"
                     name="jurisdictionId"
-                    value={location.jurisdictionId}
+                    value={location.jurisdictionId ?? undefined}
                     data={jurisdictionData?.value}
                     onChange={(e) => handleSelectChange('jurisdictionId', e)}
                     displayProperty="name"

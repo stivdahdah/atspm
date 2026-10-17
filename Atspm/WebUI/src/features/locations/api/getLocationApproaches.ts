@@ -32,16 +32,19 @@ const headers: AxiosHeaders = new AxiosHeaders({
 })
 
 export const getLocationApproaches = async (
-  locationId?: string
+  locationId?: string | number
 ): Promise<ApiResponse<LocationApproach>> => {
-  return await configAxios.get(`Location/${locationId}/approaches`, { headers })
+  return await configAxios.get<
+    ApiResponse<LocationApproach>,
+    ApiResponse<LocationApproach>
+  >(`Location/${locationId}/approaches`, { headers })
 }
 
 type QueryFnType = typeof getLocationApproaches
 
 type UseLocationsOptions = {
   config?: QueryConfig<QueryFnType>
-  locationId?: string | undefined
+  locationId?: string | number | undefined
 }
 
 export const useLocationApproaches = ({

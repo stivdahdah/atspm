@@ -1,5 +1,4 @@
 import { useLocationApproaches } from '@/features/locations/api'
-import { RouteLocation } from '@/features/routes/types'
 import { ConfigEnum, useConfigEnums } from '@/hooks/useConfigEnums'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -13,6 +12,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
+import type { RouteEditorLink as RouteLocation } from './editorModel'
 
 interface DirectionSelectProps {
   hasErrors: boolean
@@ -29,26 +29,21 @@ const DirectionSelect = ({
 }: DirectionSelectProps) => {
   const theme = useTheme()
   const { data: approachesData } = useLocationApproaches({
-    locationId: link.locationId,
+    locationId: link.locationId ?? undefined,
   })
 
   const { data: directionTypes } = useConfigEnums(ConfigEnum.DirectionTypes)
 
   if (!directionTypes) return null
 
-  if (typeof link.primaryDirectionId === 'number') {
-    link.primaryDirectionId = directionTypes?.find(
-      (directionType) => directionType.value == link.primaryDirectionId
-    )?.name as string
-    link.opposingDirectionId = directionTypes?.find(
-      (directionType) => directionType.value == link.opposingDirectionId
-    )?.name as string
-  }
-
-  const directionTypeId =
+  const rawDirection =
     updateType === 'primary'
       ? link.primaryDirectionId
       : link.opposingDirectionId
+  const directionTypeId =
+    directionTypes.find(
+      (d) => d.value === rawDirection || d.name === rawDirection
+    )?.name ?? ''
   const phaseNumber =
     updateType === 'primary' ? link.primaryPhase : link.opposingPhase
   const isOverlap =
@@ -58,9 +53,9 @@ const DirectionSelect = ({
     isOverlap ? 'true' : 'false'
   }`
 
-  const approaches = approachesData?.value?.sort(
-    (a, b) => a.protectedPhaseNumber - b.protectedPhaseNumber
-  )
+  const approaches = approachesData?.value
+    ?.slice()
+    .sort((a, b) => a.protectedPhaseNumber - b.protectedPhaseNumber)
 
   const handleSelectChange = (event: SelectChangeEvent<string>) => {
     const [directionTypeId, protectedPhaseNumber, isOverlapStr] =
@@ -76,11 +71,11 @@ const DirectionSelect = ({
 
       if (updateType === 'primary') {
         updatedLink.primaryDirectionId = directionTypeId
-        updatedLink.primaryPhase = protectedPhaseNumber
+        updatedLink.primaryPhase = Number(protectedPhaseNumber)
         updatedLink.isPrimaryOverlap = isOverlapStr === 'true'
       } else {
         updatedLink.opposingDirectionId = directionTypeId
-        updatedLink.opposingPhase = protectedPhaseNumber
+        updatedLink.opposingPhase = Number(protectedPhaseNumber)
         updatedLink.isOpposingOverlap = isOverlapStr === 'true'
       }
 
@@ -93,7 +88,13 @@ const DirectionSelect = ({
       <Select
         error={hasErrors && !directionTypeId}
         value={
-          !!formattedValue || approaches?.length === 0 ? '' : formattedValue
+          approaches?.some(
+            (a) =>
+              `${a.directionTypeId}-${a.protectedPhaseNumber}-${a.isProtectedPhaseOverlap}` ===
+              formattedValue
+          )
+            ? formattedValue
+            : ''
         }
         onChange={handleSelectChange}
         displayEmpty

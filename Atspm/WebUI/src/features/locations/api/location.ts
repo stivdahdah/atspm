@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
+import type { SearchLocation } from '@/api/config'
 import { Location, LocationExpanded } from '@/features/locations/types'
 import { useDeleteRequest } from '@/hooks/useDeleteRequest'
 import { useGetRequest } from '@/hooks/useGetRequest'
@@ -83,9 +84,14 @@ export const useAllVersionsOfLocation = (
 }
 
 export const useLatestVersionOfAllLocations = (
-  config?: UseQueryOptions<ApiResponse<Location>, unknown, ApiResponse<Location>, QueryKey>
+  config?: UseQueryOptions<
+    ApiResponse<SearchLocation>,
+    unknown,
+    ApiResponse<SearchLocation>,
+    QueryKey
+  >
 ) => {
-  return useGetRequest<ApiResponse<Location>>({
+  return useGetRequest<ApiResponse<SearchLocation>>({
     route: `${route}/GetLocationsForSearch?count=false`,
     headers,
     config: {

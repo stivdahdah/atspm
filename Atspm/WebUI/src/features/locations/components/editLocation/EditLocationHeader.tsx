@@ -56,8 +56,9 @@ export default function EditLocationHeader() {
 
   const { data: versionsData, refetch: fetchLocationVersions } =
     useGetLocationAllVersionsOfLocationFromIdentifier(
-      `'${location.locationIdentifier}'`,
-      { enabled: false }
+      `'${location?.locationIdentifier ?? ''}'`,
+      undefined,
+      { query: { enabled: false } }
     )
 
   const locationVersions = versionsData?.value
@@ -79,7 +80,9 @@ export default function EditLocationHeader() {
     setLocation(newLocation)
   }
 
-  function buildDisplayName(loc: Location) {
+  function buildDisplayName(
+    loc: Pick<Location, 'locationIdentifier' | 'primaryName' | 'secondaryName'>
+  ) {
     const { locationIdentifier, primaryName, secondaryName } = loc
     let displayName = locationIdentifier || ''
     if (primaryName) displayName += ` - ${primaryName}`
@@ -93,7 +96,8 @@ export default function EditLocationHeader() {
     startDate: ver.start,
   }))
 
-  function formatVersionNote(note: string, date: string) {
+  function formatVersionNote(note?: string | null, date?: string) {
+    if (!date) return note ?? ''
     const [year, month, day] = date.split('T')[0].split('-')
     return `${+month}/${+day}/${year} - ${note}`
   }
@@ -182,7 +186,7 @@ export default function EditLocationHeader() {
   const locationType = locationTypeData?.value.find(
     (type) => type.id === location.locationTypeId
   )
-  const locationTypeConfig = getLocationTypeConfig(locationType?.id)
+  const locationTypeConfig = getLocationTypeConfig(locationType?.id ?? 0)
 
   return (
     <Paper sx={{ mt: 2, p: 2 }}>

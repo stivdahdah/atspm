@@ -1,24 +1,29 @@
-import { Location } from '@/features/locations/types'
+import { SearchLocation } from '@/api/config'
 import { Autocomplete, Box, TextField } from '@mui/material'
 import match from 'autosuggest-highlight/match'
 import parse from 'autosuggest-highlight/parse'
 import React from 'react'
 
-interface SelectLocationNoMapProps {
-  location: Location | null
-  setLocation: (location: Location | null) => void
-  locations: Location[]
+type LocationOption = Omit<
+  Pick<
+    SearchLocation,
+    'id' | 'locationIdentifier' | 'primaryName' | 'secondaryName'
+  >,
+  'id'
+> & { id?: number | string }
+
+interface SelectLocationNoMapProps<T extends LocationOption> {
+  location: T | null
+  setLocation: (location: T | null) => void
+  locations: T[]
 }
 
-export default function SelectLocationNoMap({
+export default function SelectLocationNoMap<T extends LocationOption>({
   location,
   setLocation,
   locations,
-}: SelectLocationNoMapProps) {
-  const handleChange = (
-    event: React.SyntheticEvent,
-    value: Location | null
-  ) => {
+}: SelectLocationNoMapProps<T>) {
+  const handleChange = (event: React.SyntheticEvent, value: T | null) => {
     setLocation(value)
   }
 

@@ -15,24 +15,22 @@ import {
 import { ReactNode } from 'react'
 
 export interface SingularListDataItems {
-  id: number | string
+  id?: number | string
   icon?: ReactNode
-  [key: string]: unknown
+  label?: ReactNode
 }
 
 export type PossibleValues = number | number[] | string | string[] | undefined
 
-type DataType = SingularListDataItems[] | undefined
-
-interface CustomSelectProps
+interface CustomSelectProps<T extends SingularListDataItems>
   extends Omit<SelectProps<unknown>, 'onChange' | 'value'> {
   label: string
   name: string
   value: PossibleValues
-  data: DataType
+  data: T[] | undefined
   onChange: (event: SelectChangeEvent<unknown>) => void
   onDelete?: (id: number | string) => void
-  displayProperty: string
+  displayProperty: keyof T
   multiple?: boolean
   helperText?: string
   error?: boolean
@@ -40,21 +38,24 @@ interface CustomSelectProps
   hideLabel?: boolean
 }
 
-const CustomSelect = ({
+const CustomSelect = <T extends SingularListDataItems>({
   label,
   name,
   value,
   displayProperty,
   onChange,
   onDelete,
-  data = [],
+  data: inputData = [],
   multiple = false,
   fullWidth = false,
   helperText,
   error,
   hideLabel,
   ...rest
-}: CustomSelectProps) => {
+}: CustomSelectProps<T>) => {
+  const data = inputData.filter(
+    (item): item is T & { id: number | string } => item.id != null
+  )
   const handleDelete = (id: number | string) => () => {
     if (onDelete) {
       onDelete(id)

@@ -82,7 +82,7 @@ const CommentCell = ({ detector }: CommentCellProps) => {
     if (editCommentId) {
       updateComment(
         { id: editCommentId, data: { comment: commentText } },
-        { onSuccess: refetch }
+        { onSuccess: () => refetch() }
       )
     } else {
       addComment(
@@ -91,7 +91,7 @@ const CommentCell = ({ detector }: CommentCellProps) => {
           detectorId: detector.id,
           timeStamp: new Date().toISOString(),
         },
-        { onSuccess: refetch }
+        { onSuccess: () => refetch() }
       )
     }
     setCommentText('')
@@ -110,7 +110,7 @@ const CommentCell = ({ detector }: CommentCellProps) => {
 
   const handleConfirmDelete = () => {
     if (selectedComment) {
-      deleteComment(selectedComment, { onSuccess: refetch })
+      deleteComment(selectedComment, { onSuccess: () => refetch() })
     }
     handleCloseDeleteModal()
   }
@@ -168,14 +168,16 @@ const CommentCell = ({ detector }: CommentCellProps) => {
                       >
                         <IconButton
                           onClick={() =>
-                            handleOpenModal(comment.id, comment.comment)
+                            handleOpenModal(String(comment.id), comment.comment)
                           }
                           size="small"
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
                         <IconButton
-                          onClick={() => handleOpenDeleteModal(comment.id)}
+                          onClick={() =>
+                            handleOpenDeleteModal(String(comment.id))
+                          }
                           size="small"
                         >
                           <DeleteIcon fontSize="small" />

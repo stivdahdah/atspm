@@ -1,9 +1,9 @@
-import { Device } from '@/api/config'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import {
   useDeleteDevice,
   useGetDevicesForLocation,
 } from '@/features/devices/api/devices'
+import type { Device } from '@/features/devices/types'
 import { useUserHasClaim } from '@/features/identity/pagesCheck'
 import DeviceCard from '@/features/locations/components/editLocation/DeviceCard'
 import { useLocationStore } from '@/features/locations/components/editLocation/locationStore'
@@ -24,7 +24,7 @@ const EditDevices = () => {
   const [isModalOpen, setModalOpen] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<Device | null>(null)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
-  const [deleteDeviceId, setDeleteDeviceId] = useState<string | null>(null)
+  const [deleteDeviceId, setDeleteDeviceId] = useState<number | null>(null)
 
   const { data: devicesData, refetch: refetchDevices } =
     useGetDevicesForLocation(locationId)
@@ -49,7 +49,7 @@ const EditDevices = () => {
     setModalOpen(true)
   }
 
-  const handleDelete = (deviceId: string) => {
+  const handleDelete = (deviceId: number) => {
     if (!hasDeviceDeleteClaim) return
 
     setDeleteDeviceId(deviceId)
@@ -60,7 +60,7 @@ const EditDevices = () => {
     if (!hasDeviceDeleteClaim) return
 
     if (deleteDeviceId) {
-      deleteDevice(deleteDeviceId, { onSuccess: refetchDevices })
+      deleteDevice(deleteDeviceId, { onSuccess: () => refetchDevices() })
     }
     setOpenDeleteModal(false)
   }
@@ -84,7 +84,7 @@ const EditDevices = () => {
             canEdit={hasDeviceEditClaim}
             canDelete={hasDeviceDeleteClaim}
             onEdit={handleEditClick}
-            onDelete={() => handleDelete(device.id)}
+            onDelete={() => device.id != null && handleDelete(device.id)}
           />
         ))}
         {hasDeviceEditClaim && (
@@ -111,7 +111,7 @@ const EditDevices = () => {
           </Button>
         )}
 
-        {isModalOpen && hasDeviceEditClaim && (
+        {isModalOpen && hasDeviceEditClaim && locationId != null && (
           <DeviceModal
             onClose={() => setModalOpen(false)}
             device={currentDevice}

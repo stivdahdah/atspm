@@ -1,4 +1,3 @@
-import { LocationExpanded } from '@/features/locations/types'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import { Box } from '@mui/material'
@@ -11,9 +10,10 @@ import {
   GridToolbarExport,
   GridToolbarFilterButton,
 } from '@mui/x-data-grid'
+import type { LocationSummary } from '../summaryTypes'
 
 interface ApproachesInfoProps {
-  location: LocationExpanded | undefined
+  location: LocationSummary | undefined
 }
 
 const DataGridStyle: SxProps<Theme> = {
@@ -24,7 +24,7 @@ const DataGridStyle: SxProps<Theme> = {
   },
 } as const
 
-function CustomToolbar({ location }: { location: LocationExpanded }) {
+function CustomToolbar({ location }: { location: LocationSummary }) {
   const fileName =
     `${location.primaryName} & ${location.secondaryName} Approaches Configuration`.replace(
       / /g,
@@ -134,7 +134,7 @@ function ApproachesInfo({ location }: ApproachesInfoProps) {
 
   const { approaches } = location
 
-  const data = approaches.map((approach) => {
+  const data = (approaches ?? []).map((approach) => {
     return {
       ...approach,
       directionType: approach?.directionType?.description,
@@ -150,10 +150,7 @@ function ApproachesInfo({ location }: ApproachesInfoProps) {
         getRowId={(row) => row.id}
         rowSelection={false}
         slots={{
-          toolbar: CustomToolbar,
-        }}
-        slotProps={{
-          toolbar: { location },
+          toolbar: () => <CustomToolbar location={location} />,
         }}
         pageSizeOptions={[{ value: 100, label: '100' }]}
         sx={{

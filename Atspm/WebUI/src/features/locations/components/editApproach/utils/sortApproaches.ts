@@ -35,7 +35,7 @@ export const sortApproachesByPhaseNumber = (approaches: ConfigApproach[]) => {
 export const sortDetectorsByChannel = (approaches: ConfigApproach[]) => {
   return approaches.map((approach) => {
     const sortedDetectors = [...approach.detectors].sort((a, b) => {
-      return a.detectorChannel - b.detectorChannel
+      return Number(a.detectorChannel) - Number(b.detectorChannel)
     })
     return { ...approach, detectors: sortedDetectors }
   })

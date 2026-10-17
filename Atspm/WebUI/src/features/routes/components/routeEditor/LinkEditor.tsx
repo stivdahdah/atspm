@@ -19,7 +19,7 @@ const OverlapIcon = ({ isOverlap }: { isOverlap: boolean | null }) => {
   )
 }
 
-const DescriptionText = ({ text }: { text: string }) => {
+const DescriptionText = ({ text }: { text: React.ReactNode }) => {
   return <Typography sx={{ m: 1, fontSize: '12px' }}>{text}</Typography>
 }
 

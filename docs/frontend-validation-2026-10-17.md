@@ -13,7 +13,7 @@ This is a partial TypeScript cleanup; it is not ready to enable mandatory build 
 - Correct mutation option types and retain the edit-impact variables object and callbacks. Explicit numeric coercion retains existing rounding behavior.
 - Declare the already-used lodash 4.18.1 runtime and add its declarations 4.17.26. Add the missing jspdf-autotable 5.0.9 runtime; its registry peer range supports the existing jsPDF 4.2.1. No React, Next.js, Node, backend or API contract upgrade.
 
-## Validation
+## First checkpoint validation
 
 - Node 24.22.0: clean locked `npm ci --ignore-scripts` and full dependency/peer validation passed.
 - Full ESLint: **0 errors, 376 warnings**; baseline 13 errors, 377 warnings.
@@ -24,10 +24,24 @@ This is a partial TypeScript cleanup; it is not ready to enable mandatory build 
 - Production npm audit: zero findings. Full npm audit remains 33 development findings (14 high, 19 moderate). No audit exclusions or forced upgrades were applied.
 - `git diff --check` passed. Backend tests were not repeated: no backend source, schema, migrations or settings changed.
 
+## Route and location editor checkpoint
+
+The second checkpoint reduces TypeScript diagnostics from **1,048 to 858** (190 fewer; 355 fewer than the original 1,213). No file has a higher diagnostic count than the first checkpoint under the same compiler and dependencies. This is still a partial cleanup; compiler settings, source inclusion and the existing build type-check bypass remain unchanged.
+
+- Model editable route and location drafts separately from API DTOs. Validate IDs and required inputs; distinguish blank values from zero; normalize enum names to existing numeric wire values without silently replacing unknown values.
+- Correct route-view/upsert response declarations to `RouteDto` and align their two checked-in OpenAPI response schemas with the existing controller/service. Keep request URLs and payload contracts unchanged.
+- Repair route direction selection without mutating props or query-cache arrays. Rebuild both sides of distance links after add/reorder/delete, clear stale endpoints, preserve zero distances and retain server-assigned distance IDs after saving.
+- Correct location collection reads, approach upsert results, initialized detector collections and local temporary IDs. Preserve audit data on reads and omit it from save payloads.
+- Await general location persistence and reload before announcing success. Persist pedestrian phases as numbers and retain unrelated unsaved approach edits; failed requests do not mark drafts saved.
+- Align related selection, summary and device controls with their actual response shapes. Preserve numeric search filters when adding expanded approaches. Do not mutate cached device configurations; convert device status/type selections to the existing enum values before saving.
+- Guard incomplete coordinates before requesting route geometry. Preserve the existing OSRM match-to-route fallback.
+
+Validation: **71 Jest suites / 322 tests passed**, including 25 new regression cases for DTO contracts, editor normalization, route links/directions, save timing/failure, pedestrian settings and routing fallback. No real controller or routing-service calls are made by these tests. Full ESLint passed with **0 errors and 376 warnings**. The production webpack build passed; its existing type-check bypass remains and does not establish a clean TypeScript check. `git diff --check` passed. The locked dependency installation from the first checkpoint is reused because the dependency manifests, lockfile and runtime are unchanged. No backend source, database schema, migration or dependency changes were made in this checkpoint.
+
 ## Remaining work
 
-The largest remaining groups are route editing (56 diagnostics), approach editing (35), pedestrian activity (33), optional speed-management hotspot UI (30), transit-priority report rendering (28), and priority detail charts (26). Further groups include optional/null form values, ECharts option contracts, stale/missing feature modules, generated API shapes and test fixtures. The checked-in OpenAPI/Orval inputs and MSW collection fixtures also need alignment before future regeneration of the corrected client declarations.
+The largest remaining groups are pedestrian activity (33 diagnostics), optional speed-management hotspot UI (30), transit-priority report rendering (28), priority detail charts (26), segment administration (17) and transit-priority report options (16). The core route edit page, route editor components, approach editor, shared draft models and location general settings have no TypeScript diagnostics. Legacy location template/configuration helpers and the Watchdog editor still need focused cleanup, alongside other optional/null form values, chart contracts, missing feature modules and test fixtures.
 
-Some issues represent behavior or API mismatches, not formatting: the route-view/upsert client declares void while its consumer expects route data; location forms mix string names, numeric enums and transient blank values; numeric chart plans call a timestamp-oriented helper; optional speed-management screens refer to unavailable types/endpoints. These need focused fixes and behavior tests, rather than assertions that hide errors. The separate Speed Management API is not present in this repository; its source or a test endpoint has been requested for contract validation.
+The wider OpenAPI/Orval inputs and MSW collection fixtures still need alignment before regenerating all clients; this checkpoint corrects only the two route response schemas it relies on. The separate Speed Management API is not present in this repository; its source or a test endpoint has been requested for contract validation. Partial multi-request pedestrian updates are not transactional on the existing API: an API failure reports an error and keeps the draft unsaved; no backend transaction behavior is introduced.
 
-Nothing pushed, no PR opened, and the existing local installation was not rebuilt or modified during this task. Existing databases and credentials were accessed only through read-only response-shape checks. Full logs and remaining diagnostic inventory are local under `audit-evidence/frontend-validation-20261017`.
+Nothing pushed, no PR opened, and the existing local installation was not rebuilt or modified during this task. Existing databases and credentials were accessed only through read-only response-shape checks. Full logs and remaining diagnostic inventories are local under `audit-evidence/frontend-validation-20261017` and `audit-evidence/frontend-editors-20261017`.

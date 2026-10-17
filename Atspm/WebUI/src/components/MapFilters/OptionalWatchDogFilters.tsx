@@ -1,8 +1,8 @@
+import { SearchLocation as Location } from '@/api/config'
 import { useGetAreas } from '@/features/areas/api/areaApi'
 import { useGetJurisdiction } from '@/features/jurisdictions/api/jurisdictionApi'
 import { useLatestVersionOfAllLocations } from '@/features/locations/api'
 import SelectLocationNoMap from '@/features/locations/components/selectLocation/SelectLocationNoMap'
-import { Location } from '@/features/locations/types/Location'
 import { useGetRegion } from '@/features/region/api/regionApi'
 import { IssueTypeSelect } from '@/features/watchdog/components/issueTypeSelect'
 import { Autocomplete, Box, TextField } from '@mui/material'
@@ -54,7 +54,7 @@ const OptionalWatchDogFilters = ({
 
   const handleLocationChange = (location: Location | null) => {
     setLocation(location)
-    setLocationIdentifier(location ? location.locationIdentifier : null)
+    setLocationIdentifier(location?.locationIdentifier ?? null)
   }
 
   return (

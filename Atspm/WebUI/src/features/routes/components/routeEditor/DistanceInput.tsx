@@ -1,4 +1,3 @@
-import { RouteLocation } from '@/api/config'
 import { useNotificationStore } from '@/stores/notifications'
 import { fetchRouteDistance } from '@/utils/fetchRouteDistance'
 import RefreshIcon from '@mui/icons-material/Refresh'
@@ -12,11 +11,12 @@ import {
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
 import { useState } from 'react'
+import type { RouteEditorLink as RouteLocation } from './editorModel'
 
 interface DistanceDisplayInputProps {
   hasErrors: boolean
   link: RouteLocation
-  nextLink: RouteLocation
+  nextLink?: RouteLocation
   handleDistanceChange: (locationIdentifier: string, distance: number) => void
 }
 
@@ -70,7 +70,7 @@ const DistanceInput = ({
             error={hasErrors && link.nextLocationDistance === null}
             size="small"
             placeholder="?"
-            value={link.nextLocationDistance?.distance || ''}
+            value={link.nextLocationDistance?.distance ?? ''}
             onChange={handleInputChange}
             inputProps={{ 'aria-label': 'distance' }}
             endAdornment={<InputAdornment position="end">ft</InputAdornment>}

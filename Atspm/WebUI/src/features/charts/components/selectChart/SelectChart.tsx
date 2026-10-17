@@ -1,4 +1,4 @@
-import { Location } from '@/api/config'
+import { SearchLocation as Location } from '@/api/config'
 import { useChartDefaults } from '@/features/charts/api/getChartDefaults'
 import { useGetMeasureTypes } from '@/features/charts/api/getMeasureTypes'
 import { ApproachDelayChartOptions } from '@/features/charts/approachDelay/components/ApproachDelayChartOptions'
@@ -168,9 +168,7 @@ const SelectChart = ({
     const unsortedCharts = measureTypesData.value.reduce(
       (acc, measureType) => {
         if (
-          (location as unknown as { charts?: number[] })?.charts?.includes(
-            measureType.id
-          ) &&
+          location.charts?.includes(measureType.id) &&
           measureType.showOnWebsite
         ) {
           const chartType = abbreviationToChartType[measureType.abbreviation]
