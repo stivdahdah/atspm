@@ -264,6 +264,8 @@ Published ports bind to `127.0.0.1`. This guide is for local development and eva
 
 ## Existing installations
 
+For an easy backup and a separate recovery installation that keeps your accounts and data, follow [Backup and recovery](BACKUP-RESTORE.md). The helper saves all databases, settings, certificates and the matching source revision, and refuses to restore over an existing installation.
+
 Keep a private backup of your settings and database before switching versions. Compare your `.env` with [`.env.example`](.env.example); the older `CONFIG_CONNECTION`/`ConfigContext_Provider` style keys are not used by this Compose configuration.
 
 The current PostgreSQL data mount uses the named `postgres_data` volume. **It does not automatically import an older anonymous volume.** Preserve the old volume and use a verified backup/restore when moving existing data. Changing `POSTGRES_PASSWORD` in `.env` alone also does not change the password of an already initialized PostgreSQL database.
