@@ -92,7 +92,7 @@ export const useMapClickHandler = (
     feature: Feature,
     lng: number,
     lat: number
-  ) => Promise<number | null>,
+  ) => number | null | Promise<number | null>,
   onRouteError: (pt: [number, number] | null) => void,
   canEditSegmentLines: boolean,
   isInitialPolyline?: boolean
@@ -142,8 +142,8 @@ export const useMapClickHandler = (
       const roundedMile = round(mile, 2)
 
       const update: {
-        startMilePoint?: number
-        endMilePoint?: number
+        startMilePoint?: number | null
+        endMilePoint?: number | null
         polarity?: 'PM' | 'NM'
       } = {}
 

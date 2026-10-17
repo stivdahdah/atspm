@@ -16,7 +16,7 @@ export type LegendShape = 'line' | 'circle'
 export interface LegendItem {
   id: string
   label: string
-  color: string
+  color?: string
   width?: number // thickness for lines, diameter for circles
   shape?: LegendShape
   isSolid?: boolean

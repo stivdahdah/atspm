@@ -1,7 +1,6 @@
 import {
   getApiV1SegmentSegmentId,
   useDeleteApiV1SegmentDeleteSegmentSegmentId,
-  usePostApiV1EntityGetEntitiesWithinRange,
   usePostApiV1SegmentAddSegment,
   usePostApiV1SegmentSegmentIdEntitiesReplace,
   usePutApiV1SegmentUpdateSegmentSegmentId,
@@ -13,7 +12,17 @@ import { useTransformedSegments } from '@/features/speedManagementTool/api/getSe
 import DataSources from '@/features/speedManagementTool/components/SegmentEditor/DataSources'
 import SegmentEditorMapWrapper from '@/features/speedManagementTool/components/SegmentEditor/SegmentEditorMap/SegmentEditorMapWrapper'
 import SegmentProperties from '@/features/speedManagementTool/components/SegmentEditor/SegmentProperties'
+import { useSegmentNearbyEntities } from '@/features/speedManagementTool/components/SegmentEditor/segmentEditorApi'
 import { useSegmentEditorStore } from '@/features/speedManagementTool/components/SegmentEditor/segmentEditorStore'
+import {
+  buildDirections,
+  buildSegmentPayload,
+  propertiesFromFeature,
+  readSegment,
+  segmentFromDraft,
+  toMapSegment,
+  type SegmentFeature,
+} from '@/features/speedManagementTool/components/SegmentEditor/segmentModel'
 import { useNotificationStore } from '@/stores/notifications'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import SaveIcon from '@mui/icons-material/Save'
@@ -41,7 +50,8 @@ const SegmentAdminPage = () => {
   const pageAccess = useViewPage(PageNames.Segments)
   const router = useRouter()
   const theme = useTheme()
-  const { id } = router.query
+  const queryId = router.query.id
+  const id = Array.isArray(queryId) ? queryId[0] : queryId
   const { addNotification } = useNotificationStore()
   const [isLoading, setIsloading] = useState(false)
   const {
@@ -60,53 +70,41 @@ const SegmentAdminPage = () => {
     setInitialPolylineCoordinates,
   } = useSegmentEditorStore()
   const [modalOpen, setModalOpen] = useState(false)
-  const [selectedSegment, setSelectedSegment] = useState<number | null>(null)
-  const [segmentData, setSegmentData] = useState<any>(null)
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null)
+  const [segmentData, setSegmentData] = useState<{
+    features: SegmentFeature[]
+  } | null>(null)
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
 
   useEffect(() => {
-    if (!id || id === 'new') return
+    let cancelled = false
     setSegmentData(null)
-    getApiV1SegmentSegmentId(id as string)
-      .then((res) => {
-        setSegmentData(res)
-        const { properties, geometry } = res.features[0]
-        useSegmentEditorStore.getState().setSegmentProperties({
-          id: properties.Id,
-          udotRouteNumber: properties.UdotRouteNumber,
-          startMilePoint: properties.StartMilePoint,
-          endMilePoint: properties.EndMilePoint,
-          functionalType: properties.FunctionalType,
-          name: properties.Name,
-          direction: properties.Direction,
-          speedLimit: properties.SpeedLimit,
-          region: properties.Region,
-          city: properties.City,
-          county: properties.County,
-          alternateIdentifier: properties.AlternateIdentifier,
-          accessCategory: properties.AccessCategory,
-          offset: properties.Offset ?? null,
-          shape: properties.Shape,
-          shapeWKT: properties.ShapeWKT,
-        })
-        setPolylineCoordinates(geometry.coordinates)
-        setInitialPolylineCoordinates(geometry.coordinates)
-
-        const entityIds = properties.RouteEntities?.map((e) => e.Id) ?? []
-        setAssociatedEntityIds(entityIds)
+    fetchedOriginalRef.current = false
+    useSegmentEditorStore.getState().reset()
+    originalCoordsRef.current = []
+    prevCoordsRef.current = []
+    if (!id || id === 'new') return
+    getApiV1SegmentSegmentId(id)
+      .then((response) => {
+        const loaded = readSegment(response)
+        if (!cancelled) setSegmentData({ features: [loaded] })
       })
-      .catch((err) => {
-        console.error('Error loading segment:', err)
+      .catch((error) => {
+        if (cancelled) return
+        console.error('Error loading segment:', error)
         addNotification({ title: 'Failed to load segment', type: 'error' })
       })
-  }, [id, addNotification, setAssociatedEntityIds])
+    return () => {
+      cancelled = true
+    }
+  }, [id, addNotification])
 
   const { mutateAsync: editMutation } =
     usePutApiV1SegmentUpdateSegmentSegmentId()
 
   const { mutateAsync: getNearByEntities, isLoading: entitiesAreLoading } =
-    usePostApiV1EntityGetEntitiesWithinRange()
+    useSegmentNearbyEntities()
 
   const { mutateAsync: createSegment } = usePostApiV1SegmentAddSegment()
 
@@ -129,22 +127,6 @@ const SegmentAdminPage = () => {
 
   //Functions ─────────────────────────────────────────────────────────────
 
-  const buildDirections = (
-    dir: 'NB' | 'SB' | 'EB' | 'WB' | undefined,
-    polarity: string | undefined
-  ): string[] => {
-    if (!dir) return polarity ? [polarity] : []
-
-    const variants: Record<'NB' | 'SB' | 'EB' | 'WB', string[]> = {
-      NB: ['N', 'NB', 'NW', 'NE'],
-      SB: ['S', 'SB', 'SW', 'SE'],
-      EB: ['E', 'EB', 'NE', 'SE'],
-      WB: ['W', 'WB', 'NW', 'SW'],
-    }
-
-    return polarity ? [...variants[dir], polarity] : variants[dir]
-  }
-
   const handleGetEntities = async (coordinates: [number, number][]) => {
     if (polylineCoordinates.length < 2) return
 
@@ -154,12 +136,7 @@ const SegmentAdminPage = () => {
         data: {
           coordinates: coordinates,
           directions: buildDirections(
-            segmentProperties.direction as
-              | 'NB'
-              | 'SB'
-              | 'EB'
-              | 'WB'
-              | undefined,
+            segmentProperties.direction,
             segmentProperties.polarity
           ),
         },
@@ -178,43 +155,6 @@ const SegmentAdminPage = () => {
   const handleSaveProperties = async () => {
     setIsloading(true)
 
-    const {
-      id,
-      udotRouteNumber,
-      startMilePoint,
-      endMilePoint,
-      functionalType,
-      name,
-      direction,
-      speedLimit,
-      region,
-      city,
-      county,
-      shape,
-      shapeWKT,
-      alternateIdentifier,
-      accessCategory,
-      offset,
-    } = segmentProperties
-
-    const segmentPayload = {
-      udotRouteNumber,
-      startMilePoint,
-      endMilePoint,
-      functionalType,
-      name,
-      direction,
-      speedLimit: Number(speedLimit),
-      region: region || null,
-      city,
-      county,
-      shape,
-      shapeWKT,
-      alternateIdentifier,
-      accessCategory,
-      offset: offset ?? null,
-    }
-
     const handleServerError = (error: any, fallbackMsg: string) => {
       if (error?.response?.status === 500) {
         addNotification({
@@ -228,18 +168,21 @@ const SegmentAdminPage = () => {
       }
     }
 
+    let createdId: string | undefined
     try {
+      const draft = useSegmentEditorStore.getState().segmentProperties
+      const segmentPayload = buildSegmentPayload(draft)
+      const segmentId = draft.id ?? id
       // ────────── EDIT  ──────────
-      if (router.query.id !== 'new') {
-        await editMutation({ segmentId: id!, data: { id, ...segmentPayload } })
-        upsertSegment({
-          id: id!,
-          geometry: { type: 'LineString', coordinates: polylineCoordinates },
-          properties: { ...segmentPayload, Id: id! },
+      if (id !== 'new' || draft.id != null) {
+        if (!segmentId) throw new Error('Segment ID is missing.')
+        await editMutation({
+          segmentId,
+          data: { id: segmentId, ...segmentPayload },
         })
 
         await attachEntities(
-          { segmentId: id!, data: associatedEntityIds },
+          { segmentId, data: associatedEntityIds },
           {
             onSuccess: () =>
               addNotification({
@@ -249,24 +192,20 @@ const SegmentAdminPage = () => {
           }
         )
 
+        upsertSegment(segmentFromDraft(segmentId, draft, polylineCoordinates))
+        if (id === 'new') await router.push(`/admin/segments/${segmentId}`)
         return
       }
 
       // ────────── CREATE NEW ──────────
-      const { features } = await createSegment(
-        { data: segmentPayload },
-        {
-          onSuccess: () =>
-            addNotification({
-              title:
-                'Segment created successfully. Please wait for entities to attach to segment...',
-              type: 'success',
-            }),
-        }
-      )
-      const newSeg = features[0]
+      const response = await createSegment({ data: segmentPayload })
+      const newSeg = readSegment(response)
 
-      upsertSegment(newSeg)
+      createdId = newSeg.properties.Id
+      useSegmentEditorStore
+        .getState()
+        .setSegmentProperties({ ...draft, id: createdId })
+      upsertSegment(toMapSegment(newSeg))
       // const newId = features[0].properties.Id
       if (associatedEntityIds.length > 0) {
         await attachEntities({
@@ -274,15 +213,21 @@ const SegmentAdminPage = () => {
           data: associatedEntityIds,
         })
       }
+      addNotification({
+        title: 'Segment created successfully',
+        type: 'success',
+      })
       router.push(`/admin/segments/${newSeg.properties.Id}`).then(() => {
         setActiveTab(0)
       })
     } catch (error: any) {
       handleServerError(
         error,
-        router.query.id !== 'new'
-          ? 'Failed to update entities to segment'
-          : 'Failed to create segment'
+        createdId
+          ? 'Segment created, but attaching entities failed. Retry saving to finish.'
+          : id !== 'new'
+            ? 'Failed to update entities to segment'
+            : 'Failed to create segment'
       )
     } finally {
       setIsloading(false)
@@ -416,24 +361,9 @@ const SegmentAdminPage = () => {
     const entityIds = properties.RouteEntities?.map((e) => e.Id) ?? []
     setAssociatedEntityIds(entityIds)
 
-    useSegmentEditorStore.getState().setSegmentProperties({
-      id: properties.Id,
-      udotRouteNumber: properties.UdotRouteNumber,
-      startMilePoint: properties.StartMilePoint,
-      endMilePoint: properties.EndMilePoint,
-      functionalType: properties.FunctionalType,
-      name: properties.Name,
-      direction: properties.Direction,
-      speedLimit: properties.SpeedLimit,
-      region: properties.Region,
-      city: properties.City,
-      county: properties.County,
-      alternateIdentifier: properties.AlternateIdentifier,
-      accessCategory: properties.AccessCategory,
-      offset: properties.Offset ?? null,
-      shape: properties.Shape,
-      shapeWKT: properties.ShapeWKT,
-    })
+    useSegmentEditorStore
+      .getState()
+      .setSegmentProperties(propertiesFromFeature(segmentData.features[0]))
 
     useSegmentEditorStore
       .getState()
@@ -502,7 +432,7 @@ const SegmentAdminPage = () => {
       data: {
         coordinates: added,
         directions: buildDirections(
-          segmentProperties.direction as 'NB' | 'SB' | 'EB' | 'WB' | undefined,
+          segmentProperties.direction,
           segmentProperties.polarity
         ),
       },
@@ -642,7 +572,7 @@ const SegmentAdminPage = () => {
             aria-label="delete Segment"
             disabled={router.query.id === 'new'}
             onClick={() => {
-              setSelectedSegment(id)
+              setSelectedSegment(id ?? null)
               setModalOpen(true)
             }}
             color="error"

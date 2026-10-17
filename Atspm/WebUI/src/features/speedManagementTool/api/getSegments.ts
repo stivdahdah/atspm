@@ -15,39 +15,15 @@
 // limitations under the License.
 // #endregion
 import { useGetApiV1SegmentAllSegments } from '@/api/speedManagement/aTSPMSpeedManagementApi'
-import {
-  AllSegmentsProperties,
-  AllSegmentsPropertiesGeoJsonFeatureCollection,
-} from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import { useMemo } from 'react'
-
-export type AllSegmentsSegment = {
-  id: string
-  type?: string | null | undefined
-  geometry: {
-    type?: string
-    coordinates: number[][] | null
-  }
-  properties?: AllSegmentsProperties | undefined
-}
-
-const transformSegmentData = (
-  segments: AllSegmentsPropertiesGeoJsonFeatureCollection
-): AllSegmentsSegment[] => {
-  if (!segments || !segments.features) return []
-
-  return segments.features
-    .filter((feature) => feature.geometry?.type === 'LineString')
-    .map((feature) => ({
-      ...feature,
-      geometry: {
-        ...feature.geometry,
-        coordinates: feature.geometry?.coordinates
-          ? feature.geometry.coordinates.map((coord) => [coord[1], coord[0]])
-          : null,
-      },
-    }))
-}
+import {
+  readSegmentCollection,
+  toMapSegment,
+  type Segment,
+} from '../components/SegmentEditor/segmentModel'
+export type AllSegmentsSegment = Segment
+export const transformSegmentData = (value: unknown): Segment[] =>
+  readSegmentCollection(value).features.map(toMapSegment)
 
 export const useTransformedSegments = () => {
   const { data, ...rest } = useGetApiV1SegmentAllSegments()

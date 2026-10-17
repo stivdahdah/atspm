@@ -1,49 +1,16 @@
-import { AllSegmentsProperties } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import { Feature } from '@/features/speedManagementTool/components/SegmentEditor/SegmentEditorMap/hooks/useMapClickHandler'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { DataSource } from '../../enums'
+import type {
+  Coordinate,
+  EditorEntity as Entity,
+  Segment,
+  SegmentProperties,
+} from './segmentModel'
+export type { Segment, SegmentProperties } from './segmentModel'
 
-export interface Segment {
-  id: string
-  type?: string | null
-  geometry: {
-    type?: string
-    coordinates: number[][] | null
-  }
-  properties?: AllSegmentsProperties | undefined
-}
-
-export interface SegmentProperties {
-  id: string | null
-  udotRouteNumber: string | null
-  startMilePoint: number | null
-  endMilePoint: number | null
-  functionalType: string | null
-  name: string | null
-  direction: string | null
-  polarity: 'PM' | 'NM' | null
-  speedLimit: number | null
-  region: string | null
-  city: string | null
-  county: string | null
-  alternateIdentifier: string | null
-  accessCategory: string | null
-  offset: number | null
-  shape: string | null
-  shapeWKT: string | null
-  entities: string[] | null
-}
-
-export interface Entity {
-  id: string
-  entityId: string
-  entityType: string
-  sourceId: DataSource
-  coordinates: number[][]
-  version: string
-  isWithin50Ft?: boolean
-}
+export type { EditorEntity as Entity } from './segmentModel'
 
 interface SegmentEditorState {
   allSegments: Segment[] | null
@@ -83,8 +50,14 @@ interface SegmentEditorState {
   ) => void
   setAllSegments: (segments: Segment[] | null) => void
   setIsLoadingSegments: (isLoading: boolean) => void
-  updateSegmentProperties: (properties: Partial<SegmentProperties>) => void
-  setSegmentProperties: (properties: SegmentProperties) => void
+  updateSegmentProperties: (
+    properties: Partial<SegmentProperties> & {
+      polylineCoordinates?: Coordinate[]
+    }
+  ) => void
+  setSegmentProperties: (
+    properties: SegmentProperties & { polylineCoordinates?: Coordinate[] }
+  ) => void
   setInitialPolylineCoordinates: (coordinates: [number, number][]) => void
   setPolylineCoordinates: (coordinates: [number, number][]) => void
   addPolylineCoordinate: (
@@ -209,7 +182,7 @@ export const useSegmentEditorStore = create<SegmentEditorState>()(
 
       addPolylineCoordinate: (latlng, position = 'end') =>
         set((state) => {
-          let newCoordinates: number[][]
+          let newCoordinates: Coordinate[]
           if (state.polylineCoordinates.length === 0) {
             newCoordinates = [latlng]
           } else {

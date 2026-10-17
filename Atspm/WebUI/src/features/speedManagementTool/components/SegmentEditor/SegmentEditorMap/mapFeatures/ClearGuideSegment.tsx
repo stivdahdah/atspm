@@ -3,11 +3,7 @@ import { Polyline } from 'react-leaflet'
 import { useSegmentEditorStore } from '../../segmentEditorStore'
 
 interface ClearGuideSegmentProps {
-  entity: {
-    id: string
-    coordinates: number[][]
-    properties?: { name: string; speedLimit: number }
-  }
+  entity: import('../../segmentEditorStore').Entity
   associatedEntityIds: string[]
   setAssociatedEntityIds: (ids: string[]) => void
   setHoveredEntity: (entity: ClearGuideSegmentProps['entity'] | null) => void

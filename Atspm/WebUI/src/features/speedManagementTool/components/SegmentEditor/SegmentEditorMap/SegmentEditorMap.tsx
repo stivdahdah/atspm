@@ -16,6 +16,7 @@ import SegmentClickErrorMarker from '@/features/speedManagementTool/components/S
 import { UdotLrsSegments } from '@/features/speedManagementTool/components/SegmentEditor/SegmentEditorMap/mapFeatures/UdotLrsSegments'
 import { ROUTE_COLORS } from '@/features/speedManagementTool/components/SegmentEditor/SegmentEditorMap/utils/colors'
 import CircularProgress from '@mui/material/CircularProgress'
+import type { LegendItem } from './mapFeatures/Legend'
 
 import EntityClusterGroup from '@/features/speedManagementTool/components/SegmentEditor/SegmentEditorMap/mapFeatures/EntityClusterGroup'
 import HoveredEntity from '@/features/speedManagementTool/components/SegmentEditor/SegmentEditorMap/mapFeatures/HoveredEntity'
@@ -153,7 +154,7 @@ const SegmentEditorMap = () => {
   }
 
   const getLegendSources = useCallback(() => {
-    const sources = [
+    const sources: LegendItem[] = [
       {
         id: 'draft',
         label: 'Active Segment',
@@ -301,7 +302,6 @@ const SegmentEditorMap = () => {
         <Pane name="draft-segment" style={{ zIndex: 6000 }}>
           <DraftSegment
             polylineCoordinates={polylineCoordinates}
-            activeTab={activeTab}
             mapRef={mapRef}
             removePolylineCoordinate={removePolylineCoordinate}
             updatePolylineCoordinate={updatePolylineCoordinate}
@@ -309,7 +309,9 @@ const SegmentEditorMap = () => {
         </Pane>
 
         <Pane name="segment-click-error" style={{ zIndex: 4000 }}>
-          <SegmentClickErrorMarker position={routeErrorPos} />
+          {routeErrorPos && (
+            <SegmentClickErrorMarker position={routeErrorPos} />
+          )}
         </Pane>
         {filteredEntities.length > 0 && activeTab !== 0 && (
           <EntityClusterGroup

@@ -36,19 +36,32 @@ const emptyStringToNull = (value: unknown) => {
   return value
 }
 
-const segmentPropertiesSchema = z.object({
+export const segmentPropertiesSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   udotRouteNumber: z.string().min(1, 'Route Number is required'),
   alternateIdentifier: z.string().optional(),
   functionalType: z.string().min(1, 'Functional Type is required'),
-  startMilePoint: z.number({ required_error: 'Start Mile Point is required' }),
-  endMilePoint: z.number({ required_error: 'End Mile Point is required' }),
-  speedLimit: z.number().min(1, 'Speed Limit must be positive'),
+  startMilePoint: z
+    .number({ required_error: 'Start Mile Point is required' })
+    .nullable()
+    .refine((value): boolean => value != null, 'Start Mile Point is required'),
+  endMilePoint: z
+    .number({ required_error: 'End Mile Point is required' })
+    .nullable()
+    .refine((value): boolean => value != null, 'End Mile Point is required'),
+  speedLimit: z
+    .number()
+    .min(1, 'Speed Limit must be positive')
+    .nullable()
+    .refine((value): boolean => value != null, 'Speed Limit is required'),
   offset: z.preprocess(emptyNumberToNull, z.number().nullable()),
   region: z.preprocess(emptyStringToNull, z.string().nullable()),
-  direction: z.enum(['NB', 'EB', 'SB', 'WB'], {
-    message: 'Direction is required',
-  }),
+  direction: z
+    .string()
+    .refine(
+      (value) => ['NB', 'EB', 'SB', 'WB'].includes(value),
+      'Direction is required'
+    ),
   polarity: z.enum(['PM', 'NM']).optional(),
   accessCategory: z.string().min(1, 'Access Category is required'),
   city: z.string().min(1, 'City is required'),
@@ -60,7 +73,10 @@ type SegmentPropertiesForm = z.infer<typeof segmentPropertiesSchema>
 // ---------------------------
 // component
 // ---------------------------
-const SegmentProperties = forwardRef((_, ref) => {
+export interface SegmentPropertiesHandle {
+  submitForm: () => Promise<boolean>
+}
+const SegmentProperties = forwardRef<SegmentPropertiesHandle>((_, ref) => {
   const { segmentProperties, updateSegmentProperties } = useSegmentEditorStore()
 
   // look-ups
@@ -101,9 +117,9 @@ const SegmentProperties = forwardRef((_, ref) => {
       udotRouteNumber: '',
       alternateIdentifier: '',
       functionalType: '',
-      startMilePoint: '',
-      endMilePoint: '',
-      speedLimit: '',
+      startMilePoint: null,
+      endMilePoint: null,
+      speedLimit: null,
       offset: null,
       region: null,
       direction: '',
@@ -116,27 +132,28 @@ const SegmentProperties = forwardRef((_, ref) => {
 
   // keep form in sync with store
   useEffect(() => {
+    const properties = useSegmentEditorStore.getState().segmentProperties
     reset({
-      name: segmentProperties.name ?? '',
-      udotRouteNumber: segmentProperties.udotRouteNumber ?? '',
-      alternateIdentifier: segmentProperties.alternateIdentifier ?? '',
-      functionalType: segmentProperties.functionalType ?? '',
-      startMilePoint: segmentProperties.startMilePoint ?? '',
-      endMilePoint: segmentProperties.endMilePoint ?? '',
-      speedLimit: segmentProperties.speedLimit ?? '',
-      offset: segmentProperties.offset ?? null,
-      region: segmentProperties.region ?? null,
-      direction: segmentProperties.direction ?? '',
-      polarity: 'PM',
-      accessCategory: segmentProperties.accessCategory ?? '',
-      city: segmentProperties.city ?? '',
-      county: segmentProperties.county ?? '',
+      name: properties.name ?? '',
+      udotRouteNumber: properties.udotRouteNumber ?? '',
+      alternateIdentifier: properties.alternateIdentifier ?? '',
+      functionalType: properties.functionalType ?? '',
+      startMilePoint: properties.startMilePoint ?? null,
+      endMilePoint: properties.endMilePoint ?? null,
+      speedLimit: properties.speedLimit ?? null,
+      offset: properties.offset ?? null,
+      region: properties.region ?? null,
+      direction: properties.direction ?? '',
+      polarity: properties.polarity ?? 'PM',
+      accessCategory: properties.accessCategory ?? '',
+      city: properties.city ?? '',
+      county: properties.county ?? '',
     })
-  }, [])
+  }, [segmentProperties.id, reset])
 
   useEffect(() => {
-    setValue('startMilePoint', segmentProperties.startMilePoint ?? 0)
-    setValue('endMilePoint', segmentProperties.endMilePoint ?? 0)
+    setValue('startMilePoint', segmentProperties.startMilePoint ?? null)
+    setValue('endMilePoint', segmentProperties.endMilePoint ?? null)
   }, [
     segmentProperties.startMilePoint,
     segmentProperties.endMilePoint,
@@ -328,12 +345,17 @@ const SegmentProperties = forwardRef((_, ref) => {
           render={({ field }) => (
             <TextField
               {...field}
+              value={field.value ?? ''}
               label="Start Mile Point"
               type="number"
               required
               sx={{ flex: '1 1 45%' }}
               error={!!errors.startMilePoint}
-              onChange={(e) => field.onChange(Number(e.target.value))}
+              onChange={(e) =>
+                field.onChange(
+                  e.target.value === '' ? null : Number(e.target.value)
+                )
+              }
             />
           )}
         />
@@ -343,12 +365,17 @@ const SegmentProperties = forwardRef((_, ref) => {
           render={({ field }) => (
             <TextField
               {...field}
+              value={field.value ?? ''}
               label="End Mile Point"
               type="number"
               required
               sx={{ flex: '1 1 45%' }}
               error={!!errors.endMilePoint}
-              onChange={(e) => field.onChange(Number(e.target.value))}
+              onChange={(e) =>
+                field.onChange(
+                  e.target.value === '' ? null : Number(e.target.value)
+                )
+              }
             />
           )}
         />
@@ -358,12 +385,17 @@ const SegmentProperties = forwardRef((_, ref) => {
           render={({ field }) => (
             <TextField
               {...field}
+              value={field.value ?? ''}
               label="Speed Limit"
               type="number"
               required
               sx={{ flex: '1 1 45%' }}
               error={!!errors.speedLimit}
-              onChange={(e) => field.onChange(Number(e.target.value))}
+              onChange={(e) =>
+                field.onChange(
+                  e.target.value === '' ? null : Number(e.target.value)
+                )
+              }
             />
           )}
         />
