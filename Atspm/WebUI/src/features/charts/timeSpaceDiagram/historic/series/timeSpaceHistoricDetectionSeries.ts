@@ -25,10 +25,7 @@ import {
   TIME_SPACE_MOVEMENT_SERIES_Z,
 } from '@/features/charts/timeSpaceDiagram/shared/transformers/timeSpaceTransformerBase'
 import { RawTimeSpaceHistoricData } from '@/features/charts/timeSpaceDiagram/shared/types'
-import {
-  CustomSeriesRenderItemReturn,
-  SeriesOption,
-} from 'echarts'
+import { CustomSeriesRenderItemReturn, SeriesOption } from 'echarts'
 import {
   getArrivalTime,
   PASSIVE_DETECTION_SERIES_PROPS,
@@ -158,11 +155,7 @@ export function generateAdvanceCountEventLines(
           location.speed,
           finalX
         )
-        return [
-          [initialX, previousDistance],
-          [finalX, currentDistance],
-          null,
-        ]
+        return [[initialX, previousDistance], [finalX, currentDistance], null]
       }),
     }
     seriesOptions.push(series)
@@ -301,7 +294,7 @@ function buildStopBarPresencePolygon(
   points: number[][],
   isContinuation: boolean,
   color: string
-): CustomSeriesRenderItemReturn {
+): NonNullable<CustomSeriesRenderItemReturn> {
   return {
     type: 'polygon',
     ...(isContinuation ? { name: TIME_SPACE_CONTINUATION_NODE_NAME } : null),

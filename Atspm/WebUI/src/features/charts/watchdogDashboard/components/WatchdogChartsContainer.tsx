@@ -20,11 +20,14 @@ const WatchdogChartsContainer: React.FC<WatchdogChartsContainerProps> = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Box sx={{ display: 'flex', gap: 3 }}>
         <Box sx={{ flex: 1 }}>
-          <DeviceCountChart data={data?.deviceCount} isLoading={isLoading} />
+          <DeviceCountChart
+            data={data?.deviceCount ?? []}
+            isLoading={isLoading}
+          />
         </Box>
         <Box sx={{ flex: 1 }}>
           <DetectionTypeCountChart
-            data={data?.detectionTypeCount}
+            data={data?.detectionTypeCount ?? []}
             isLoading={isLoading}
           />
         </Box>

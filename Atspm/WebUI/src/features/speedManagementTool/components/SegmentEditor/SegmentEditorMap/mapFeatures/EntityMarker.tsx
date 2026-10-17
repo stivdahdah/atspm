@@ -39,17 +39,7 @@ ICON_PATHS.forEach((src) => {
 })
 
 interface EntityMarkerProps {
-  entity: {
-    id: string
-    sourceId: DataSource
-    coordinates: number[][]
-    entityId: string
-    version: string
-    entityType: string
-    direction: string
-    startDate: string
-    active?: boolean
-  }
+  entity: import('../../segmentEditorStore').Entity
   isSelected: boolean
   associatedEntityIds: string[]
   setAssociatedEntityIds: (ids: string[]) => void

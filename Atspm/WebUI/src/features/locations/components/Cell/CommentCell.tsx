@@ -61,7 +61,9 @@ const CommentCell = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [editCommentId, setEditCommentId] = useState<string | null>(null)
+  const [editCommentId, setEditCommentId] = useState<string | number | null>(
+    null
+  )
   const [commentText, setCommentText] = useState('')
 
   const { refetch, data: commentsData } = useGetDetectorComments(detector.id)
@@ -118,7 +120,7 @@ const CommentCell = ({
     setAnchorEl(null)
   }
 
-  const handleOpenModal = (id: string | null = null, text = '') => {
+  const handleOpenModal = (id: string | number | null = null, text = '') => {
     cellRef.current?.blur()
     setEditCommentId(id)
     setCommentText(text)
@@ -134,7 +136,11 @@ const CommentCell = ({
     if (editCommentId) {
       updateComment(
         { id: editCommentId, data: { comment: commentText } },
-        { onSuccess: refetch }
+        {
+          onSuccess: () => {
+            void refetch()
+          },
+        }
       )
     } else {
       addComment(
@@ -143,14 +149,18 @@ const CommentCell = ({
           detectorId: detector.id,
           timeStamp: new Date().toISOString(),
         },
-        { onSuccess: refetch }
+        {
+          onSuccess: () => {
+            void refetch()
+          },
+        }
       )
     }
     setCommentText('')
     handleCloseModal()
   }
 
-  const handleOpenDeleteModal = (id: string) => {
+  const handleOpenDeleteModal = (id: string | number) => {
     setEditCommentId(id)
     setDeleteModalOpen(true)
   }
@@ -162,7 +172,11 @@ const CommentCell = ({
 
   const handleConfirmDelete = () => {
     if (editCommentId) {
-      deleteComment(editCommentId, { onSuccess: refetch })
+      deleteComment(editCommentId, {
+        onSuccess: () => {
+          void refetch()
+        },
+      })
     }
     handleCloseDeleteModal()
   }

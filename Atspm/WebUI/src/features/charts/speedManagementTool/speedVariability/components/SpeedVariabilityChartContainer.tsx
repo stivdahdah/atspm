@@ -1,6 +1,5 @@
 import { SpeedVariabilityDto } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import ApacheEChart from '@/features/charts/components/apacheEChart'
-import { ExtendedEChartsOption } from '@/features/charts/types'
 import {
   Box,
   Table,
@@ -10,11 +9,12 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import transformChart from '../speedVariability.transformer'
 
 const SpeedVariabilityChartContainer = ({
   chartData,
 }: {
-  chartData: ExtendedEChartsOption
+  chartData: ReturnType<typeof transformChart>
 }) => {
   const chartOptions = chartData.charts[0]
   const response: SpeedVariabilityDto = chartOptions.displayProp?.data

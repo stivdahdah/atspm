@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { WatchdogIgnoreEvents } from '@/features/watchdogignoreevents/types'
+import type { WatchDogIgnoreEvent as WatchdogIgnoreEvents } from '@/api/config'
 import { useDeleteRequest } from '@/hooks/useDeleteRequest'
 import { useGetRequest } from '@/hooks/useGetRequest'
 import { usePatchRequest } from '@/hooks/usePatchRequest'
@@ -22,6 +22,15 @@ import { usePostRequest } from '@/hooks/usePostRequest'
 import { ApiResponse } from '@/types'
 import { AxiosHeaders } from 'axios'
 import Cookies from 'js-cookie'
+
+export type WatchdogIgnoreEventResponse = Omit<
+  WatchdogIgnoreEvents,
+  'issueType' | 'componentType' | 'end'
+> & {
+  issueType?: WatchdogIgnoreEvents['issueType'] | string
+  componentType?: WatchdogIgnoreEvents['componentType'] | string | null
+  end?: string | null
+}
 
 const route = '/WatchDogIgnoreEvent'
 const token = Cookies.get('token')
@@ -31,7 +40,7 @@ const headers: AxiosHeaders = new AxiosHeaders({
 })
 
 export function useGetWatchdogIgnoreEvents() {
-  return useGetRequest<ApiResponse<WatchdogIgnoreEvents>>({ route })
+  return useGetRequest<ApiResponse<WatchdogIgnoreEventResponse>>({ route })
 }
 
 export function useCreateWatchdogIgnoreEvents() {

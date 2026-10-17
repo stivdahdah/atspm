@@ -1,3 +1,4 @@
+import type { XAXisComponentOption } from 'echarts'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - speedVariability.transformer.ts
@@ -26,8 +27,6 @@ import {
   createYAxis,
   transformSeriesData,
 } from '../../common/transformers'
-import { DataPoint } from '../../common/types'
-import { ExtendedEChartsOption } from '../../types'
 import { Color, SolidLineSeriesSymbol, formatChartDateRange } from '../../utils'
 import { createSpeedManagementTitle } from '../createSpeedManagementTitle'
 
@@ -56,7 +55,7 @@ function transformData(response: SpeedVariabilityDto) {
   const maxSpeed = 'Max Speed'
   const minSpeed = 'Min Speed'
 
-  const xAxis = {
+  const xAxis: XAXisComponentOption = {
     type: 'time',
     name: 'Date',
     nameGap: 30,
@@ -103,29 +102,16 @@ function transformData(response: SpeedVariabilityDto) {
   const tooltip = createTooltip()
 
   // const seriesData = transformData(response)
-  const minSpeeds: DataPoint[] = response.data
-    .filter((variability) => variability.minSpeed !== null)
-    .map((variability) => {
-      return {
-        timestamp: variability.date,
-        value: variability.minSpeed,
-      }
+  const points = (key: 'minSpeed' | 'maxSpeed' | 'speedVariability') =>
+    response.data.flatMap((row) => {
+      const value = row[key]
+      return typeof value === 'number' && Number.isFinite(value)
+        ? [{ timestamp: row.date, value }]
+        : []
     })
-  const maxSpeeds = response.data
-    .filter((variability) => variability.maxSpeed !== null)
-    .map((variability) => {
-      return {
-        timestamp: variability.date,
-        value: variability.maxSpeed,
-      }
-    })
-  const variabilityData = response.data.map((variability) => {
-    return {
-      timestamp: variability.date,
-      value: variability.speedVariability,
-    }
-  })
-
+  const minSpeeds = points('minSpeed')
+  const maxSpeeds = points('maxSpeed')
+  const variabilityData = points('speedVariability')
   const series = createSeries(
     {
       name: maxSpeed,
@@ -160,7 +146,7 @@ function transformData(response: SpeedVariabilityDto) {
     description: '',
   })
 
-  const chartOptions: ExtendedEChartsOption = {
+  const chartOptions = {
     title,
     xAxis,
     yAxis,
@@ -169,7 +155,7 @@ function transformData(response: SpeedVariabilityDto) {
     tooltip,
     series,
     dataZoom,
-    displayProp,
+    displayProp: { ...displayProp, data: response },
   }
 
   return chartOptions

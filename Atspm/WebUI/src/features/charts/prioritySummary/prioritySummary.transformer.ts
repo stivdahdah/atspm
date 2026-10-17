@@ -71,15 +71,50 @@ function isRawPrioritySummaryResponse(
   return 'data' in response
 }
 
-function durationToSeconds(duration: string): string {
+function durationToSeconds(duration: string | undefined): string {
+  if (!duration) return '—'
   const [h, m, s] = duration.split(':')
   const seconds = Number(h) * 3600 + Number(m) * 60 + Number(s)
 
   return seconds.toFixed(1)
 }
 
-function transformLocation(data: PrioritySummaryResult) {
-  const cycles = data.cycles || []
+type ChartSummary = PrioritySummaryResult & {
+  start: string
+  end: string
+  locationIdentifier: string
+  locationDescription: string
+}
+type ChartCycle = NonNullable<PrioritySummaryResult['cycles']>[number] & {
+  checkIn: string
+  checkOut: string
+}
+
+function transformLocation(raw: PrioritySummaryResult) {
+  if (
+    !raw.start ||
+    !raw.end ||
+    !Number.isFinite(Date.parse(raw.start)) ||
+    !Number.isFinite(Date.parse(raw.end)) ||
+    Date.parse(raw.end) < Date.parse(raw.start)
+  )
+    return []
+  const data: ChartSummary = {
+    ...raw,
+    start: raw.start,
+    end: raw.end,
+    locationIdentifier: raw.locationIdentifier ?? '',
+    locationDescription: raw.locationDescription ?? '',
+  }
+  const cycles: ChartCycle[] = (data.cycles ?? []).flatMap((cycle) =>
+    cycle.checkIn &&
+    cycle.checkOut &&
+    Number.isFinite(Date.parse(cycle.checkIn)) &&
+    Number.isFinite(Date.parse(cycle.checkOut)) &&
+    Date.parse(cycle.checkOut) >= Date.parse(cycle.checkIn)
+      ? [{ ...cycle, checkIn: cycle.checkIn, checkOut: cycle.checkOut }]
+      : []
+  )
   const tspNumbers = getTspNumbers(data, cycles)
 
   const combinedChart = transformTspChart(data, cycles)
@@ -99,14 +134,19 @@ function transformLocation(data: PrioritySummaryResult) {
 }
 
 function transformTspChart(
-  data: PrioritySummaryResult,
-  cycles: NonNullable<PrioritySummaryResult['cycles']>,
+  data: ChartSummary,
+  cycles: ChartCycle[],
   tspNumber?: number
 ) {
   const dateRange = formatChartDateTimeRange(data.start, data.end)
 
   const info = createInfoString(
-    ['Average duration:', `${durationToSeconds(data.averageDuration)}s`],
+    [
+      'Average duration:',
+      data.averageDuration
+        ? `${durationToSeconds(data.averageDuration)}s`
+        : 'Unavailable',
+    ],
     ['Total check-ins:', `${data.numberCheckins}`],
     ['Total check-outs:', `${data.numberCheckouts}`],
     ['Total early greens:', `${data.numberEarlyGreens}`],
@@ -188,7 +228,12 @@ function transformTspChart(
   }
 
   const serviceCycles = cycles.filter(
-    (c) =>
+    (
+      c
+    ): c is ChartCycle & {
+      serviceStartOffsetSec: number
+      serviceEndOffsetSec: number
+    } =>
       c.serviceStartOffsetSec != null &&
       c.serviceEndOffsetSec != null &&
       c.serviceEndOffsetSec > c.serviceStartOffsetSec

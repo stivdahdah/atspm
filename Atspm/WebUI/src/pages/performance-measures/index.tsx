@@ -1,6 +1,6 @@
 'use client'
 
-import { Location } from '@/api/config'
+import { SearchLocation as Location } from '@/api/config'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import { StyledPaper } from '@/components/StyledPaper'
 import SelectDateTime from '@/components/selectTimeSpan'
@@ -42,7 +42,7 @@ const PerformanceMeasures = () => {
     endOfWeek(endOfMonth(startOfToday()))
   )
   const [chartType, setChartType] = useState<ChartType | null>(null)
-  const [chartOptions, setChartOptions] = useState<Partial<ChartOptions>>()
+  const [chartOptions, setChartOptions] = useState<Partial<ChartOptions>>({})
   const [startDateTime, setStartDateTime] = useState(startOfToday())
   const [endDateTime, setEndDateTime] = useState(startOfTomorrow())
 

@@ -41,9 +41,17 @@ export interface ERMonthlyHandler extends ERBaseHandler, ReportDateTimeHandler {
 
 function getRouteSpeedOptions(options: ExportableReportOptions) {
   const routeSpeedOptions: RouteSpeedOptions = {
+    category: 'AverageSpeed',
+    timePeriod: options.timePeriod,
+    excludeAccessCategory: false,
+    excludeCity: false,
+    excludeCounty: false,
+    excludeFunctionalType: false,
+    excludeRegion: false,
+    excludeSourceId: false,
     startDate: options.startDate,
     endDate: options.endDate,
-    sourceId: options.sourceId as number,
+    sourceId: options.sourceId,
     accessCategory: options.accessCategory,
     aggClassification: options.aggClassification,
     city: options.city,
@@ -51,7 +59,7 @@ function getRouteSpeedOptions(options: ExportableReportOptions) {
     region: options.region,
     violationThreshold: 5,
     functionalType: options.functionalType,
-  } as RouteSpeedOptions
+  }
   return routeSpeedOptions
 }
 
@@ -137,7 +145,9 @@ export const useERMonthlyReportHandler = (props: Props) => {
     } catch (e) {
       setHasError(true)
       baseHandler.setError(
-        'Failed to generate report: ' + (e.message || 'Unknown error')
+        'Failed to generate report: ' +
+          ((e instanceof Error ? e.message : 'Unknown error') ||
+            'Unknown error')
       )
     } finally {
       setIsPdfDownloading(false)
@@ -247,7 +257,9 @@ export const useExportableReportHandler = (props: Props) => {
     } catch (e) {
       setHasError(true)
       baseHandler.setError(
-        'Failed to generate report: ' + (e.message || 'Unknown error')
+        'Failed to generate report: ' +
+          ((e instanceof Error ? e.message : 'Unknown error') ||
+            'Unknown error')
       )
     } finally {
       setIsPdfDownloading(false)

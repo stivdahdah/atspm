@@ -19,7 +19,7 @@ export default function GeneralOptionsPopup() {
   }
 
   const getDataSourceLabel = () => {
-    switch (routeSpeedRequest.sourceId[0]) {
+    switch (routeSpeedRequest.sourceId?.[0]) {
       case DataSource.ATSPM:
         return 'ATSPM'
       case DataSource.PeMS:
@@ -40,7 +40,7 @@ export default function GeneralOptionsPopup() {
       <Box padding={'10px'}>
         <Box display="flex" alignItems={'center'}>
           <ToggleButtonGroup
-            value={routeSpeedRequest.sourceId[0]}
+            value={routeSpeedRequest.sourceId?.[0]}
             size="small"
             exclusive
             onChange={handleDataSourceChange}

@@ -57,12 +57,16 @@ export const PurdueCoordinationDiagramChartOptions = ({
     >
       <BinSizeDropdown
         value={binSize}
-        handleChange={handleBinSizeChange}
+        handleChange={(value) => {
+          if (value !== null) handleBinSizeChange(value)
+        }}
         id="purdue-coordination-diagram"
       />
       <YAxisDefaultInput
         value={yAxisMax}
-        handleChange={updateYAxisDefault}
+        handleChange={(value) => {
+          if (value !== null) updateYAxisDefault(value)
+        }}
         isMeasureDefaultView={isMeasureDefaultView}
       />
     </Box>

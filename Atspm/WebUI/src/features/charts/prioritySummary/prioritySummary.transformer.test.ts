@@ -15,6 +15,7 @@
 // limitations under the License.
 // #endregion
 import type { PrioritySummaryResult } from '@/api/reports'
+import type { ScatterSeriesOption } from 'echarts'
 import transformPrioritySummaryData from './prioritySummary.transformer'
 
 describe('transformPrioritySummaryData', () => {
@@ -70,7 +71,8 @@ describe('transformPrioritySummaryData', () => {
     const combinedSeries = transformed.data.charts[0].chart.series
     expect(Array.isArray(combinedSeries)).toBe(true)
 
-    const combinedRequestBar = combinedSeries?.find(
+    if (!Array.isArray(combinedSeries)) throw new Error('Expected series array')
+    const combinedRequestBar = combinedSeries.find(
       (entry) => entry.type === 'bar' && entry.stack == null
     )
 
@@ -79,24 +81,18 @@ describe('transformPrioritySummaryData', () => {
     const getSeries = (chartIndex: number, name: string) => {
       const series = transformed.data.charts[chartIndex].chart.series
       expect(Array.isArray(series)).toBe(true)
-      return series?.find((entry) => entry.name === name)
+      if (!Array.isArray(series)) throw new Error('Expected series array')
+      return series.find(
+        (entry): entry is ScatterSeriesOption =>
+          entry.type === 'scatter' && entry.name === name
+      )
     }
 
-    const combinedEarlyGreen = getSeries(
-      0,
-      'Unassociated Early Green (113)'
-    )
-    const combinedExtendGreen = getSeries(
-      0,
-      'Unassociated Extend Green (114)'
-    )
+    const combinedEarlyGreen = getSeries(0, 'Unassociated Early Green (113)')
+    const combinedExtendGreen = getSeries(0, 'Unassociated Extend Green (114)')
 
-    expect(combinedEarlyGreen?.data).toEqual([
-      ['2026-04-07T08:03:00Z', 0, 2],
-    ])
-    expect(combinedExtendGreen?.data).toEqual([
-      ['2026-04-07T08:04:00Z', 0, 3],
-    ])
+    expect(combinedEarlyGreen?.data).toEqual([['2026-04-07T08:03:00Z', 0, 2]])
+    expect(combinedExtendGreen?.data).toEqual([['2026-04-07T08:04:00Z', 0, 3]])
     expect(combinedEarlyGreen?.z).toBe(100000)
     expect(combinedExtendGreen?.z).toBe(100000)
     expect(combinedEarlyGreen?.zlevel).toBe(1)
@@ -123,4 +119,32 @@ describe('transformPrioritySummaryData', () => {
       ['2026-04-07T08:04:00Z', 0, 3],
     ])
   })
+})
+
+it('returns no charts for invalid report bounds and omits incomplete cycles without invalid dates', () => {
+  expect(transformPrioritySummaryData({}).data.charts).toEqual([])
+  const result = transformPrioritySummaryData({
+    start: '2026-04-07T08:00:00Z',
+    end: '2026-04-07T08:10:00Z',
+    cycles: [
+      {
+        checkIn: 'invalid',
+        checkOut: '2026-04-07T08:01:00Z',
+        requestEndOffsetSec: 60,
+      },
+      {
+        checkIn: '2026-04-07T08:00:00Z',
+        checkOut: '2026-04-07T08:01:00Z',
+        requestEndOffsetSec: 0,
+        tspNumber: 1,
+      },
+    ],
+  })
+  const series = result.data.charts[0].chart.series
+  if (!Array.isArray(series)) throw new Error('Expected series array')
+  const requests = series.find(
+    (s) => s.type === 'bar' && String(s.name).startsWith('TSP Request')
+  )
+  expect(requests?.data).toHaveLength(1)
+  expect(requests?.data).toEqual([expect.arrayContaining([0])])
 })

@@ -1,3 +1,4 @@
+import { horizontalBounds } from '@/features/charts/common/rendererGeometry'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - timeSpaceCycleLabels.ts
@@ -167,7 +168,8 @@ export function generateCycleLabels(
       const rowIndex = params.dataIndex
       const { bodyHeight, cardHeight, cardTop, cardBottom, isIgnored } =
         getCardMetrics(api, rowIndex)
-      const coordSys = params.coordSys as { x: number; width: number }
+      const coordSys = horizontalBounds(params.coordSys)
+      if (!coordSys) return null
       const primaryCardLeft = coordSys.x + coordSys.width + cardGapFromPlot
       const cardLeft =
         column === 'left'
@@ -206,7 +208,7 @@ export function generateCycleLabels(
         0,
         detailTextWidth - detailValueWidth - detailMetricGap
       )
-      const connectorChildren: CustomSeriesRenderItemReturn[] = []
+      const connectorChildren: NonNullable<CustomSeriesRenderItemReturn>[] = []
       const nextRowIndex = rowIndex + 1
 
       if (nextRowIndex < distanceData.length) {
@@ -254,7 +256,7 @@ export function generateCycleLabels(
               style: {
                 stroke: connectorStroke,
                 lineWidth: TIME_SPACE_CARD_CONNECTOR_WIDTH,
-                lineCap: 'round',
+                lineCap: 'round' as const,
               },
             },
             {
@@ -269,7 +271,7 @@ export function generateCycleLabels(
               style: {
                 stroke: connectorStroke,
                 lineWidth: TIME_SPACE_CARD_CONNECTOR_WIDTH,
-                lineCap: 'round',
+                lineCap: 'round' as const,
               },
             },
             {
@@ -284,7 +286,7 @@ export function generateCycleLabels(
               style: {
                 stroke: connectorStroke,
                 lineWidth: TIME_SPACE_CARD_CONNECTOR_WIDTH,
-                lineCap: 'round',
+                lineCap: 'round' as const,
               },
             }
           )
@@ -292,7 +294,7 @@ export function generateCycleLabels(
       }
 
       return {
-        type: 'group',
+        type: 'group' as const,
         children: [
           ...connectorChildren,
           {
@@ -367,8 +369,8 @@ export function generateCycleLabels(
                     x: textX,
                     y: cardTop + headerHeight / 2,
                     text: '?',
-                    textAlign: 'left',
-                    textVerticalAlign: 'middle',
+                    align: 'left' as const,
+                    verticalAlign: 'middle' as const,
                     fill: isIgnored ? '#94A3B8' : '#111',
                     fontSize: 10,
                     fontWeight: 700,
@@ -376,14 +378,14 @@ export function generateCycleLabels(
                 },
               ]),
           {
-            type: 'text',
+            type: 'text' as const,
             z2: 20,
             style: {
               x: headerTextX,
               y: cardTop + headerHeight / 2,
               text: headerTitleText,
-              textAlign: 'left',
-              textVerticalAlign: 'middle',
+              align: 'left' as const,
+              verticalAlign: 'middle' as const,
               fontSize: 10,
               rich: {
                 ident: {
@@ -459,10 +461,10 @@ export function generateCycleLabels(
                         y: lineY,
                         text: 'AOG',
                         width: detailLabelWidth,
-                        overflow: 'truncate',
+                        overflow: 'truncate' as const,
                         lineHeight,
-                        textAlign: 'left',
-                        textVerticalAlign: 'top',
+                        align: 'left' as const,
+                        verticalAlign: 'top' as const,
                         fill: isIgnored ? '#94A3B8' : '#64748B',
                         fontSize: 10,
                         fontWeight: 500,
@@ -476,10 +478,10 @@ export function generateCycleLabels(
                         y: lineY,
                         text: arrivalOnGreenValue ?? '',
                         width: detailValueWidth,
-                        overflow: 'truncate',
+                        overflow: 'truncate' as const,
                         lineHeight,
-                        textAlign: 'right',
-                        textVerticalAlign: 'top',
+                        align: 'right' as const,
+                        verticalAlign: 'top' as const,
                         fill: isIgnored ? '#94A3B8' : '#222',
                         fontSize: 10,
                         fontWeight: 500,
@@ -495,10 +497,10 @@ export function generateCycleLabels(
                         y: lineY,
                         text: line,
                         width: detailTextWidth,
-                        overflow: 'truncate',
+                        overflow: 'truncate' as const,
                         lineHeight,
-                        textAlign: 'left',
-                        textVerticalAlign: 'top',
+                        align: 'left' as const,
+                        verticalAlign: 'top' as const,
                         fill: isIgnored ? '#94A3B8' : '#222',
                         fontSize: 10,
                         fontWeight: 500,

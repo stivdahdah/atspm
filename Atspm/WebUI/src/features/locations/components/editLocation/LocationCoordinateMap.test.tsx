@@ -21,18 +21,18 @@ jest.mock('@/features/locations/utils', () => ({
 jest.mock('@/components/LeafletMap/SmoothWheelZoom', () => () => null)
 
 jest.mock('react-leaflet', () => {
-  const React = require('react')
+  const React = jest.requireActual<typeof import('react')>('react')
 
   return {
     MapContainer: React.forwardRef(
-      (
+      function MockMapContainer(
         { children }: { children: React.ReactNode },
         ref: React.ForwardedRef<{
           getContainer: () => HTMLDivElement
           invalidateSize: () => void
           setView: () => void
         }>
-      ) => {
+      ) {
         const mapContainer = document.createElement('div')
         const mapRef = {
           getContainer: () => mapContainer,
@@ -76,8 +76,9 @@ describe('LocationCoordinateMap', () => {
     ;(generatePin as jest.Mock).mockReset().mockResolvedValue({})
 
     class ResizeObserverMock {
-      observe() {}
-      disconnect() {}
+      observe = jest.fn()
+      unobserve = jest.fn()
+      disconnect = jest.fn()
     }
 
     global.ResizeObserver = ResizeObserverMock as typeof ResizeObserver

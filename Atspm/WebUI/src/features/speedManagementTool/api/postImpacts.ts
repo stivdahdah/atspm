@@ -15,7 +15,7 @@
 // limitations under the License.
 // #endregion
 import { Impact } from '@/features/speedManagementTool/types/impact'
-import { QueryConfig } from '@/lib/react-query'
+import { MutationConfig } from '@/lib/react-query'
 import { useNotificationStore } from '@/stores/notifications'
 import { getEnv } from '@/utils/getEnv'
 import axios from 'axios'
@@ -39,12 +39,11 @@ const postImpacts = async (impactData: Impact): Promise<Impact> => {
   return data
 }
 
-export const usePostImpacts = (config?: QueryConfig<typeof postImpacts>) => {
+export const usePostImpacts = (config?: MutationConfig<typeof postImpacts>) => {
   const { addNotification } = useNotificationStore()
 
   return useMutation({
     mutationFn: postImpacts,
-    onMutate: async (impactData: Impact) => {},
     onError: (error: any) => {
       addNotification({
         type: 'error',

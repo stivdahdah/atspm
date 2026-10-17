@@ -1,12 +1,12 @@
 import {
   Area,
-  Location,
   useDeleteAreaFromKey,
   useGetArea,
   useGetLocationLocationsForSearch,
   usePatchAreaFromKey,
   usePostArea,
 } from '@/api/config'
+import type { SearchLocation } from '@/api/config/config-api.schemas'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -17,7 +17,7 @@ import {
   useViewPage,
 } from '@/features/identity/pagesCheck'
 import { useNotificationStore } from '@/stores/notifications'
-import { formatInstantAsLocalDate, formatInstantAsLocalDateTime } from '@/utils/dateTime'
+import { formatInstantAsLocalDate } from '@/utils/dateTime'
 import { Backdrop, CircularProgress } from '@mui/material'
 const AreasAdmin = () => {
   const pageAccess = useViewPage(PageNames.Areas)
@@ -57,6 +57,7 @@ const AreasAdmin = () => {
 
   const handleEditArea = async (areaData: Area) => {
     const { id, name } = areaData
+    if (id == null) return
     try {
       await updateArea({ data: { name }, key: id })
       refetchAreas()
@@ -66,7 +67,8 @@ const AreasAdmin = () => {
     }
   }
 
-  const handleDeleteArea = async (id: number) => {
+  const handleDeleteArea = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteArea({ key: id })
       refetchAreas()
@@ -80,7 +82,10 @@ const AreasAdmin = () => {
     //add code for custom modal close
   }
 
-  const filterAssociatedObjects = (areaId: number, objects: Location[]) => {
+  const filterAssociatedObjects = (
+    areaId: number,
+    objects: SearchLocation[]
+  ) => {
     const associatedLocations = objects.filter((object) => {
       return object.areas?.some((id) => id === areaId)
     })

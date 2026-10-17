@@ -1,4 +1,4 @@
-import { usePutDeviceFromKey } from '@/api/config'
+import { DeviceStatus, DeviceTypes, usePutDeviceFromKey } from '@/api/config'
 import ATSPMDialog from '@/components/ATSPMDialog'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useCreateDevice } from '@/features/devices/api/devices'
@@ -87,7 +87,7 @@ const deviceSchema = z.object({
 export interface NewDeviceModalProps {
   onClose: () => void
   device?: any | null
-  locationId: string
+  locationId: number | string
   refetchDevices: () => void
 }
 
@@ -185,7 +185,32 @@ const DeviceModal = ({
 
     const { id, productId, deviceProperties, ...rest } = data
     const newDeviceDTO = { ...rest, ...flattenedProps }
-    const updateDeviceDTO = { id, ...rest, ...flattenedProps }
+    const status = deviceStatus?.find(
+      (item) => item.name === rest.deviceStatus
+    )?.value
+    const type = deviceTypes?.find(
+      (item) => item.name === rest.deviceType
+    )?.value
+    const deviceStatusValue = Object.values(DeviceStatus).find(
+      (value) => value === status
+    )
+    const deviceTypeValue = Object.values(DeviceTypes).find(
+      (value) => value === type
+    )
+    if (deviceStatusValue == null || deviceTypeValue == null) {
+      addNotification({
+        title: 'Select a valid device status and type',
+        type: 'error',
+      })
+      return
+    }
+    const updateDeviceDTO = {
+      ...rest,
+      ...flattenedProps,
+      id: id ?? undefined,
+      deviceStatus: deviceStatusValue,
+      deviceType: deviceTypeValue,
+    }
 
     if (data.id) {
       updateDevice(
@@ -203,15 +228,22 @@ const DeviceModal = ({
         }
       )
     } else {
-      createDevice(newDeviceDTO, {
-        onSuccess: () => {
-          refetchDevices()
-          onClose()
+      createDevice(
+        {
+          ...newDeviceDTO,
+          deviceStatus: deviceStatusValue,
+          deviceType: deviceTypeValue,
         },
-        onError: (error) => {
-          addNotification({ title: 'Device Creation Failed', type: 'error' })
-        },
-      })
+        {
+          onSuccess: () => {
+            refetchDevices()
+            onClose()
+          },
+          onError: (error) => {
+            addNotification({ title: 'Device Creation Failed', type: 'error' })
+          },
+        }
+      )
     }
   }
 

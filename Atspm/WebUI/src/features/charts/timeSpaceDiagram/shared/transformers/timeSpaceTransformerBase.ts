@@ -1,3 +1,4 @@
+import { horizontalBounds } from '@/features/charts/common/rendererGeometry'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - timeSpaceTransformerBase.ts
@@ -19,11 +20,11 @@ import {
   getTimeLikeMs,
   TIME_SPACE_CYCLE_SEGMENT_HEIGHT_PX,
 } from '@/features/charts/timeSpaceDiagram/core/math/timeSpaceLayout'
+import type { TimeSpaceDisplayDistanceOffset } from '@/features/charts/timeSpaceDiagram/core/types/timeSpaceCore.types'
 import type {
   TimeSpaceDetectorEvent,
   TimeSpaceUnwrappedData,
 } from '@/features/charts/timeSpaceDiagram/shared/types'
-import type { TimeSpaceDisplayDistanceOffset } from '@/features/charts/timeSpaceDiagram/core/types/timeSpaceCore.types'
 import { Cycle } from '@/features/charts/timingAndActuation/types'
 import { dateToTimestamp } from '@/utils/dateTime'
 import type {
@@ -86,8 +87,7 @@ export const CYCLE_INDICATIONS: readonly CycleIndication[] = [
     color: '#0CC078',
   },
   {
-    name:
-      'Phase Min Complete (3)\nOverlap Begin Trailing Green (Extension) (62)',
+    name: 'Phase Min Complete (3)\nOverlap Begin Trailing Green (Extension) (62)',
     codes: [3, 62],
     color: '#79DE79',
   },
@@ -165,7 +165,7 @@ export function generateCycles(
 
     const distance = distanceData[index]
     const hasData = hasCycleData(phase.cycleAllEvents)
-    const cycleEvents = hasData
+    const cycleEvents: Array<[string | number, number, number]> = hasData
       ? getCycleEvents(phase.cycleAllEvents, distance)
       : [[0, distance, 0]]
     const cycleRailData = [[phase.start, distance]]
@@ -196,7 +196,7 @@ export function generateCycles(
           }
 
           return {
-            type: 'group',
+            type: 'group' as const,
             children: [
               buildCycleBandGroup(
                 center[0] - timespanMs,
@@ -257,7 +257,7 @@ export function generateCycles(
           const center = api.coord([midX, y])
 
           return {
-            type: 'text',
+            type: 'text' as const,
             z2: 20,
             style: {
               x: center[0],
@@ -268,8 +268,8 @@ export function generateCycles(
               lineWidth: CYCLE_DURATION_LABEL_STROKE_WIDTH,
               fontSize: CYCLE_DURATION_LABEL_FONT_SIZE,
               fontWeight: 600,
-              textAlign: 'center',
-              textVerticalAlign: 'middle',
+              align: 'center' as const,
+              verticalAlign: 'middle' as const,
             },
           }
         },
@@ -282,7 +282,7 @@ export function generateCycles(
 
 function renderCycleSegment(
   api: CustomSeriesRenderItemAPI,
-  cycleEvents: Array<[string, number, number]>,
+  cycleEvents: Array<[string | number, number, number]>,
   index: number
 ): CustomSeriesRenderItemReturn {
   if (index >= cycleEvents.length - 1) return
@@ -307,7 +307,7 @@ function renderCycleSegment(
 }
 
 function getCycleSegmentDurationMs(
-  cycleEvents: Array<[string, number, number]>,
+  cycleEvents: Array<[string | number, number, number]>,
   index: number
 ): number | null {
   if (index >= cycleEvents.length - 1) return null
@@ -334,7 +334,7 @@ function formatCycleDurationLabel(durationMs: number): string {
 }
 
 function getCycleDurationLabelData(
-  cycleEvents: Array<[string, number, number]>
+  cycleEvents: Array<[string | number, number, number]>
 ): Array<[number, number, string]> {
   return cycleEvents.flatMap((event, index) => {
     if (index >= cycleEvents.length - 1) return []
@@ -391,7 +391,8 @@ function renderMissingCycle(
   param: CustomSeriesRenderItemParams,
   distance: number
 ): CustomSeriesRenderItemReturn {
-  const coordSys = param.coordSys as { x: number; width: number }
+  const coordSys = horizontalBounds(param.coordSys)
+  if (!coordSys) return null
   const y = api.coord([0, distance])[1]
 
   return buildCycleBackgroundBandGroup(coordSys.x, y, coordSys.width, '#E0E0E0')
@@ -437,11 +438,11 @@ function buildCycleBandGroup(
   width: number,
   fill: string,
   opacity: number
-): CustomSeriesRenderItemReturn {
+): NonNullable<CustomSeriesRenderItemReturn> {
   const y = centerY - CYCLE_SEGMENT_HEIGHT / 2
 
   return {
-    type: 'group',
+    type: 'group' as const,
     emphasisDisabled: true,
     children: [
       {
@@ -628,14 +629,8 @@ export function generateGreenEventLines(
         const points = [
           api.coord([x1Ms, y1]),
           api.coord([x2Ms, y2]),
-          api.coord([
-            nextPointFinalMs,
-            (y2 as number) + displayDistanceToNext,
-          ]),
-          api.coord([
-            currPointFinalMs,
-            (y1 as number) + displayDistanceToNext,
-          ]),
+          api.coord([nextPointFinalMs, (y2 as number) + displayDistanceToNext]),
+          api.coord([currPointFinalMs, (y1 as number) + displayDistanceToNext]),
         ]
 
         return buildGreenBandPolygon(points, isPrimary)
@@ -722,7 +717,11 @@ function getGreenEventsDataPoints(
   const chartStartMs = getTimeLikeMs(start)
   const chartEndMs = getTimeLikeMs(end)
 
-  if (chartStartMs == null || chartEndMs == null || chartEndMs <= chartStartMs) {
+  if (
+    chartStartMs == null ||
+    chartEndMs == null ||
+    chartEndMs <= chartStartMs
+  ) {
     return result
   }
 

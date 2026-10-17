@@ -155,7 +155,7 @@ const SelectCell = ({
               onClose={handleClose}
               value={value ?? ''}
               onChange={(e) => {
-                onUpdate(e.target.value)
+                onUpdate(String(e.target.value))
                 closeEditor()
               }}
               onKeyDown={handleSelectKeyDown}

@@ -20,13 +20,27 @@ import { ExtractFnReturnType, QueryConfig } from '@/lib/react-query'
 
 import { reportsAxios } from '@/lib/axios'
 
-export const getLeftTurnGapReportDataCheck = async (approachIds, body) => {
+export const getLeftTurnGapReportDataCheck = async (
+  approachIds: number[],
+  body: {
+    locationIdentifier: string
+    start: string
+    end: string
+    volumePerHourThreshold: number
+    gapOutThreshold: number
+    pedestrianThreshold: number
+    daysOfWeek: number[]
+  }
+) => {
   const result = await Promise.all(
     approachIds.map(async (approachId) => {
-      return await reportsAxios.post(
-        `/api/v1/LeftTurnGapReportDataCheck/getReportData`,
-        { ...body, approachId: approachId }
-      )
+      return await reportsAxios.post<
+        unknown,
+        import('../components/LTGRReportView').ApproachData
+      >(`/api/v1/LeftTurnGapReportDataCheck/getReportData`, {
+        ...body,
+        approachId: approachId,
+      })
     })
   )
   return result
@@ -36,8 +50,8 @@ type QueryFnType = typeof getLeftTurnGapReportDataCheck
 
 type UseLeftTurnGapReportOptions = {
   config?: QueryConfig<QueryFnType>
-  body: any
-  approachIds: string[]
+  body: Parameters<typeof getLeftTurnGapReportDataCheck>[1]
+  approachIds: number[]
 }
 
 export const useLeftTurnGapReportDataCheck = ({
@@ -47,7 +61,7 @@ export const useLeftTurnGapReportDataCheck = ({
 }: UseLeftTurnGapReportOptions) => {
   return useQuery<ExtractFnReturnType<QueryFnType>>({
     ...config,
-    queryKey: ['LeftTurnGapReportDataCheck', body],
+    queryKey: ['LeftTurnGapReportDataCheck', body, approachIds],
     enabled: false,
     queryFn: () => getLeftTurnGapReportDataCheck(approachIds, body),
   })

@@ -76,7 +76,11 @@ const MenuItemsModal = ({ isOpen, onClose, data, onSave }: ModalProps) => {
   const onSubmit = async (formData: MenuItemFormData) => {
     try {
       const sanitizedMenuItem: MenuItems = {
+        ...data,
         ...formData,
+        id: formData.id ?? 0,
+        link: formData.link ?? null,
+        children: formData.children ?? [],
         displayOrder: parseInt(formData.displayOrder.toString(), 10),
       }
       onSave(sanitizedMenuItem)
@@ -174,7 +178,7 @@ const MenuItemsModal = ({ isOpen, onClose, data, onSave }: ModalProps) => {
         render={({ field, fieldState }) => {
           const linkChildrenConflict = !validateLinkAndChildren(
             field.value,
-            watch('id')
+            watch('id') ?? null
           )
           return (
             <TextField

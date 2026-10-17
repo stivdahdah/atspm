@@ -1,12 +1,4 @@
-import {
-  DetectionHardwareTypes,
-  DetectionTypes,
-  DirectionTypes,
-  LaneTypes,
-  MovementTypes,
-} from '@/api/config'
 import AuditInfo from '@/components/AuditInfo'
-import { Color } from '@/features/charts/utils'
 import { useEditApproach } from '@/features/locations/api/approach'
 import ApproachEditorRowHeader from '@/features/locations/components/editApproach/ApproachEditorRow'
 import DeleteApproachModal from '@/features/locations/components/editApproach/DeleteApproachModal'
@@ -14,14 +6,16 @@ import { hasUniqueDetectorChannels } from '@/features/locations/components/editA
 import EditApproachGrid from '@/features/locations/components/EditApproachGrid'
 import EditDetectors from '@/features/locations/components/editDetector/EditDetectors'
 import {
+  approachToDto,
+  readConfigApproach,
+} from '@/features/locations/components/editLocation/editorModel'
+import {
   ConfigApproach,
   useLocationStore,
 } from '@/features/locations/components/editLocation/locationStore'
 import { getDirectionAccentColor } from '@/features/locations/utils/directionAccent'
 import { ConfigEnum, useConfigEnums } from '@/hooks/useConfigEnums'
 import { useNotificationStore } from '@/stores/notifications'
-import { dateToTimestamp } from '@/utils/dateTime'
-import { removeAuditFields } from '@/utils/removeAuditFields'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -143,100 +137,50 @@ function EditApproach({ approach }: ApproachAdminProps) {
     }
     setErrors(null)
 
-    // Create a deep clone so we can safely mutate
-    let modifiedApproach = JSON.parse(
-      JSON.stringify(approach)
-    ) as ConfigApproach
-
-    // overwrite with our parsed phase values
-    modifiedApproach.protectedPhaseNumber = protectedPhaseNumber
-    modifiedApproach.permissivePhaseNumber = permissivePhaseNumber
-    modifiedApproach.pedestrianPhaseNumber = pedestrianPhaseNumber
-    modifiedApproach.transitSignalPriorityNumber =
-      approach.transitSignalPriorityNumber === ''
-        ? null
-        : Number(approach.transitSignalPriorityNumber)
-
-    // If the approach is new, remove the local ID so the server will create one
-    if (modifiedApproach.isNew) {
-      delete modifiedApproach.id
-      modifiedApproach.detectors.forEach((d) => delete d.approachId)
-    }
-    delete modifiedApproach.index
-    delete modifiedApproach.open
-    delete modifiedApproach.isNew
-
-    // Convert direction type from name -> numeric enum
-    modifiedApproach.directionTypeId =
-      findDirectionType(modifiedApproach.directionTypeId)?.value ||
-      DirectionTypes.NA
-
-    // Detectors
-    modifiedApproach.detectors.forEach((det) => {
-      if (det.isNew) {
-        delete det.id
-      }
-      delete det.isNew
-      delete det.approach
-      delete det.detectorComments
-
-      det.latencyCorrection =
-        det.latencyCorrection == null || det.latencyCorrection === ''
-          ? 0
-          : Number(det.latencyCorrection)
-
-      det.dectectorIdentifier =
-        det?.dectectorIdentifier ||
-        locationIdentifier + (det.detectorChannel || '')
-
-      det.detectionTypes.forEach((dType) => {
-        dType.id = findDetectionType(dType.abbreviation)?.value
+    let modifiedApproach
+    try {
+      modifiedApproach = approachToDto(approach, locationIdentifier ?? '', {
+        direction: findDirectionType,
+        detection: findDetectionType,
+        hardware: findDetectionHardware,
+        movement: findMovementType,
+        lane: findLaneType,
       })
-
-      det.dateAdded = dateToTimestamp(det.dateAdded)
-
-      det.detectionHardware = findDetectionHardware(
-        det.detectionHardware
-      )?.value
-      det.movementType = findMovementType(det.movementType)?.value
-      det.laneType = findLaneType(det.laneType)?.value
-    })
-
-    // remove audit fields
-    modifiedApproach = removeAuditFields(modifiedApproach)
-    modifiedApproach.detectors =
-      modifiedApproach.detectors.map(removeAuditFields)
+    } catch (error) {
+      addNotification({
+        title: 'Unable to save approach',
+        type: 'error',
+        message:
+          error instanceof Error ? error.message : 'Invalid approach data.',
+      })
+      return
+    }
 
     editApproach(modifiedApproach, {
       onSuccess: (saved) => {
         try {
-          const detectorsArray = saved.detectors || []
-          detectorsArray.forEach((detector) => {
-            detector.detectionTypes = detector.detectionTypes || []
-            detector.detectionTypes.forEach((dType) => {
-              dType.abbreviation =
-                findDetectionType(dType.abbreviation)?.name || DetectionTypes.NA
+          const normalizedSaved = readConfigApproach(saved)
+          normalizedSaved.isNew = false
+          normalizedSaved.directionTypeId =
+            findDirectionType(normalizedSaved.directionTypeId)?.name ??
+            normalizedSaved.directionTypeId
+          normalizedSaved.detectors.forEach((detector) => {
+            detector.detectionTypes.forEach((t) => {
+              t.abbreviation =
+                findDetectionType(t.abbreviation)?.name ?? t.abbreviation
             })
             detector.detectionHardware =
-              findDetectionHardware(detector.detectionHardware)?.name ||
-              DetectionHardwareTypes.NA
+              findDetectionHardware(detector.detectionHardware)?.name ??
+              detector.detectionHardware
             detector.movementType =
-              findMovementType(detector.movementType)?.name || MovementTypes.NA
+              findMovementType(detector.movementType)?.name ??
+              detector.movementType
             detector.laneType =
-              findLaneType(detector.laneType)?.name || LaneTypes.NA
+              findLaneType(detector.laneType)?.name ?? detector.laneType
           })
-
-          // Build final approach object for the store
-          const normalizedSaved: ConfigApproach = {
-            ...saved,
-            isNew: false,
-            directionTypeId:
-              findDirectionType(saved.directionTypeId)?.name ||
-              DirectionTypes.NA,
-            detectors: detectorsArray.sort(
-              (a, b) => a.detectorChannel - b.detectorChannel
-            ),
-          }
+          normalizedSaved.detectors.sort(
+            (a, b) => Number(a.detectorChannel) - Number(b.detectorChannel)
+          )
 
           if (approach.isNew) {
             deleteApproachInStore(approach)
@@ -316,11 +260,11 @@ function EditApproach({ approach }: ApproachAdminProps) {
   }, [approach, deleteApproachInStore, addNotification])
 
   const leftBorderColor = useMemo(() => {
-    if (approach.directionTypeId === DirectionTypes.NA) {
+    if (approach.directionTypeId === 'NA') {
       return 'lightgrey'
     }
 
-    return getDirectionAccentColor(approach.directionTypeId)
+    return getDirectionAccentColor(String(approach.directionTypeId))
   }, [approach.directionTypeId])
 
   return (
@@ -401,7 +345,6 @@ function EditApproach({ approach }: ApproachAdminProps) {
 
             <Box sx={{ mt: 1, ml: '1px' }}>
               <EditDetectors
-                showHistory={openHistory}
                 approach={approach}
                 deleteMode={deleteMode}
                 onSelectionChange={(ids) => setSelectedDetectorIds(ids)}

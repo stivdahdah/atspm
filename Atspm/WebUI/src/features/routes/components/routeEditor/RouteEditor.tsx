@@ -1,6 +1,5 @@
-import { Location } from '@/features/locations/types'
+import type { SearchLocation as Location } from '@/api/config'
 import RouteRow from '@/features/routes/components/routeEditor/RouteRow'
-import { Route, RouteLocation } from '@/features/routes/types'
 import { DragDropContext, DropResult, Droppable } from '@hello-pangea/dnd'
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt'
 import SaveIcon from '@mui/icons-material/Save'
@@ -18,6 +17,10 @@ import {
   Typography,
 } from '@mui/material'
 import { memo } from 'react'
+import type {
+  EditableRoute as Route,
+  RouteEditorLink as RouteLocation,
+} from './editorModel'
 
 interface RouteEditorProps {
   route: Route

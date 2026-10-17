@@ -45,7 +45,9 @@ function collectRenderTexts(node: unknown): string[] {
 
 function buildHistoricLocation(
   phaseType: 'Primary' | 'Opposing',
-  overrides: Partial<RawTimeSpaceHistoricData> = {}
+  overrides: Partial<RawTimeSpaceHistoricData> & {
+    programmedSplit?: number
+  } = {}
 ): RawTimeSpaceHistoricData {
   return {
     start: '2026-04-07T08:00:00Z',
@@ -598,8 +600,12 @@ describe('transformTimeSpaceHistoricData detection series interaction', () => {
         typeof entry === 'object' && entry.name === 'Extend Green (114)'
     )
 
-    expect(earlySeries?.symbol).toBe('circle')
-    expect(extendSeries?.symbol).toBe(triangleSvgSymbol)
+    expect(
+      earlySeries && 'symbol' in earlySeries ? earlySeries.symbol : undefined
+    ).toBe('circle')
+    expect(
+      extendSeries && 'symbol' in extendSeries ? extendSeries.symbol : undefined
+    ).toBe(triangleSvgSymbol)
     expect(earlyLegend).toMatchObject({ icon: 'circle' })
     expect(extendLegend).toMatchObject({ icon: triangleSvgSymbol })
   })
@@ -680,7 +686,9 @@ describe('transformTimeSpaceHistoricData detection series interaction', () => {
       ['2026-04-07T08:02:00Z', expect.any(Number)],
       ['2026-04-07T08:03:00Z', expect.any(Number)],
     ])
-    expect(gapSeries?.lineStyle).toMatchObject({ type: 'dotted' })
+    expect(
+      gapSeries && 'lineStyle' in gapSeries ? gapSeries.lineStyle : undefined
+    ).toMatchObject({ type: 'dotted' })
     expect(gapSeries?.data).toEqual([collectionData?.[1], collectionData?.[3]])
     expect(chart.legend).toMatchObject({
       selected: {

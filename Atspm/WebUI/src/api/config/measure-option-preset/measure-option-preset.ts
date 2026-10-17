@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - measure-option-preset.ts
@@ -61,7 +62,7 @@ export const getMeasureOptionPresetMeasureOptionPresetTypes = (
 ) => {
       
       
-      return configRequest<string[]>(
+      return configRequest<ODataCollection<string>>(
       {url: `/MeasureOptionPreset/GetMeasureOptionPresetTypes`, method: 'GET',
         params, signal
     },
@@ -122,7 +123,7 @@ export const getMeasureOptionPreset = (
 ) => {
       
       
-      return configRequest<MeasureOptionPreset[]>(
+      return configRequest<ODataCollection<MeasureOptionPreset>>(
       {url: `/MeasureOptionPreset`, method: 'GET',
         params, signal
     },
@@ -240,7 +241,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<MeasureOptionPreset[]>(
+      return configRequest<number>(
       {url: `/MeasureOptionPreset/$count`, method: 'GET',
         params, signal
     },

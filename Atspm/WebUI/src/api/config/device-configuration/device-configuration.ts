@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - device-configuration.ts
@@ -65,7 +66,7 @@ export const getDeviceConfigurationDevicesFromKey = (
 ) => {
       
       
-      return configRequest<Device[]>(
+      return configRequest<ODataCollection<Device>>(
       {url: `/DeviceConfiguration/${key}/devices`, method: 'GET',
         params, signal
     },
@@ -133,7 +134,7 @@ export const getDeviceConfigurationDevicesCountFromKey = (
 ) => {
       
       
-      return configRequest<Device[]>(
+      return configRequest<number>(
       {url: `/DeviceConfiguration/${key}/devices/$count`, method: 'GET',
         params, signal
     },
@@ -201,7 +202,7 @@ export const getDeviceConfigurationEventLogDecoders = (
 ) => {
       
       
-      return configRequest<string[]>(
+      return configRequest<ODataCollection<string>>(
       {url: `/DeviceConfiguration/GetEventLogDecoders`, method: 'GET',
         params, signal
     },
@@ -263,7 +264,7 @@ export const getDeviceConfiguration = (
 ) => {
       
       
-      return configRequest<DeviceConfiguration[]>(
+      return configRequest<ODataCollection<DeviceConfiguration>>(
       {url: `/DeviceConfiguration`, method: 'GET',
         params, signal
     },
@@ -381,7 +382,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<DeviceConfiguration[]>(
+      return configRequest<number>(
       {url: `/DeviceConfiguration/$count`, method: 'GET',
         params, signal
     },

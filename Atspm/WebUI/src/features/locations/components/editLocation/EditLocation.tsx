@@ -27,6 +27,7 @@ import {
 } from '@mui/material'
 import React, { memo, useCallback, useEffect, useState } from 'react'
 import EditLocationHeader from './EditLocationHeader'
+import { formNumber } from './editorModel'
 import WatchdogEditor from './WatchdogEditor'
 
 function EditLocation() {
@@ -108,6 +109,7 @@ function ApproachesTab() {
   const location = useLocationStore((state) => state.location)
   const setLocation = useLocationStore((state) => state.setLocation)
   const approaches = useLocationStore((state) => state.approaches)
+  const savedApproaches = useLocationStore((state) => state.savedApproaches)
   const addApproach = useLocationStore((state) => state.addApproach)
   const updateSavedApproaches = useLocationStore(
     (state) => state.updateSavedApproaches
@@ -126,48 +128,63 @@ function ApproachesTab() {
     addApproach()
   }, [addApproach])
 
-  const combinedLocation = { ...location, approaches }
+  const combinedLocation = location ? { ...location, approaches } : null
 
   const handleToggle = () => setShowPedsAre1To1Dialog(true)
   const applyChange = async () => {
+    if (!combinedLocation) return
     const { pedsAre1to1 } = combinedLocation
-    setLocation({
-      ...combinedLocation,
-      pedsAre1to1: !pedsAre1to1,
-    })
-
-    const updatedApproaches = combinedLocation.approaches.map((approach) => ({
-      ...approach,
-      pedestrianDetectors: !pedsAre1to1
-        ? approach.protectedPhaseNumber?.toString()
-        : null,
-      pedestrianPhaseNumber: !pedsAre1to1
-        ? approach.protectedPhaseNumber
-        : null,
-    }))
-
-    updateApproachesInStore(updatedApproaches)
-    updateSavedApproaches(updatedApproaches)
-
-    setShowPedsAre1To1Dialog(false)
-
     try {
+      const updatedApproaches = combinedLocation.approaches.map((approach) => ({
+        ...approach,
+        pedestrianDetectors: !pedsAre1to1
+          ? approach.protectedPhaseNumber?.toString()
+          : null,
+        pedestrianPhaseNumber: !pedsAre1to1
+          ? formNumber(approach.protectedPhaseNumber)
+          : null,
+      }))
+
       await updateLocation({
         key: combinedLocation.id,
         data: { pedsAre1to1: !pedsAre1to1 },
       })
 
       await Promise.all(
-        updatedApproaches.map((app) =>
-          updateApproach({
-            key: app.id,
-            data: {
-              pedestrianDetectors: app.pedestrianDetectors,
-              pedestrianPhaseNumber: app.pedestrianPhaseNumber,
-            },
-          })
-        )
+        updatedApproaches
+          .filter((app) => !app.isNew)
+          .map((app) =>
+            updateApproach({
+              key: app.id,
+              data: {
+                pedestrianDetectors: app.pedestrianDetectors,
+                pedestrianPhaseNumber: app.pedestrianPhaseNumber,
+              },
+            })
+          )
       )
+
+      setLocation({
+        ...combinedLocation,
+        pedsAre1to1: !pedsAre1to1,
+        approaches: updatedApproaches,
+      })
+      updateApproachesInStore(updatedApproaches)
+      updateSavedApproaches(
+        savedApproaches.map((approach) => {
+          const persisted = updatedApproaches.find(
+            (updated) => updated.id === approach.id
+          )
+          return persisted
+            ? {
+                ...approach,
+                pedestrianDetectors: persisted.pedestrianDetectors,
+                pedestrianPhaseNumber: persisted.pedestrianPhaseNumber,
+              }
+            : approach
+        })
+      )
+      setShowPedsAre1To1Dialog(false)
 
       addNotification({
         title: `Location updated`,
@@ -180,6 +197,8 @@ function ApproachesTab() {
       })
     }
   }
+
+  if (!combinedLocation) return null
 
   return (
     <Box sx={{ minHeight: '400px', mt: 2 }}>

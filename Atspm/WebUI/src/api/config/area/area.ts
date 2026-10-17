@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - area.ts
@@ -64,7 +65,7 @@ export const getAreaLocationsFromKey = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/Area/${key}/locations`, method: 'GET',
         params, signal
     },
@@ -132,7 +133,7 @@ export const getAreaLocationsCountFromKey = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<number>(
       {url: `/Area/${key}/locations/$count`, method: 'GET',
         params, signal
     },
@@ -196,7 +197,7 @@ export const getArea = (
 ) => {
       
       
-      return configRequest<Area[]>(
+      return configRequest<ODataCollection<Area>>(
       {url: `/Area`, method: 'GET',
         params, signal
     },
@@ -314,7 +315,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Area[]>(
+      return configRequest<number>(
       {url: `/Area/$count`, method: 'GET',
         params, signal
     },

@@ -79,11 +79,11 @@ const QueryDataExportBtn = () => {
     data: eventLogsData,
     isLoading: isLoadingEventLogs,
   } = useEventLogs({
-    params: {
-      locationIdentifier: location,
-      start: format(startDateTime, 'yyyy-MM-dd'), // Format to 'yyyy-MM-dd'
-      end: format(endDateTime, 'yyyy-MM-dd'), // Format to 'yyyy-MM-dd'
-    },
+    locationIdentifier: location,
+    start: format(startDateTime, 'yyyy-MM-dd'), // Format to 'yyyy-MM-dd'
+    end: format(endDateTime, 'yyyy-MM-dd'), // Format to 'yyyy-MM-dd'
+    dataType: selectedDataType ?? '',
+    ResponseFormat: 'json',
   })
 
   useEffect(() => {
@@ -95,8 +95,8 @@ const QueryDataExportBtn = () => {
 
   //DOWNLOAD DATA FUNCTIONS
   // convert data to csv and download
-  const createCSV = (latestEventLogs: EventLog) => {
-    if (!latestEventLogs) {
+  const createCSV = (latestEventLogs: EventLog[]) => {
+    if (!latestEventLogs?.length) {
       console.error('No data available to export')
       return
     }

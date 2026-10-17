@@ -2,7 +2,7 @@ import {
   getLocationFromKey,
   SearchLocation as Location,
   Route,
-  useGetLocationLatestVersionOfAllLocations,
+  useGetLocationLocationsForSearch,
   useGetRoute,
 } from '@/api/config'
 import { Filters } from '@/features/locations/components/selectLocation'
@@ -49,13 +49,10 @@ const MultipleLocationsSelect = ({
   fillAvailableHeight = false,
 }: MultipleLocationsSelectProps) => {
   const { data: routesData } = useGetRoute({ expand: 'routeLocations' })
-  const { data: locationsData } = useGetLocationLatestVersionOfAllLocations()
+  const { data: locationsData } = useGetLocationLocationsForSearch()
 
   const routes = useMemo(() => routesData?.value || [], [routesData])
-  const locations = useMemo(
-    () => locationsData?.value || [],
-    [locationsData]
-  ) as Location[]
+  const locations = useMemo(() => locationsData?.value || [], [locationsData])
 
   const [selectedLocation, setSelectedLocation] = useState<Location>()
   const [selectedRoute, setSelectedRoute] = useState<Route>()
@@ -253,7 +250,7 @@ const MultipleLocationsSelect = ({
               }}
             >
               <LocationInput
-                location={selectedLocation}
+                location={selectedLocation ?? null}
                 locations={filteredLocations}
                 handleChange={handleLocationInputChange}
                 filters={filters}
@@ -311,10 +308,19 @@ const MultipleLocationsSelect = ({
 export default MultipleLocationsSelect
 
 export const getLocationWithApproaches = async (locations: Location[]) => {
-  const locationsWithApproaches = await Promise.all(
+  return Promise.all(
     locations
-      .filter((loc) => loc?.id)
-      .map((loc) => getLocationFromKey(loc.id, { expand: 'approaches' }))
+      .filter((loc): loc is Location & { id: number } => loc?.id != null)
+      .map(async (loc) => {
+        const response = await getLocationFromKey(loc.id, {
+          expand: 'approaches',
+        })
+        // Preserve search-only fields (numeric area IDs and chart filters).
+        return {
+          ...loc,
+          approaches: response.value[0]?.approaches ?? [],
+          pedsAre1to1: response.value[0]?.pedsAre1to1,
+        }
+      })
   )
-  return locationsWithApproaches.map((res) => res.value[0])
 }

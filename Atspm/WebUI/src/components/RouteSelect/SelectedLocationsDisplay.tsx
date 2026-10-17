@@ -108,6 +108,7 @@ const SelectedLocationsDisplay = ({ handler }: Props) => {
         </TableCell>
         <CheckboxCell>
           <FormControlLabel
+            label=""
             control={
               <Checkbox
                 checked={location.exclude}

@@ -14,7 +14,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import type { DataZoomComponentOption, ECharts, SeriesOption } from 'echarts'
+import type {
+  DataZoomComponentOption,
+  ECharts,
+  EChartsOption,
+  SeriesOption,
+} from 'echarts'
 import { ChartType, MarkAreaData, PlanData } from './common/types'
 
 export enum Color {
@@ -259,9 +264,7 @@ function getXAxisTimeRange(
   xAxis: unknown
 ): { start: number; end: number } | null {
   const primaryXAxis = Array.isArray(xAxis) ? xAxis[0] : xAxis
-  const axisRange = primaryXAxis as
-    | { min?: unknown; max?: unknown }
-    | undefined
+  const axisRange = primaryXAxis as { min?: unknown; max?: unknown } | undefined
   const start = toTimestamp(axisRange?.min)
   const end = toTimestamp(axisRange?.max)
 
@@ -310,63 +313,74 @@ function adjustMarkDataForViewRange(
 }
 
 export function handleGreenTimeUtilizationDataZoom(chart: ECharts) {
-  const options = chart.getOption()
-  const startValue = options.dataZoom[0].startValue
+  const options = chart.getOption() as EChartsOption
+  const zoom = Array.isArray(options.dataZoom)
+    ? options.dataZoom[0]
+    : options.dataZoom
+  const startValue = Number(zoom?.startValue)
+  if (!Number.isFinite(startValue)) return
   const pixelPositionStart = chart.convertToPixel({ xAxisIndex: 0 }, startValue)
   const pixelPositionNext = chart.convertToPixel(
     { xAxisIndex: 0 },
     startValue + 1
   )
   const binPixelWidth = pixelPositionNext - pixelPositionStart
-  const heatmapIndex = (options.series as SeriesOption[]).findIndex(
-    (s) => s.type === 'heatmap'
-  )
+  const series = Array.isArray(options.series)
+    ? options.series
+    : options.series
+      ? [options.series]
+      : []
+  const heatmapIndex = series.findIndex((s) => s.type === 'heatmap')
+  if (heatmapIndex < 0) return
   const newMaxValue = determineYAxisMax(options, heatmapIndex, 3)
   const labelFormatter = computeLabelFormatter(binPixelWidth)
-  const seriesUpdateTemplate = (options.series as SeriesOption[]).map(
-    () => ({})
-  )
-  seriesUpdateTemplate[heatmapIndex] = {
-    label: {
-      formatter: labelFormatter,
-    },
-  }
   chart.setOption({
     yAxis: [{ max: newMaxValue }],
-    series: seriesUpdateTemplate,
+    series: series.map((_, index) =>
+      index === heatmapIndex ? { label: { formatter: labelFormatter } } : {}
+    ),
   })
 }
-
-function determineYAxisMax(options, heatmapIndex, binSize: number) {
-  const heatmapData = (options.series[heatmapIndex] as any).data
-  const maxHeatmapValue = Math.max(...heatmapData.map((item: any) => item[2]))
-
-  // Get max index from heatmap Y-values (which correspond to categories)
-  const maxHeatmapIndex = Math.max(...heatmapData.map((item: any) => item[1]))
-  const maxCategoryValue = (maxHeatmapIndex + 1) * binSize
-
-  const currentYAxisMax = options.yAxis[0]?.max ?? 0
-
-  const calculatedMax = Math.max(maxHeatmapValue, maxCategoryValue)
-
-  return calculatedMax > currentYAxisMax ? calculatedMax : currentYAxisMax
+function determineYAxisMax(
+  options: EChartsOption,
+  heatmapIndex: number,
+  binSize: number
+) {
+  const series = Array.isArray(options.series)
+    ? options.series
+    : options.series
+      ? [options.series]
+      : []
+  const heatmap = series[heatmapIndex]
+  const heatmapData =
+    heatmap && 'data' in heatmap && Array.isArray(heatmap.data)
+      ? heatmap.data
+      : []
+  const points = heatmapData.filter(
+    (item): item is number[] =>
+      Array.isArray(item) &&
+      typeof item[1] === 'number' &&
+      Number.isFinite(item[1]) &&
+      typeof item[2] === 'number' &&
+      Number.isFinite(item[2])
+  )
+  const yAxis = Array.isArray(options.yAxis) ? options.yAxis[0] : options.yAxis
+  const currentMax =
+    yAxis && 'max' in yAxis && typeof yAxis.max === 'number' ? yAxis.max : 0
+  return Math.max(
+    currentMax,
+    0,
+    ...points.map((item) => item[2]),
+    ...points.map((item) => (item[1] + 1) * binSize)
+  )
 }
-function computeLabelFormatter(binPixelWidth) {
-  const determineDecimals = (binWidth: number) => {
-    if (binWidth > 40) return 2
-    if (binWidth > 25) return 1
-    return null
-  }
-
-  const decimals = determineDecimals(binPixelWidth)
-
-  return (params) => {
-    const value = params.value[2]
-    if (decimals !== null) {
-      return parseFloat(value).toFixed(decimals)
-    } else {
-      return ' '
-    }
+function computeLabelFormatter(binPixelWidth: number) {
+  const decimals = binPixelWidth > 40 ? 2 : binPixelWidth > 25 ? 1 : null
+  return (params: { value: unknown }) => {
+    const value = Array.isArray(params.value) ? Number(params.value[2]) : NaN
+    return decimals !== null && Number.isFinite(value)
+      ? value.toFixed(decimals)
+      : ' '
   }
 }
 

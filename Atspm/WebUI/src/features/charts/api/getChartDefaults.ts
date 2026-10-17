@@ -40,9 +40,14 @@ const determineChartType = (chartName: string): ChartType | 'Unknown' => {
 }
 
 export const getChartDefaults = async (): Promise<
-  ApiResponse<ChartDefaults>
+  ApiResponse<
+    Omit<ChartDefaults, 'measureOptions' | 'chartType'> & {
+      measureOptions: Record<string, Default>
+      chartType: ChartType | 'Unknown'
+    }
+  >
 > => {
-  const response = await configAxios.get<ApiResponse<ChartDefaults[]>>(
+  const response = await configAxios.get<unknown, ApiResponse<ChartDefaults>>(
     '/MeasureType?expand=measureOptions'
   )
 

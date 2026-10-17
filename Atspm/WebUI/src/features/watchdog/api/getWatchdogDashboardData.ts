@@ -32,7 +32,7 @@ export const getWatchdogDashboardData = async (
   start: string,
   end: string
 ): Promise<WatchdogDashboardData> => {
-  const response = await reportsAxios.post(
+  const response = await reportsAxios.post<unknown, WatchdogDashboardData>(
     `/api/v1/WatchDogDashboard/getDashboardGroup`,
     {
       start,

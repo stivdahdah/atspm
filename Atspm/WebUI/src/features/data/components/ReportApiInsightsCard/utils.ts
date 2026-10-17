@@ -17,7 +17,7 @@
 
 // features/data/components/ReportApiInsightsCard/utils.ts
 import { UsageEntry } from '@/api/config'
-import { IdentityUser } from '@/features/data/components/ReportApiAgencyCard'
+import type { UserDTO as IdentityUser } from '@/api/identity/atspmAuthenticationApi.schemas'
 import {
   formatInstantAsLocalDate,
   parseWallClockDateTimeLiteral,
@@ -64,7 +64,7 @@ export function normalizeUsers(users: unknown): IdentityUser[] {
 
 function getUserLabel(u?: IdentityUser | null) {
   if (!u) return 'Unknown'
-  return u.fullName?.trim() || u.email?.trim() || u.userName?.trim() || u.userId
+  return u.fullName?.trim() || u.email?.trim() || u.userName?.trim() || u.userId || 'Unknown'
 }
 
 function metricValue(r: UsageEntry, metric: Metric): number {

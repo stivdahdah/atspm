@@ -1,3 +1,4 @@
+import useSpeedManagementStore from '@/features/speedManagementTool/speedManagementStore'
 import { toDateStamp } from '@/utils/dateTime'
 import {
   Box,
@@ -14,7 +15,11 @@ import {
 } from '@mui/material'
 import React, { Fragment, ReactNode } from 'react'
 import { getChangeBackgroundColor } from './changeColors'
-import useSpeedManagementStore from '@/features/speedManagementTool/speedManagementStore'
+import {
+  getHotspotCoordinates,
+  getHotspotRouteId,
+  type HotspotFeature,
+} from './hotspotModel'
 
 interface Column {
   key: string
@@ -28,28 +33,8 @@ interface VariableGroup {
   change?: string
 }
 
-type HotspotCoordinate = [number, number]
-
-interface Hotspot {
-  id?: string
-  geometry?: {
-    coordinates?: HotspotCoordinate[]
-    geometries?: Array<{
-      coordinates?: HotspotCoordinate[]
-    }>
-  }
-  properties?: Record<string, unknown> & {
-    route_id?: string
-    segmentId?: string
-    segmentIds?: string[] | null
-  }
-  segmentId?: string
-  segmentIds?: string[] | null
-  [key: string]: unknown
-}
-
 interface ImpactHotspotTableProps {
-  hotspots: Hotspot[]
+  hotspots: HotspotFeature[]
   handleRouteSelection: (id: string) => void
   setHoveredHotspot: (id: string | null) => void
   showBeforeAfter: boolean
@@ -133,30 +118,6 @@ const formatImpactDate = (value: unknown): string => {
   } catch {
     return 'N/A'
   }
-}
-
-const getHotspotRouteId = (hotspot: Hotspot): string | null => {
-  const segmentIds = hotspot.properties?.segmentIds ?? hotspot.segmentIds
-  if (hotspot.properties?.route_id) return hotspot.properties.route_id
-  if (hotspot.properties?.segmentId) return hotspot.properties.segmentId
-  if (hotspot.segmentId) return hotspot.segmentId
-  if (segmentIds?.length) {
-    return segmentIds[Math.floor(segmentIds.length / 2)]
-  }
-  return null
-}
-
-const getHotspotHoverId = (hotspot: Hotspot): string | null =>
-  getHotspotRouteId(hotspot) ?? hotspot.id ?? null
-
-const getHotspotCoordinates = (hotspot: Hotspot) => {
-  if (hotspot.geometry?.geometries) {
-    return hotspot.geometry.geometries.flatMap((geometry) =>
-      Array.isArray(geometry.coordinates) ? geometry.coordinates : []
-    )
-  }
-
-  return hotspot.geometry?.coordinates || null
 }
 
 function renderText(
@@ -418,7 +379,9 @@ const ImpactHotspotTable: React.FC<ImpactHotspotTableProps> = ({
                       }
                     }}
                     onMouseEnter={() =>
-                      setHoveredHotspot(getHotspotHoverId(hotspot))
+                      setHoveredHotspot(
+                        getHotspotRouteId(hotspot) ?? hotspot.id ?? null
+                      )
                     }
                     onMouseLeave={() => setHoveredHotspot(null)}
                   >

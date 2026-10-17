@@ -4,13 +4,14 @@ import { useGetAreas } from '@/features/areas/api/areaApi'
 import { useGetRoles } from '@/features/identity/api/getRoles'
 import { useGetJurisdiction } from '@/features/jurisdictions/api/jurisdictionApi'
 import { useGetRegion } from '@/features/region/api/regionApi'
+import type { AuditFields } from '@/types/AuditFields'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-interface User {
+interface User extends AuditFields {
   userId: string
   firstName: string
   lastName: string
@@ -127,7 +128,7 @@ const UserModal = ({ isOpen, open, onClose, data, onSave }: ModalProps) => {
       isOpen={modalOpen}
       onClose={onClose}
       title="User Details"
-      auditInfo={data}
+      auditInfo={data ?? undefined}
       dialogProps={{ sx: { width: 500, pt: 0 } }}
       saveButtonProps={{
         disabled: isSaving,
@@ -250,9 +251,13 @@ const UserModal = ({ isOpen, open, onClose, data, onSave }: ModalProps) => {
             name="regionIds"
             value={field.value}
             data={regionsData?.value}
-            onChange={(event) => field.onChange(normalizeNumberArray(event.target.value))}
+            onChange={(event) =>
+              field.onChange(normalizeNumberArray(event.target.value))
+            }
             onDelete={(id) =>
-              field.onChange(field.value.filter((value) => value !== Number(id)))
+              field.onChange(
+                field.value.filter((value) => value !== Number(id))
+              )
             }
             displayProperty="description"
             fullWidth
@@ -271,9 +276,13 @@ const UserModal = ({ isOpen, open, onClose, data, onSave }: ModalProps) => {
             name="jurisdictionIds"
             value={field.value}
             data={jurisdictionsData?.value}
-            onChange={(event) => field.onChange(normalizeNumberArray(event.target.value))}
+            onChange={(event) =>
+              field.onChange(normalizeNumberArray(event.target.value))
+            }
             onDelete={(id) =>
-              field.onChange(field.value.filter((value) => value !== Number(id)))
+              field.onChange(
+                field.value.filter((value) => value !== Number(id))
+              )
             }
             displayProperty="name"
             fullWidth
@@ -292,9 +301,13 @@ const UserModal = ({ isOpen, open, onClose, data, onSave }: ModalProps) => {
             name="areaIds"
             value={field.value}
             data={areasData?.value}
-            onChange={(event) => field.onChange(normalizeNumberArray(event.target.value))}
+            onChange={(event) =>
+              field.onChange(normalizeNumberArray(event.target.value))
+            }
             onDelete={(id) =>
-              field.onChange(field.value.filter((value) => value !== Number(id)))
+              field.onChange(
+                field.value.filter((value) => value !== Number(id))
+              )
             }
             displayProperty="name"
             fullWidth

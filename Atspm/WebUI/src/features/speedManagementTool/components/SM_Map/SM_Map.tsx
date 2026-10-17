@@ -9,8 +9,6 @@ import useSpeedManagementStore from '@/features/speedManagementTool/speedManagem
 import { SpeedManagementRoute } from '@/features/speedManagementTool/types/routes'
 import { useNotificationStore } from '@/stores/notifications'
 import { getEnv } from '@/utils/getEnv'
-import { lineString } from '@turf/helpers'
-import lineOffset from '@turf/line-offset'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import {
   Box,
@@ -23,6 +21,8 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material'
+import { lineString } from '@turf/helpers'
+import lineOffset from '@turf/line-offset'
 import L from 'leaflet'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { MapContainer, Polyline, TileLayer } from 'react-leaflet'
@@ -94,8 +94,8 @@ const SM_Map = ({
     const fetchEnv = async () => {
       const env = await getEnv()
       setInitialLatLong([
-        parseFloat(env.MAP_DEFAULT_LATITUDE),
-        parseFloat(env.MAP_DEFAULT_LONGITUDE),
+        parseFloat(env.MAP_DEFAULT_LATITUDE ?? '0'),
+        parseFloat(env.MAP_DEFAULT_LONGITUDE ?? '0'),
       ])
     }
     fetchEnv()
@@ -207,10 +207,9 @@ const SM_Map = ({
     return routes.find((route) => route.properties.route_id === routeId)
   }
 
-  const getHotspotOffsetName = (
-    hotspot: MapHotspot,
-    geometryIndex?: number
-  ) => getHotspotRoute(hotspot, geometryIndex)?.properties?.name ?? hotspot.properties?.name
+  const getHotspotOffsetName = (hotspot: MapHotspot, geometryIndex?: number) =>
+    getHotspotRoute(hotspot, geometryIndex)?.properties?.name ??
+    hotspot.properties?.name
 
   const getOffsetHotspotCoordinates = (
     hotspot: MapHotspot,
@@ -242,7 +241,7 @@ const SM_Map = ({
 
   const makeHotspotPathPassive = (layer: L.Polyline) => {
     const element = layer.getElement()
-    if (element) {
+    if (element instanceof HTMLElement || element instanceof SVGElement) {
       element.style.pointerEvents = 'none'
     }
     layer.bringToFront()
@@ -523,7 +522,9 @@ const SM_Map = ({
                       % Violations:
                     </TableCell>
                     <TableCell align="right" sx={{ fontSize: '12px' }}>
-                      {formatPercent(hoveredSegment.properties.percentViolations)}
+                      {formatPercent(
+                        hoveredSegment.properties.percentViolations
+                      )}
                     </TableCell>
                   </TableRow>
                 )}

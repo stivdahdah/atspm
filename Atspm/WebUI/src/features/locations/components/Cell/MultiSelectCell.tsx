@@ -12,7 +12,7 @@ import {
 import React, { KeyboardEvent, useEffect, useRef } from 'react'
 import { useCellNavigation } from './CellNavigation'
 
-interface MultiSelectCellProps<T> {
+interface MultiSelectCellProps<T extends string | number> {
   approachId: number
   row: number
   col: number
@@ -26,7 +26,7 @@ interface MultiSelectCellProps<T> {
   warning?: string
 }
 
-export function MultiSelectCell<T>({
+export function MultiSelectCell<T extends string | number>({
   approachId,
   row,
   col,

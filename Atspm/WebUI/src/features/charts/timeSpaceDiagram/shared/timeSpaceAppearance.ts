@@ -223,11 +223,8 @@ function wrapCustomRenderItem(
     value: CustomSeriesRenderItemReturn
   ) => CustomSeriesRenderItemReturn
 ) {
-  const renderItem = (
-    series as SeriesOption & {
-      renderItem?: (...args: unknown[]) => CustomSeriesRenderItemReturn
-    }
-  ).renderItem
+  if (series.type !== 'custom') return series
+  const renderItem = series.renderItem
 
   if (typeof renderItem !== 'function') {
     return series
@@ -244,16 +241,17 @@ function applyLineAppearance(
   series: SeriesOption,
   appearance: TimeSpaceDirectionalAppearance
 ) {
+  if (series.type !== 'line' && series.type !== 'scatter') return series
   return {
     ...series,
     color: appearance.color,
     lineStyle: {
-      ...(series.lineStyle as Record<string, unknown> | undefined),
+      ...(series.type === 'line' ? series.lineStyle : undefined),
       color: appearance.color,
       opacity: appearance.opacity,
     },
     itemStyle: {
-      ...(series.itemStyle as Record<string, unknown> | undefined),
+      ...series.itemStyle,
       color: appearance.color,
       opacity: appearance.opacity,
     },
@@ -306,7 +304,11 @@ function applyCyclesAppearance(
     series,
     (result) =>
       mapGraphicNode(result, (node) => {
-        const fill = normalizeColorToken(node?.style?.fill)
+        const style =
+          node.style && typeof node.style === 'object'
+            ? (node.style as { fill?: unknown })
+            : undefined
+        const fill = normalizeColorToken(style?.fill)
         const nextFill = fill ? cycleColorMap.get(fill) : undefined
 
         if (!nextFill) {

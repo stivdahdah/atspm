@@ -153,7 +153,7 @@ function parseDelimitedText(
     }
 
     const timestampMs = toUtcTimestampMs(rawTimestamp, rawDate, rawTime)
-    if (!Number.isFinite(timestampMs)) continue
+    if (timestampMs == null || !Number.isFinite(timestampMs)) continue
     const time = dateToTimestamp(new Date(timestampMs))
 
     const entityId =

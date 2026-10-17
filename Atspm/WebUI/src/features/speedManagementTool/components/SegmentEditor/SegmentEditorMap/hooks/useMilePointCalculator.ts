@@ -19,7 +19,7 @@ import * as turf from '@turf/turf'
 
 interface RouteFeature {
   geometry: {
-    type: 'LineString'
+    type?: 'LineString'
     coordinates: [number, number][]
   }
   properties: {

@@ -18,13 +18,23 @@ import { Feature } from '@/features/speedManagementTool/components/SegmentEditor
 import * as turf from '@turf/turf'
 
 export function getPolylineCoordinates(
-  geometry: GeoJSON.LineString | GeoJSON.MultiLineString
+  geometry:
+    | { type?: 'LineString'; coordinates: number[][] }
+    | GeoJSON.MultiLineString
 ): [number, number][] {
-  return geometry.type === 'MultiLineString'
-    ? ([] as [number, number][]).concat(
-        ...(geometry.coordinates as [number, number][][])
-      )
-    : (geometry.coordinates as [number, number][])
+  const coordinates =
+    geometry.type === 'MultiLineString'
+      ? geometry.coordinates.flat()
+      : geometry.coordinates
+  return coordinates.map((point) => {
+    if (
+      point.length < 2 ||
+      !Number.isFinite(point[0]) ||
+      !Number.isFinite(point[1])
+    )
+      throw new Error('Invalid route coordinate.')
+    return [point[0], point[1]]
+  })
 }
 
 export const snapToRoute = (feature: Feature, pt: [number, number]) => {

@@ -1,11 +1,7 @@
+import { configRequest } from '@/lib/axios'
 import { navigateToPage } from '@/utils/routes'
 
-import {
-  Route,
-  useDeleteRouteFromKey,
-  useGetRoute,
-  usePostRoute,
-} from '@/api/config'
+import { Route, useDeleteRouteFromKey, useGetRoute } from '@/api/config'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -27,7 +23,6 @@ const RoutesAdmin = () => {
     'LocationConfiguration:Delete'
   )
 
-  const { mutateAsync: createRoute } = usePostRoute()
   const { mutateAsync: deleteRoute } = useDeleteRouteFromKey()
 
   const { data: routeData, isLoading, refetch: refetchRoutes } = useGetRoute()
@@ -40,7 +35,9 @@ const RoutesAdmin = () => {
   const HandleCreateRoute = async (routeData: Route) => {
     const { id, name } = routeData
     try {
-      const newRoute = await createRoute({
+      const newRoute = await configRequest<Route>({
+        url: '/Route',
+        method: 'POST',
         data: { id, name },
       })
       navigateToPage(`/admin/routes/${newRoute.id}/edit`)
@@ -59,7 +56,8 @@ const RoutesAdmin = () => {
     }
   }
 
-  const HandleEditRoute = (route: Route) => {
+  const HandleEditRoute = (route: { id?: number } | null) => {
+    if (route?.id == null) return
     navigateToPage(`/admin/routes/${route.id}/edit`)
   }
 
@@ -71,7 +69,8 @@ const RoutesAdmin = () => {
     )
   }
 
-  const HandleDeleteRoute = async (id: number) => {
+  const HandleDeleteRoute = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteRoute({ key: id })
       refetchRoutes()
@@ -131,6 +130,7 @@ const RoutesAdmin = () => {
             name={''}
             objectType="Route"
             open={false}
+            onClose={onModalClose}
             onConfirm={HandleDeleteRoute}
           />
         }

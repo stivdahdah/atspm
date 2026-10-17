@@ -1,6 +1,6 @@
-import { Device } from '@/api/config'
 import AuditBadge from '@/components/AuditInfo'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
+import type { Device } from '@/features/devices/types'
 import CircleIcon from '@mui/icons-material/Circle'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
@@ -10,6 +10,7 @@ import SettingsRemoteIcon from '@mui/icons-material/SettingsRemote'
 import TrafficIcon from '@mui/icons-material/Traffic'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined'
+import type { ChipProps } from '@mui/material'
 import {
   Avatar,
   Box,
@@ -22,7 +23,10 @@ import {
 } from '@mui/material'
 import React, { useState } from 'react'
 
-const statusColorMap = {
+const statusColorMap: Record<
+  string,
+  { label: string; color: ChipProps['color'] }
+> = {
   Unknown: { label: 'Unknown', color: 'default' },
   Decommissioned: { label: 'Decommissioned', color: 'warning' },
   Inactive: { label: 'Inactive', color: 'error' },
@@ -31,16 +35,20 @@ const statusColorMap = {
   Staging: { label: 'Staging', color: 'primary' },
 }
 
-const deviceTypeMap = {
-  Unknown: { label: 'Unknown', icon: <QuestionMarkIcon /> },
-  SignalController: { label: 'Signal Controller', icon: <TrafficIcon /> },
-  RampController: { label: 'Ramp Controller', icon: <RampLeftIcon /> },
-  AICamera: { label: 'AI Camera', icon: <VideocamIcon /> },
-  FIRCamera: { label: 'FIR Camera', icon: <VideocamOutlinedIcon /> },
-  LidarSensor: { label: 'Lidar Sensor', icon: <SensorsIcon /> },
-  WavetronixSpeed: { label: 'Wavetronix Speed', icon: <SettingsRemoteIcon /> },
-  SpeedSensor: { label: 'Speed Sensor', icon: <SettingsRemoteIcon /> },
-}
+const deviceTypeMap: Record<string, { label: string; icon: React.ReactNode }> =
+  {
+    Unknown: { label: 'Unknown', icon: <QuestionMarkIcon /> },
+    SignalController: { label: 'Signal Controller', icon: <TrafficIcon /> },
+    RampController: { label: 'Ramp Controller', icon: <RampLeftIcon /> },
+    AICamera: { label: 'AI Camera', icon: <VideocamIcon /> },
+    FIRCamera: { label: 'FIR Camera', icon: <VideocamOutlinedIcon /> },
+    LidarSensor: { label: 'Lidar Sensor', icon: <SensorsIcon /> },
+    WavetronixSpeed: {
+      label: 'Wavetronix Speed',
+      icon: <SettingsRemoteIcon />,
+    },
+    SpeedSensor: { label: 'Speed Sensor', icon: <SettingsRemoteIcon /> },
+  }
 
 const StyledLabel = ({ children }: { children: React.ReactNode }) => (
   <Typography variant="overline" color={'#3B3B3B'} sx={{ width: '160px' }}>
@@ -53,7 +61,7 @@ interface DeviceCardProps {
   canEdit: boolean
   canDelete: boolean
   onEdit: (device: Device) => void
-  onDelete: (deviceId: string) => void
+  onDelete: (deviceId: number) => void
 }
 
 const DeviceCard = ({
@@ -71,7 +79,7 @@ const DeviceCard = ({
 
   if (!deviceConfigurations) return null
 
-  device.deviceConfiguration = deviceConfigurations.find(
+  const deviceConfiguration = deviceConfigurations.find(
     (dc) => dc.id === device.deviceConfigurationId
   )
 
@@ -135,7 +143,7 @@ const DeviceCard = ({
                   <MenuItem
                     onClick={() => {
                       handleMenuClose()
-                      onEdit(device)
+                      onEdit({ ...device, deviceConfiguration })
                     }}
                   >
                     Edit
@@ -145,7 +153,7 @@ const DeviceCard = ({
                   <MenuItem
                     onClick={() => {
                       handleMenuClose()
-                      onDelete(device.id)
+                      device.id != null && onDelete(device.id)
                     }}
                   >
                     Delete
@@ -176,13 +184,13 @@ const DeviceCard = ({
           <Box display={'flex'} justifyContent={'flex-start'}>
             <StyledLabel>Manufacturer</StyledLabel>
             <Typography variant="body1">
-              {device.deviceConfiguration?.product?.manufacturer}
+              {deviceConfiguration?.product?.manufacturer}
             </Typography>
           </Box>
           <Box display={'flex'} justifyContent={'flex-start'}>
             <StyledLabel>Model</StyledLabel>
             <Typography variant="body1">
-              {device.deviceConfiguration?.product?.model}
+              {deviceConfiguration?.product?.model}
             </Typography>
           </Box>
           <Box display={'flex'} justifyContent={'flex-start'}>

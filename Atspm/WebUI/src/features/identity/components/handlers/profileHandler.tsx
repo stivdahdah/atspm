@@ -4,8 +4,12 @@ import { useUserInfo } from '../../api/getUserInfo'
 import UserDto from '../../types/userDto'
 import { ResponseHandler } from './baseHandler'
 
+type ProfileData = Pick<
+  UserDto,
+  'firstName' | 'lastName' | 'agency' | 'email' | 'phoneNumber' | 'roles'
+>
 export interface ProfileHandler extends ResponseHandler {
-  profileData: UserDto
+  profileData: ProfileData
   submitted: boolean
   isEditing: boolean
   isLoading: boolean
@@ -24,21 +28,16 @@ export const useProfileHandler = (): ProfileHandler => {
   const [responseError, setResponseError] = useState(false)
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null)
   const profileData = useUserInfo({})
-  const [formData, setFormData] = useState<UserDto>({
+  const [formData, setFormData] = useState<ProfileData>({
     firstName: '',
     lastName: '',
     agency: '',
     email: '',
     phoneNumber: '',
-    roles: '',
+    roles: [],
   })
 
-  const {
-    refetch,
-    data: saveUser,
-    isSuccess,
-    error,
-  } = useEditUserInfo({ userInfo: formData })
+  const { mutate: saveProfile, isSuccess, error } = useEditUserInfo()
 
   useEffect(() => {
     if (profileData.data) {
@@ -58,7 +57,7 @@ export const useProfileHandler = (): ProfileHandler => {
   }, [profileData.data])
 
   useEffect(() => {
-    if (saveUser !== undefined && isSuccess) {
+    if (isSuccess) {
       setResponseSuccess(true)
       setSubmitted(true)
       setIsEditing(false)
@@ -66,15 +65,16 @@ export const useProfileHandler = (): ProfileHandler => {
     if (error) {
       setResponseError(true)
     }
-  }, [error, isSuccess, saveUser])
+  }, [error, isSuccess])
 
   const validatePhoneNumber = (phoneNumber: string) => {
-    const phoneRegex = /^(\+1|1)?[-.\s]?\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/
-    
+    const phoneRegex =
+      /^(\+1|1)?[-.\s]?\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/
+
     if (!phoneNumber) {
-      setPhoneNumberError("Phone number is required")
+      setPhoneNumberError('Phone number is required')
     } else if (!phoneRegex.test(phoneNumber)) {
-      setPhoneNumberError("Must be a valid phone number")
+      setPhoneNumberError('Must be a valid phone number')
     } else {
       setPhoneNumberError(null)
     }
@@ -92,7 +92,7 @@ export const useProfileHandler = (): ProfileHandler => {
 
   const handleSaveClick = () => {
     if (!phoneNumberError) {
-      refetch()
+      saveProfile(formData)
     }
   }
 

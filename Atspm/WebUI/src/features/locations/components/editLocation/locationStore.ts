@@ -14,35 +14,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import {
-  Approach,
-  deleteApproachFromKey,
-  deleteDetectorFromKey,
-  Detector,
-  Location,
-} from '@/api/config'
+import { deleteApproachFromKey, deleteDetectorFromKey } from '@/api/config'
 import { devtools } from 'zustand/middleware'
 import { createWithEqualityFn } from 'zustand/traditional'
+import type {
+  ConfigApproach,
+  ConfigDetector,
+  ConfigLocation,
+} from './editorModel'
 
-export interface ConfigLocation extends Omit<Location, 'id' | 'approaches'> {
-  id: number
-}
-
-export interface ConfigApproach
-  extends Omit<Approach, 'id' | 'detectors' | 'protectedPhaseNumber'> {
-  id: number
-  index?: number
-  open?: boolean
-  isNew?: boolean
-  detectors: ConfigDetector[]
-  protectedPhaseNumber: number | null
-}
-
-export interface ConfigDetector extends Omit<Detector, 'id' | 'approachId'> {
-  id: number
-  approachId?: number
-  isNew?: boolean
-}
+export type {
+  ConfigApproach,
+  ConfigDetector,
+  ConfigLocation,
+} from './editorModel'
 
 interface LocationSlice {
   location: ConfigLocation | null
@@ -96,7 +81,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
       const newMap = new Map<number, number>()
       approachList.forEach((approach) =>
         approach.detectors.forEach((detector) =>
-          newMap.set(detector.id, detector.detectorChannel || 0)
+          newMap.set(detector.id, Number(detector.detectorChannel) || 0)
         )
       )
 
@@ -188,6 +173,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         id,
         index,
         description: 'New Approach',
+        directionTypeId: 'NA',
         isNew: true,
         detectors: [],
         isProtectedPhaseOverlap: false,
@@ -198,7 +184,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         pedestrianDetectors: '',
         locationId: location?.id,
         directionType: {
-          id: '0',
+          id: 0,
           abbreviation: 'NA',
           description: 'Unknown',
           displayOrder: 0,
@@ -269,6 +255,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         isNew: true,
         id: Math.floor(Math.random() * 1e8),
         approachId,
+        detectorChannel: null,
         dateDisabled: null,
         decisionPoint: null,
         dectectorIdentifier: '',

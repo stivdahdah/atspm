@@ -11,7 +11,7 @@ import * as React from 'react'
 import { memo } from 'react'
 
 interface UsageSummaryTabProps {
-  rows: UsageEntryWithUser[]
+  rows: UsageEntry[]
   users?: UserDTO[]
   usersLoading?: boolean
   usageLoading?: boolean
@@ -81,11 +81,10 @@ function UsageSummaryTab({
   }, [dataRows])
 
   const tableData = React.useMemo(() => {
-     return rows.map((r) => {
+    return reportRows.map((r) => {
       const user = users?.find((u) => u.userId === r.userId)
-      r.user = user ? user.userName : 'Anonymous'
-      return r
-    }) as UsageEntryWithUser[]
+      return { ...r, user: user?.userName ?? 'Anonymous' }
+    })
   }, [reportRows, users])
 
   return (
@@ -130,14 +129,14 @@ function UsageSummaryTab({
           rows={rows}
           users={users}
           dateRange={dateRange}
-          isLoading={usageLoading}
+          isLoading={Boolean(usageLoading)}
         />
       </Box>
 
       <Box sx={{ width: '100%', minWidth: 0 }}>
         <Card sx={{ width: '100%', minWidth: 0 }}>
           <CardContent sx={{ p: 0 }}>
-            <UsageTable isLoading={usageLoading} rows={tableData} />
+            <UsageTable isLoading={Boolean(usageLoading)} rows={tableData} />
           </CardContent>
         </Card>
       </Box>

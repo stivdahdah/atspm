@@ -152,7 +152,11 @@ export default function MultipleLocationsDisplay({
             {locations.map((location) => {
               const locationPhaseOptions = Array.from(
                 new Set(
-                  location.approaches?.map((a) => a.protectedPhaseNumber) || []
+                  location.approaches?.flatMap((a) =>
+                    typeof a.protectedPhaseNumber === 'number'
+                      ? [a.protectedPhaseNumber]
+                      : []
+                  ) || []
                 )
               ).sort((a, b) => a - b)
               const isInError =

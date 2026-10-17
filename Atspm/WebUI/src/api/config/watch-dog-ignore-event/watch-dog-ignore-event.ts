@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - watch-dog-ignore-event.ts
@@ -57,7 +58,7 @@ export const getWatchDogIgnoreEvent = (
 ) => {
       
       
-      return configRequest<WatchDogIgnoreEvent[]>(
+      return configRequest<ODataCollection<WatchDogIgnoreEvent>>(
       {url: `/WatchDogIgnoreEvent`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<WatchDogIgnoreEvent[]>(
+      return configRequest<number>(
       {url: `/WatchDogIgnoreEvent/$count`, method: 'GET',
         params, signal
     },

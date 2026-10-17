@@ -1,3 +1,4 @@
+import type { StandardChart } from '@/features/charts/types'
 import { useNotificationStore } from '@/stores/notifications'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -21,31 +22,36 @@ interface SplitMonitorPlan {
   planDescription: string
   start: string
   end: string
-  percentSkips: number
-  percentGapOuts: number
-  percentMaxOuts: number
-  percentForceOffs: number
-  averageSplit: number
-  minTime: number
-  programmedSplit: number
-  percentileSplit85th: number
-  percentileSplit50th: number
+  percentSkips: number | string | null
+  percentGapOuts: number | string | null
+  percentMaxOuts: number | string | null
+  percentForceOffs: number | string | null
+  averageSplit: number | string | null
+  minTime: number | string | null
+  programmedSplit: number | string | null
+  percentileSplit85th: number | string | null
+  percentileSplit50th: number | string | null
 }
 
 interface ChartResults {
   chart: {
     displayProps: {
       plans: SplitMonitorPlan[]
-      phaseNumber: string
+      phaseNumber: string | number
     }
   }
 }
 
 interface PhaseTableProps {
-  phases: ChartResults[]
+  phases: StandardChart[]
 }
 
-const PhaseTable = ({ phases }: PhaseTableProps) => {
+const PhaseTable = ({ phases: allPhases }: PhaseTableProps) => {
+  const phases = allPhases.filter(
+    (phase): phase is StandardChart & ChartResults =>
+      Array.isArray(phase.chart.displayProps?.plans) &&
+      phase.chart.displayProps?.phaseNumber != null
+  )
   const { addNotification } = useNotificationStore()
   if (phases.length === 0) {
     return null
@@ -90,7 +96,7 @@ const PhaseTable = ({ phases }: PhaseTableProps) => {
     </TableCell>
   )
 
-  const formatNumber = (value: string | number) => {
+  const formatNumber = (value: string | number | null | undefined) => {
     if (
       value === '' ||
       value === undefined ||
@@ -99,7 +105,7 @@ const PhaseTable = ({ phases }: PhaseTableProps) => {
     ) {
       return value === undefined || value === null ? '' : value
     }
-    const numberValue = parseFloat(value)
+    const numberValue = value
     if (Number.isNaN(numberValue)) {
       return ''
     }
@@ -118,7 +124,15 @@ const PhaseTable = ({ phases }: PhaseTableProps) => {
     })
     clipboardText += '\n'
 
-    const metrics = [
+    const metrics: Array<{
+      key: keyof SplitMonitorPlan
+      label: string
+      formatter: (
+        value: string | number | null,
+        end?: string | number | null
+      ) => string | number
+      specialCondition?: (plan: SplitMonitorPlan) => boolean
+    }> = [
       { key: 'start', label: 'Time', formatter: formatDateTime },
       { key: 'minTime', label: 'Min Time', formatter: formatNumber },
       {
@@ -180,7 +194,7 @@ const PhaseTable = ({ phases }: PhaseTableProps) => {
     return clipboardText
   }
 
-  const handleCopyToClipboard = async (e) => {
+  const handleCopyToClipboard = async (e: React.MouseEvent) => {
     e.stopPropagation()
     const clipboardText = createClipboardText()
 
@@ -195,8 +209,11 @@ const PhaseTable = ({ phases }: PhaseTableProps) => {
     }
   }
 
-  const formatDateTime = (start, end) => {
-    const formatTime = (time) => {
+  const formatDateTime = (
+    start: string | number | null,
+    end?: string | number | null
+  ) => {
+    const formatTime = (time: string | number | null | undefined) => {
       if (!time) {
         return '00:00' // Default time if not specified
       }

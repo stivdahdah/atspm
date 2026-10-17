@@ -1,3 +1,4 @@
+import type { SearchLocation } from '@/api/config/config-api.schemas'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -14,7 +15,8 @@ import {
   useEditRegion,
 } from '@/features/region/api/regionApi'
 import RegionEditorModal from '@/features/regions/components/RegionEditorModal'
-import { formatInstantAsLocalDate, formatInstantAsLocalDateTime } from '@/utils/dateTime'
+import type { Region } from '@/features/regions/types'
+import { formatInstantAsLocalDate } from '@/utils/dateTime'
 import { Backdrop, CircularProgress } from '@mui/material'
 
 const RegionsAdmin = () => {
@@ -38,7 +40,7 @@ const RegionsAdmin = () => {
   if (pageAccess.isLoading) {
     return null
   }
-  const HandleCreateRegion = async (regionData) => {
+  const HandleCreateRegion = async (regionData: Region) => {
     const { id, description } = regionData
     try {
       await createMutation({ id, description })
@@ -48,7 +50,8 @@ const RegionsAdmin = () => {
     }
   }
 
-  const HandleDeleteRegion = async (id: number) => {
+  const HandleDeleteRegion = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteMutation(id)
       refetchRegions()
@@ -57,7 +60,7 @@ const RegionsAdmin = () => {
     }
   }
 
-  const HandleEditRegion = async (regionData) => {
+  const HandleEditRegion = async (regionData: Region) => {
     const { id, description } = regionData
     try {
       await editMutation({
@@ -76,8 +79,8 @@ const RegionsAdmin = () => {
 
   const filterAssociatedObjects = (
     regionId: number,
-    objects: Location[]
-  ): { id: number; name: string }[] => {
+    objects: SearchLocation[]
+  ) => {
     const associatedLocations = objects.filter((object) => {
       return object.regionId === regionId
     })
@@ -143,7 +146,7 @@ const RegionsAdmin = () => {
             name={''}
             objectType="Region"
             deleteLabel={(selectedRow: (typeof filteredData)[number]) =>
-              selectedRow.description
+              selectedRow.description ?? ''
             }
             open={false}
             onClose={onModalClose}

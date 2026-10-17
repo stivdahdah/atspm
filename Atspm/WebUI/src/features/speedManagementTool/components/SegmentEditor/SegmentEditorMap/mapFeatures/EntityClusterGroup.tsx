@@ -125,7 +125,7 @@ export default function EntityClusterGroup({
     setTimeout(() => {
       const popupEl = cluster.getPopup()?.getElement()
       if (!popupEl) return
-      popupEl.querySelectorAll('li').forEach((li) => {
+      ;(popupEl as HTMLElement).querySelectorAll('li').forEach((li) => {
         li.addEventListener(
           'mouseenter',
           () => (li.style.background = 'rgba(0,0,0,0.05)')
@@ -147,8 +147,9 @@ export default function EntityClusterGroup({
           if (img) {
             const d = (
               markers.find((mk) => (mk.options as any).entity.id === id)
-                .options as any
+                ?.options as any
             ).entity as Entity
+            if (!d) return
             img.src =
               d.sourceId === DataSource.PeMS
                 ? updated.includes(id)
@@ -188,7 +189,7 @@ export default function EntityClusterGroup({
           spiderfyOnMaxZoom={false}
           zoomToBoundsOnClick={false}
           maxClusterRadius={5}
-          iconCreateFunction={(cluster) =>
+          iconCreateFunction={(cluster: { getAllChildMarkers(): L.Marker[] }) =>
             makeIcon(cluster.getAllChildMarkers() as L.Marker[])
           }
           eventHandlers={{ clusterclick: handleClusterClick }}

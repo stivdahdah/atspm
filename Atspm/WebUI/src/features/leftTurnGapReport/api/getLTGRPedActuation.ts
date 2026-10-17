@@ -44,7 +44,7 @@ type QueryFnType = typeof getLTGRPedActuation
 type useLTGRPedActu = {
   config?: QueryConfig<QueryFnType>
   body: LTGRDataCheck
-  approachIds: string[]
+  approachIds: number[]
 }
 
 export const useLTGRPedActuation = ({

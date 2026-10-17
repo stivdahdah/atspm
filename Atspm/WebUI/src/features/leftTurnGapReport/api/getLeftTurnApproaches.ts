@@ -23,10 +23,11 @@ import { configAxios } from '@/lib/axios'
 
 export const getLeftTurnApproaches = async (
   locationId: string
-): Promise<any> => {
-  const result: ApiResponse<any> = await configAxios.get(
-    `Approach?$filter=locationId eq ${locationId} and detectors/any(i:i/movementType eq 'L')&$select=id, description`
-  )
+): Promise<{ id: number; description: string }[]> => {
+  const result: ApiResponse<{ id: number; description: string }> =
+    await configAxios.get(
+      `Approach?$filter=locationId eq ${locationId} and detectors/any(i:i/movementType eq 'L')&$select=id, description`
+    )
   const leftTurnApproaches = result.value
   return leftTurnApproaches
 }

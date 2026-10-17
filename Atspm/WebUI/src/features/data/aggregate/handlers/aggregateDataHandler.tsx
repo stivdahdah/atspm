@@ -7,7 +7,6 @@ import {
   useRouteHandler,
 } from '@/components/handlers/routeHandler'
 import { useGetLocation } from '@/features/locations/api'
-import { LocationExpanded } from '@/features/locations/types'
 import { useGetRouteWithExpandedLocations } from '@/features/routes/api/getRouteWithExpandedLocations'
 import { DateTimeProps, TimeOnlyProps } from '@/types/TimeProps'
 import { dateToTimestamp } from '@/utils/dateTime'
@@ -30,6 +29,7 @@ import {
   xAxisOptions,
 } from '../types/aggregateOptionsData'
 import {
+  AggregationLocation,
   ExpandLocationHandler,
   useExpandLocationHandler,
 } from './expandLocationHandler'
@@ -88,20 +88,20 @@ export const useAggregateOptionsHandler = (): AggregateOptionsHandler => {
     'line' | 'bar' | 'pie'
   >(chartTypeOptions[0].id)
   const [binSize, setBinSize] = useState<number>(binSizeMarks[0].value)
-  const [locationId, setLocationId] = useState<string>('')
+  const [locationId, setLocationId] = useState<number | undefined>()
   const [averageOrSum, setAverageOrSum] = useState<number>(0)
   const [selectedLocations, setSelectedLocations] = useState<
-    LocationExpanded[]
+    AggregationLocation[]
   >([])
   const [aggregatedData, setAggregatedData] = useState<AggregateData[]>([])
   const [routeExpandedLocations, setRouteExpandedLocations] = useState<
-    LocationExpanded[]
+    AggregationLocation[]
   >([])
   const {
     data: locationExpandedData,
     refetch: refetchLocationExpanded,
     status,
-  } = useGetLocation(locationId)
+  } = useGetLocation(locationId ?? 0)
   const postMutation = usePostAggregateData()
   const routeHandler = useRouteHandler()
   const {
@@ -236,20 +236,34 @@ export const useAggregateOptionsHandler = (): AggregateOptionsHandler => {
   useEffect(() => {
     if (routeStatus === 'success' && routeWithExpandedLocations) {
       const locationsExpandedData = routeWithExpandedLocations.routeLocations
-      setRouteExpandedLocations(locationsExpandedData)
+      setRouteExpandedLocations(
+        locationsExpandedData.flatMap((location) =>
+          location.locationId == null
+            ? []
+            : [
+                {
+                  id: String(location.locationId),
+                  locationIdentifier: location.locationIdentifier,
+                  primaryName: location.primaryName ?? '',
+                  secondaryName: location.secondaryName ?? '',
+                  approaches: location.approaches,
+                },
+              ]
+        )
+      )
     }
   }, [routeStatus, routeWithExpandedLocations])
 
   useEffect(() => {
     if (locationHandler.location) {
-      setLocationId(locationHandler.location.id)
+      setLocationId(Number(locationHandler.location.id))
     } else if (locationHandler.location === null) {
-      setLocationId('')
+      setLocationId(undefined)
     }
   }, [locationHandler.location])
 
   useEffect(() => {
-    if (locationId !== '') {
+    if (locationId != null) {
       refetchLocationExpanded()
     }
   }, [locationId, refetchLocationExpanded])

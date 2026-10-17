@@ -26,8 +26,8 @@ import {
   createTooltip,
   createYAxis,
 } from '@/features/charts/common/transformers'
-import { ExtendedEChartsOption } from '@/features/charts/types'
 import { createSpeedManagementTitle } from '@/features/charts/speedManagementTool/createSpeedManagementTitle'
+import { ExtendedEChartsOption } from '@/features/charts/types'
 import {
   Color,
   DashedLineSeriesSymbol,
@@ -52,7 +52,7 @@ const AcceptedImpactSpeedAggregationCategories: ImpactSpeedAggregationCategoryFi
 // Transformer for Effectiveness of Strategies chart data
 export default function transformEffectivenessOfStrategiesData(
   segmentData: EffectivenessOfStrategiesDto[],
-  customSpeedLimit?: string,
+  customSpeedLimit?: number | null,
   impactType?: ImpactSpeedAggregationCategoryFilter
 ) {
   const chart = transformData(segmentData, customSpeedLimit, impactType)
@@ -65,9 +65,12 @@ export default function transformEffectivenessOfStrategiesData(
 
 function transformData(
   segmentData: EffectivenessOfStrategiesDto[],
-  customSpeedLimit?: string,
+  customSpeedLimit?: number | null,
   impactType?: ImpactSpeedAggregationCategoryFilter
-): ExtendedEChartsOption {
+): ExtendedEChartsOption & { response: EffectivenessOfStrategiesDto[] } {
+  if (!segmentData.length || !segmentData[0].weeklyEffectiveness.length) {
+    return { series: [], response: [] }
+  }
   let categoryFilter: ImpactSpeedAggregationCategoryFilter | null = null
   if (impactType && impactType.length > 0) {
     categoryFilter = AcceptedImpactSpeedAggregationCategories.includes(
@@ -184,7 +187,9 @@ function transformData(
   //   },
   // ]
 
-  const chartOptions: ExtendedEChartsOption = {
+  const chartOptions: ExtendedEChartsOption & {
+    response: EffectivenessOfStrategiesDto[]
+  } = {
     title,
     xAxis,
     yAxis,
@@ -202,7 +207,7 @@ function transformData(
 function createSeries(
   eoSData: EffectivenessOfStrategiesDto[],
   categoryFilter: ImpactSpeedAggregationCategoryFilter | null,
-  customSpeedLimit?: string
+  customSpeedLimit?: number | null
 ): SeriesOption[] {
   let series: SeriesOption[] = []
 
@@ -217,7 +222,7 @@ function createSeries(
 
 function createDefaultSeries(
   eoSData: EffectivenessOfStrategiesDto[],
-  customSpeedLimit?: string
+  customSpeedLimit?: number | null
 ): SeriesOption[] {
   return eoSData
     .map((item) => {
@@ -265,10 +270,7 @@ function createDefaultSeries(
           data: (item.weeklyEffectiveness as TimeSegmentEffectiveness[]).map(
             (weeklyData) => {
               const weekLabel = `${formatDate(weeklyData.startDate as string)}`
-              return [
-                weekLabel,
-                customSpeedLimit ? customSpeedLimit : item.speedLimit,
-              ]
+              return [weekLabel, customSpeedLimit ?? item.speedLimit]
             }
           ),
           type: 'line',
@@ -395,7 +397,7 @@ function createCustomSeries(
 }
 
 // Merges series data for the Effectiveness of Strategies chart
-// function mergeEffectivenessSeriesData(segmentData, customSpeedLimit?: string) {
+// function mergeEffectivenessSeriesData(segmentData, customSpeedLimit?: number | null) {
 //   const averageSpeedData: [string, number | null][] = []
 //   const eightyFifthPercentileData: [string, number | null][] = []
 //   const speedLimitData: [string, number | null][] = []

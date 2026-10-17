@@ -1,10 +1,7 @@
 import { ECharts, SeriesOption } from 'echarts'
 import { useCallback, useMemo, useRef } from 'react'
 import { GpxPoint } from '../gpxFileParser'
-import {
-  GpxUploadOptions,
-  TIME_SPACE_GPX_TRACKS_LEGEND_NAME,
-} from '../types'
+import { GpxUploadOptions, TIME_SPACE_GPX_TRACKS_LEGEND_NAME } from '../types'
 
 const GPX_OVERLAY_SERIES_ID_PREFIXES = ['gpx-', 'srm-'] as const
 
@@ -14,16 +11,13 @@ function isSeriesOption(
   return Boolean(value && typeof value === 'object')
 }
 
-function isGpxOverlaySeries(
-  series: SeriesOption | null | undefined
-): boolean {
+function isGpxOverlaySeries(series: SeriesOption | null | undefined): boolean {
   if (!isSeriesOption(series) || typeof series.id !== 'string') {
     return false
   }
 
-  return GPX_OVERLAY_SERIES_ID_PREFIXES.some((prefix) =>
-    series.id.startsWith(prefix)
-  )
+  const id = series.id
+  return GPX_OVERLAY_SERIES_ID_PREFIXES.some((prefix) => id.startsWith(prefix))
 }
 
 function getCurrentChartSeries(chart: ECharts): SeriesOption[] {
@@ -57,7 +51,15 @@ function buildShiftedGpxData(
   if (!points?.length) return []
 
   const options = chart?.getOption()
-  const locations = options.displayProps.locations
+  const meta = options.displayProps
+  if (
+    !meta ||
+    typeof meta !== 'object' ||
+    !('locations' in meta) ||
+    !Array.isArray(meta.locations)
+  )
+    return []
+  const locations = meta.locations
   const yAxis = chart.getOption()?.yAxis
 
   if (!Array.isArray(yAxis) || !Array.isArray(yAxis[0]?.data)) return []
@@ -138,7 +140,11 @@ export const useGpxAnimationHandler = (
   }, [chart, uploads])
 
   const maxTime = useMemo(
-    () => processedSeries.flatMap((s) => s.data).at(-1)?.[0] ?? '',
+    () =>
+      processedSeries
+        .flatMap((s) => (Array.isArray(s.data) ? s.data : []))
+        .filter(Array.isArray)
+        .at(-1)?.[0] ?? '',
     [processedSeries]
   )
 

@@ -18,6 +18,10 @@ import {
   getAggregationDaysWithDataFromLocationIdentifierAndDataType,
   getEventLogDaysWithDataFromLocationIdentifierAndDataType,
 } from '@/api/data'
+import {
+  isAggregationDataType,
+  isRawDataType,
+} from '@/features/data/api/dataTypeNames'
 import { dateToTimestamp } from '@/utils/dateTime'
 import {
   eachDayOfInterval,
@@ -45,8 +49,8 @@ const useMissingDays = (
 
     const computeMissingDays = async () => {
       try {
-        let availableDaysRaw = []
-        if (dataCategory === 'raw') {
+        let availableDaysRaw: string[] = []
+        if (dataCategory === 'raw' && isRawDataType(dataType)) {
           availableDaysRaw =
             await getEventLogDaysWithDataFromLocationIdentifierAndDataType(
               locationIdentifier,
@@ -56,7 +60,10 @@ const useMissingDays = (
                 end: dateToTimestamp(endDate),
               }
             )
-        } else {
+        } else if (
+          dataCategory === 'aggregation' &&
+          isAggregationDataType(dataType)
+        ) {
           availableDaysRaw =
             await getAggregationDaysWithDataFromLocationIdentifierAndDataType(
               locationIdentifier,

@@ -22,7 +22,7 @@ import { useQuery } from 'react-query'
 export const fetchLocationConfiguration = async (
   locationId: string | null
 ): Promise<Location[]> => {
-  const response = await configAxios.get(
+  const response = await configAxios.get<unknown, { value: Location[] }>(
     `Location/${locationId}?expand=approaches($expand=directionType, detectors($expand=detectionTypes, detectorComments))`
   )
 

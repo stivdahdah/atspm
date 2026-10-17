@@ -14,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { PrioritySummaryResult } from '@/api/reports'
 import { PrioritySummaryOptions } from '@/api/reports/report-api.schemas'
 import {
   ApproachDelayChartOptions,
@@ -48,6 +47,7 @@ import {
   PreemptionDetailsChartOptions,
   RawPreemptionDetailsResponse,
 } from '@/features/charts/preemptionDetails/types'
+import type { RawPrioritySummaryResponse } from '@/features/charts/prioritySummary/types'
 import {
   PurdueCoordinationDiagramChartOptions,
   RawPurdueCoordinationDiagramResponse,
@@ -120,7 +120,7 @@ export type MarkAreaData = [
 ]
 
 export type PlanOptions<T> = {
-  [K in keyof Omit<T, keyof BasePlan>]: (value: T[K]) => string | number
+  [K in keyof Omit<T, keyof BasePlan>]?: (value: T[K]) => string | number
 }
 
 export interface BaseChartData {
@@ -146,7 +146,7 @@ export type RawChartResponse =
   | RawPreemptionDetailsResponse
   | RawPurdueCoordinationDiagramResponse
   | RawPurduePhaseTerminationResponse
-  | PrioritySummaryResult
+  | (RawPrioritySummaryResponse & { type: ChartType.PrioritySummary })
   | RawPurdueSplitFailureResponse
   | RawSplitMonitorResponse
   | RawTimingAndActuationResponse

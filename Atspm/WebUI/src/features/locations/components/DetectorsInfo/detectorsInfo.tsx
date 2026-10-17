@@ -3,7 +3,6 @@ import DetectionTypesCell from '@/features/locations/components/editDetector/Det
 import { laneTypeOptions } from '@/features/locations/components/editDetector/LaneTypeCell'
 import { movementTypeOptions } from '@/features/locations/components/editDetector/MovementTypeCell'
 import { hardwareTypes } from '@/features/locations/components/editDetector/selectOptions'
-import { LocationExpanded } from '@/features/locations/types'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import { Box, SxProps, Theme } from '@mui/material'
@@ -16,6 +15,7 @@ import {
   GridToolbarFilterButton,
 } from '@mui/x-data-grid'
 import React from 'react'
+import type { LocationSummary } from '../summaryTypes'
 
 const DataGridStyle: SxProps<Theme> = {
   '@media print': {
@@ -26,7 +26,7 @@ const DataGridStyle: SxProps<Theme> = {
 } as const
 
 interface CustomToolbarProps {
-  location: LocationExpanded
+  location: LocationSummary
 }
 
 function CustomToolbar({ location }: CustomToolbarProps) {
@@ -51,7 +51,7 @@ function CustomToolbar({ location }: CustomToolbarProps) {
 }
 
 interface DetectorsInfoProps {
-  location: LocationExpanded | undefined
+  location: LocationSummary | undefined
 }
 
 function DetectorsInfo({ location }: DetectorsInfoProps) {
@@ -110,13 +110,14 @@ function DetectorsInfo({ location }: DetectorsInfoProps) {
       movementDelay: detector.movementDelay,
       minSpeedFilter: detector.minSpeedFilter,
       comment: detector.detectorComments
-        ?.map((comment) => comment.comment)
+        ?.map((comment) =>
+          typeof comment === 'string' ? comment : comment.comment
+        )
         .join(', '),
     }))
-    .sort((a, b) => {
-      if (a.detectorChannel < b.detectorChannel) return -1
-      if (a.detectorChannel > b.detectorChannel) return 1
-    })
+    .sort(
+      (a, b) => Number(a.detectorChannel ?? 0) - Number(b.detectorChannel ?? 0)
+    )
 
   const columns: GridColDef[] = [
     {
@@ -296,8 +297,7 @@ function DetectorsInfo({ location }: DetectorsInfoProps) {
         getRowId={(row) => row.id}
         rowSelection={false}
         hideFooter
-        slots={{ toolbar: CustomToolbar }}
-        slotProps={{ toolbar: { location } }}
+        slots={{ toolbar: () => <CustomToolbar location={location} /> }}
         pageSizeOptions={[{ value: 100, label: '100' }]}
         sx={{
           ...DataGridStyle,

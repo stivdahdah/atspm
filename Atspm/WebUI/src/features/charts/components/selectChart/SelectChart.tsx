@@ -1,4 +1,4 @@
-import { Location } from '@/api/config'
+import { SearchLocation as Location } from '@/api/config'
 import { useChartDefaults } from '@/features/charts/api/getChartDefaults'
 import { useGetMeasureTypes } from '@/features/charts/api/getMeasureTypes'
 import { ApproachDelayChartOptions } from '@/features/charts/approachDelay/components/ApproachDelayChartOptions'
@@ -121,34 +121,17 @@ const SelectChart = ({
     chartDefaultsData.value.find((chart) => chart.chartType === chartType)
       ?.measureOptions
 
-  const chartDefaultsForUi: Default[] | undefined = useMemo(() => {
+  const chartDefaultsForUi = useMemo(() => {
     if (!chartDefaultsRaw) return undefined
-    if (!chartOptions || Object.keys(chartOptions).length === 0)
-      return chartDefaultsRaw
-
-    const asRecord = chartDefaultsRaw as unknown as Record<
-      string,
-      { value: unknown; [k: string]: unknown }
-    >
-
-    const merged: Record<string, { value: unknown; [k: string]: unknown }> = {
-      ...asRecord,
-    }
-
-    Object.entries(chartOptions).forEach(([key, overrideValue]) => {
-      if (overrideValue === undefined || overrideValue === null) return
-
-      if (merged[key]) {
-        merged[key] = { ...merged[key], value: overrideValue }
-      } else {
-        merged[key] = { value: overrideValue }
-      }
+    const merged: Record<string, Default> = { ...chartDefaultsRaw }
+    Object.entries(chartOptions ?? {}).forEach(([key, value]) => {
+      if (value == null || value instanceof Date) return
+      merged[key] = { ...(merged[key] ?? { id: -1, option: key }), value }
     })
-
-    return merged as unknown as Default[]
+    return merged
   }, [chartDefaultsRaw, chartOptions])
 
-  const simplifyChartDefaults = (chartDefaults: Default[]) => {
+  const simplifyChartDefaults = (chartDefaults: Record<string, Default>) => {
     const simplifiedDefaults = chartDefaults
       ? Object.entries(chartDefaults).reduce<Record<string, unknown>>(
           (acc, [key, { value }]) => {
@@ -168,9 +151,7 @@ const SelectChart = ({
     const unsortedCharts = measureTypesData.value.reduce(
       (acc, measureType) => {
         if (
-          (location as unknown as { charts?: number[] })?.charts?.includes(
-            measureType.id
-          ) &&
+          location.charts?.includes(measureType.id) &&
           measureType.showOnWebsite
         ) {
           const chartType = abbreviationToChartType[measureType.abbreviation]

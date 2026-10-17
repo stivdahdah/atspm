@@ -16,6 +16,12 @@ import type { SpeedManagementRoute } from '@/features/speedManagementTool/types/
 import { ViolationColors } from '@/features/speedManagementTool/utils/colors'
 import { lineString } from '@turf/helpers'
 import lineOffset from '@turf/line-offset'
+import type {
+  Feature,
+  FeatureCollection,
+  LineString,
+  MultiLineString,
+} from 'geojson'
 import L from 'leaflet'
 import 'leaflet.vectorgrid'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -102,8 +108,8 @@ const cleanMulti = (multi: any): number[][][] =>
 
 const isLatLng = (c: number[]) => Math.abs(c[0]) <= 90 && Math.abs(c[1]) <= 180
 const swap = (c: number[]) => [c[1], c[0]]
-const normalizeLine = (coords: number[][]) =>
-  coords.map((c) => (isLatLng(c) ? swap(c) : c))
+const normalizeLine = (coords: unknown) =>
+  cleanLine(coords).map((c) => (isLatLng(c) ? swap(c) : c))
 
 export default function VectorRoutesSlicerLayer({
   routes,
@@ -112,7 +118,7 @@ export default function VectorRoutesSlicerLayer({
   setHoveredSegment,
 }: Props) {
   const map = useMap()
-  const layerRef = useRef<L.VectorGrid>(null)
+  const layerRef = useRef<L.VectorGrid | null>(null)
   const [zoom, setZoom] = useState(map.getZoom())
 
   const onSelectRef = useRef(setSelectedRouteId)
@@ -135,12 +141,16 @@ export default function VectorRoutesSlicerLayer({
   useEffect(() => {
     const onZoom = () => setZoom(map.getZoom())
     map.on('zoomend', onZoom)
-    return () => map.off('zoomend', onZoom)
+    return () => {
+      map.off('zoomend', onZoom)
+    }
   }, [map])
 
-  const featureCollection = useMemo(() => {
+  const featureCollection = useMemo<
+    FeatureCollection<LineString | MultiLineString>
+  >(() => {
     const feats = routes
-      .map((f) => {
+      .map((f): Feature<LineString | MultiLineString> | null => {
         const name = f?.properties?.name as string | undefined
         const meters = dirSignedOffset(name, zoom)
         const baseCoords =
@@ -203,8 +213,11 @@ export default function VectorRoutesSlicerLayer({
             : null
         }
       })
-      .filter(Boolean)
-    return { type: 'FeatureCollection', features: feats } as const
+      .filter(
+        (feature): feature is Feature<LineString | MultiLineString> =>
+          feature !== null
+      )
+    return { type: 'FeatureCollection', features: feats }
   }, [routes, zoom])
 
   const { routeRenderOption, mediumMin, mediumMax } = useSpeedManagementStore()
@@ -219,7 +232,7 @@ export default function VectorRoutesSlicerLayer({
         weight: hasNoData ? getNoDataRouteWeight(weight) : weight,
         opacity: hasNoData ? NO_DATA_ROUTE_OPACITY : 1,
         dashArray: hasNoData ? NO_DATA_ROUTE_DASH_ARRAY : undefined,
-        lineCap: 'round',
+        lineCap: 'round' as const,
       }
     },
     [routeRenderOption, mediumMin, mediumMax]

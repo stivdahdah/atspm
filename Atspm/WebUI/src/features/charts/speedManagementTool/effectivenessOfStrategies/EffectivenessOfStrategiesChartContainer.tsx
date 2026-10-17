@@ -18,7 +18,7 @@ import transformEffectivenessOfStrategiesData from './effectivenessOfStrategies.
 const EffectivenessOfStrategiesChartsContainer = ({
   chartData: chartOptions,
 }: {
-  chartData: ChartData
+  chartData: ReturnType<typeof transformEffectivenessOfStrategiesData>
 }) => {
   const chartData = chartOptions.charts[0]
   const [customSpeedLimit, setCustomSpeedLimit] = useState<number | null>(null)
@@ -26,7 +26,7 @@ const EffectivenessOfStrategiesChartsContainer = ({
     null
   )
   const [transformedChartData, setTransformedChartData] =
-    useState<ChartData>(chartData)
+    useState<typeof chartData>(chartData)
 
   const handleSpeedLimitChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value ? parseInt(event.target.value) : null
@@ -49,14 +49,19 @@ const EffectivenessOfStrategiesChartsContainer = ({
   }
 
   const Overalls = chartData.response
+  if (!Overalls.length)
+    return <Typography>No data found for the selected segments.</Typography>
 
   const beforeMetrics = Overalls[0].before
   const afterMetrics = Overalls[0].after
   const differenceMetrics = {
     averageSpeed: afterMetrics.averageSpeed - beforeMetrics.averageSpeed,
     averageEightyFifthSpeed:
-      afterMetrics.averageEightyFifthSpeed -
-      beforeMetrics.averageEightyFifthSpeed,
+      typeof afterMetrics.averageEightyFifthSpeed === 'number' &&
+      typeof beforeMetrics.averageEightyFifthSpeed === 'number'
+        ? afterMetrics.averageEightyFifthSpeed -
+          beforeMetrics.averageEightyFifthSpeed
+        : null,
     percentViolations:
       afterMetrics.percentViolations - beforeMetrics.percentViolations,
     percentExtremeViolations:

@@ -14,17 +14,22 @@ import {
 import { format } from 'date-fns'
 import { Fragment } from 'react'
 import { getChangeBackgroundColor } from './changeColors'
+import {
+  getHotspotCoordinates,
+  getHotspotRouteId,
+  type HotspotFeature,
+} from './hotspotModel'
 
 type HotspotTableProps = {
-  hotspots: Array<any>
+  hotspots: HotspotFeature[]
   handleRouteDoubleClick: (routeId: string) => void
   setHoveredHotspot: (routeId: string | null) => void
   compareDates: boolean
-  selectedHotspotType: string
+  selectedHotspotType?: string
   isLoading: boolean
 }
 
-const columnMapping = {
+const columnMapping: Record<string, Array<keyof typeof columnNames>> = {
   'Average Speed': [
     'averageSpeed',
     'speedLimit',
@@ -146,16 +151,16 @@ const columnNames = {
   percentObserved: '% Observed',
 }
 
-const formatValue = (value: any) => {
-  if (typeof value === 'number') {
+const formatValue = (value: unknown): string => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
     const roundedValue = Math.round(value)
     return roundedValue.toLocaleString()
   }
-  return value || 'N/A'
+  return typeof value === 'string' && value ? value : 'N/A'
 }
 
 interface StyledTableCellProps {
-  value: number
+  value: unknown
   compareDates: boolean
   isLoading: boolean
 }
@@ -173,11 +178,14 @@ const StyledTableCell = ({
     )
   }
   const formattedValue = formatValue(value)
-  const roundedValue = Math.round(value)
+  const roundedValue =
+    typeof value === 'number' && Number.isFinite(value)
+      ? Math.round(value)
+      : null
   const isZero = roundedValue === 0
   const displayValue = isZero
     ? '0'
-    : compareDates && roundedValue > 0
+    : compareDates && roundedValue !== null && roundedValue > 0
       ? `+${formattedValue}`
       : formattedValue
   const backgroundColor = getChangeBackgroundColor(roundedValue)
@@ -224,8 +232,7 @@ const HotspotTable = ({
     )
   }
 
-  const columns =
-    columnMapping[selectedHotspotType as keyof typeof columnMapping] || []
+  const columns = columnMapping[selectedHotspotType ?? ''] || []
 
   const violationHeaders = ['violations', 'percentViolations']
 
@@ -323,24 +330,27 @@ const HotspotTable = ({
           : hotspots.map((hotspot, index) => {
               const dateValue = hotspot.properties.binStartTime
               let formattedMonth = 'N/A'
-              if (!isNaN(Date.parse(dateValue))) {
+              if (
+                typeof dateValue === 'string' &&
+                !isNaN(Date.parse(dateValue))
+              ) {
                 formattedMonth = format(dateValue, 'MMM')
               }
               return (
                 <Fragment key={index}>
                   <TableRow
                     hover
-                    onClick={() =>
-                      zoomToHotspot(
-                        hotspot.geometry.coordinates,
-                        mapRef?.getZoom()
-                      )
-                    }
-                    onDoubleClick={() =>
-                      handleRouteDoubleClick(hotspot.properties.route_id)
-                    }
+                    onClick={() => {
+                      const coordinates = getHotspotCoordinates(hotspot)
+                      if (coordinates.length)
+                        zoomToHotspot(coordinates, mapRef?.getZoom())
+                    }}
+                    onDoubleClick={() => {
+                      const routeId = getHotspotRouteId(hotspot)
+                      if (routeId) handleRouteDoubleClick(routeId)
+                    }}
                     onMouseEnter={() =>
-                      setHoveredHotspot(hotspot.properties.route_id)
+                      setHoveredHotspot(getHotspotRouteId(hotspot))
                     }
                     onMouseLeave={() => setHoveredHotspot(null)}
                     sx={{ cursor: 'pointer' }}

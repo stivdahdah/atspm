@@ -53,7 +53,7 @@ export const TextCell = ({
     isEditing,
     openEditor,
     closeEditor,
-  } = useCellNavigation(approachId, row, col, rowCount, colCount)
+  } = useCellNavigation(approachId, row, col, rowCount, colCount ?? 0)
   const cellRef = useRef<HTMLElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 

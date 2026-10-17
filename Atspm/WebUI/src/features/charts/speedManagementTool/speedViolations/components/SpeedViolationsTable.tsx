@@ -1,3 +1,4 @@
+import type { SpeedViolationsDto } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import {
   Box,
   Table,
@@ -8,7 +9,11 @@ import {
   TableRow,
 } from '@mui/material'
 
-const DailySpeedViolationsTable = ({ response }) => {
+const DailySpeedViolationsTable = ({
+  response,
+}: {
+  response: SpeedViolationsDto
+}) => {
   const { dailySpeedViolationsDto } = response
   const formattedPercent = (value: number) => `${(value * 100).toFixed(2)}%`
   const formattedDate = (date: string | undefined) => {
@@ -58,8 +63,8 @@ const DailySpeedViolationsTable = ({ response }) => {
           <TableBody>
             <TableRow>
               <TableCell sx={{ border: '1px solid lightgrey' }}>
-                {formattedDate(dailySpeedViolationsDto[0].date)} -{' '}
-                {formattedDate(dailySpeedViolationsDto.slice(-1)[0].date)}
+                {formattedDate(dailySpeedViolationsDto[0]?.date)} -{' '}
+                {formattedDate(dailySpeedViolationsDto.slice(-1)[0]?.date)}
               </TableCell>
               <TableCell sx={{ border: '1px solid lightgrey' }}>
                 {response.totalFlow.toLocaleString()}

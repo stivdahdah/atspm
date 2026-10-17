@@ -1,13 +1,3 @@
-import {
-  CongestionTrackingOptions,
-  DataQualityOptions,
-  EffectivenessOfStrategiesOptions,
-  SpeedComplianceOptions,
-  SpeedOverDistanceOptions,
-  SpeedOverTimeOptions,
-  SpeedVariabilityOptions,
-  SpeedViolationsDto,
-} from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import CongestionTrackerChartsContainer from '@/features/charts/speedManagementTool/congestionTracker/components/CongestionTrackerChartsContainer'
 import CongestionTrackingChartOptions from '@/features/charts/speedManagementTool/congestionTracker/components/CongestionTrackingChartOptions'
 import DataQualityChartContainer from '@/features/charts/speedManagementTool/dataQuality/components/DataQualityChartContainer'
@@ -45,17 +35,9 @@ import {
   Typography,
 } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import type { ChartOptionsMapping } from '../api/getSMCharts'
 
-type ChartOptions =
-  | CongestionTrackingOptions
-  | SpeedOverTimeOptions
-  | SpeedOverDistanceOptions
-  | SpeedComplianceOptions
-  | DataQualityOptions
-  | SpeedVariabilityOptions
-  | SpeedViolationsDto
-  | EffectivenessOfStrategiesOptions
-  | null
+type ChartOptions = Partial<ChartOptionsMapping[SM_ChartType]> | null
 
 const CHART_TOOLTIPS: Record<SM_ChartType, JSX.Element> = {
   [SM_ChartType.CONGESTION_TRACKING]: (
@@ -222,7 +204,10 @@ const SM_Charts = ({ routes }: { routes: SpeedManagementRoute[] }) => {
     }
   }, [routes, selectedChart, chartTypes, handleChartOptionsChange])
 
-  const { data, isLoading, refetch } = useSMCharts(selectedChart, chartOptions)
+  const { data, isLoading, refetch, error } = useSMCharts(
+    selectedChart,
+    chartOptions
+  )
 
   const handleChartChange = (chartType: SM_ChartType) => {
     if (selectedChart === chartType) return
@@ -307,7 +292,15 @@ const SM_Charts = ({ routes }: { routes: SpeedManagementRoute[] }) => {
 
   const renderChartContainer = () => {
     if (isLoading) return <Typography sx={{ ml: 2 }}>Loading...</Typography>
-    if (hasFetched && (!data || data?.charts?.length === 0)) {
+    if (error) return <Alert severity="error">{error.message}</Alert>
+    if (
+      hasFetched &&
+      (!data ||
+        !data.data ||
+        ('charts' in data.data &&
+          Array.isArray(data.data.charts) &&
+          data.data.charts.length === 0))
+    ) {
       return (
         <Alert severity="error" sx={{ p: 2, m: 2 }}>
           No data found for the selected segment and date range.
@@ -315,23 +308,25 @@ const SM_Charts = ({ routes }: { routes: SpeedManagementRoute[] }) => {
       )
     }
     if (!data) return null
-    switch (selectedChart) {
+    switch (data.type) {
       case SM_ChartType.CONGESTION_TRACKING:
-        return <CongestionTrackerChartsContainer chartData={data} />
+        return <CongestionTrackerChartsContainer chartData={data.data} />
       case SM_ChartType.SPEED_OVER_TIME:
-        return <SpeedOverTimeChartContainer chartData={data} />
+        return <SpeedOverTimeChartContainer chartData={data.data} />
       case SM_ChartType.SPEED_OVER_DISTANCE:
-        return <SpeedOverDistanceChartContainer chartData={data} />
+        return <SpeedOverDistanceChartContainer chartData={data.data} />
       case SM_ChartType.SPEED_COMPLIANCE:
-        return <SpeedComplianceChartsContainer chartData={data} />
+        return <SpeedComplianceChartsContainer chartData={data.data} />
       case SM_ChartType.DATA_QUALITY:
-        return <DataQualityChartContainer chartData={data} />
+        return <DataQualityChartContainer chartData={data.data} />
       case SM_ChartType.SPEED_VARIABILITY:
-        return <SpeedVariabilityChartContainer chartData={data} />
+        return <SpeedVariabilityChartContainer chartData={data.data} />
       case SM_ChartType.SPEED_VIOLATIONS:
-        return <SpeedViolationsChartContainer chartData={data} />
+        return <SpeedViolationsChartContainer chartData={data.data} />
       case SM_ChartType.EFFECTIVENESS_OF_STRATEGIES:
-        return <EffectivenessOfStrategiesChartsContainer chartData={data} />
+        return (
+          <EffectivenessOfStrategiesChartsContainer chartData={data.data} />
+        )
       default:
         return null
     }

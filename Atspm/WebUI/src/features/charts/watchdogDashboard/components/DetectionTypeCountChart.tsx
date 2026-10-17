@@ -40,7 +40,6 @@ const DetectionTypeCountChart: React.FC<DetectionTypeCountChartProps> = ({
     <Paper elevation={3} sx={{ height: 375, padding: 1 }}>
       {!isLoading && detectionTypeCountChartOption && (
         <ApacheEChart
-          ref={chartRef}
           id="watchdog-detection-type-count-chart"
           option={detectionTypeCountChartOption}
           loading={isLoading}

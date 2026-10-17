@@ -108,7 +108,7 @@ const Filters = () => {
           <MultiSelectAutocomplete
             label="County"
             options={counties}
-            value={routeSpeedRequest.county}
+            value={routeSpeedRequest.county ?? null}
             onChange={(_, newValue) =>
               handleAutocompleteChange('county', newValue)
             }
@@ -116,7 +116,7 @@ const Filters = () => {
           <MultiSelectAutocomplete
             label="Access Category"
             options={accessCategories}
-            value={routeSpeedRequest.accessCategory}
+            value={routeSpeedRequest.accessCategory ?? null}
             onChange={(_, newValue) =>
               handleAutocompleteChange('accessCategory', newValue)
             }
@@ -124,7 +124,7 @@ const Filters = () => {
           <MultiSelectAutocomplete
             label="City"
             options={cities}
-            value={routeSpeedRequest.city}
+            value={routeSpeedRequest.city ?? null}
             onChange={(_, newValue) =>
               handleAutocompleteChange('city', newValue)
             }
@@ -132,7 +132,7 @@ const Filters = () => {
           <MultiSelectAutocomplete
             label="Functional Type"
             options={functionalTypes}
-            value={routeSpeedRequest.functionalType}
+            value={routeSpeedRequest.functionalType ?? null}
             onChange={(_, newValue) =>
               handleAutocompleteChange('functionalType', newValue)
             }
@@ -140,7 +140,7 @@ const Filters = () => {
           <MultiSelectAutocomplete
             label="Region"
             options={regions}
-            value={routeSpeedRequest.region}
+            value={routeSpeedRequest.region ?? null}
             onChange={(_, newValue) =>
               handleAutocompleteChange('region', newValue)
             }

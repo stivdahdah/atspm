@@ -90,7 +90,8 @@ function RenderOptionSelector({
                   />
                 }
                 disabled={
-                  submittedRouteSpeedRequest.sourceId === DataSource.ClearGuide
+                  submittedRouteSpeedRequest.sourceId?.[0] ===
+                  DataSource.ClearGuide
                 }
               />
               <Divider sx={{ my: 1 }} />
@@ -125,7 +126,7 @@ function RenderOptionSelector({
                   />
                 }
                 disabled={
-                  submittedRouteSpeedRequest.sourceId !== DataSource.PeMS
+                  submittedRouteSpeedRequest.sourceId?.[0] !== DataSource.PeMS
                 }
               />
               <FormControlLabel
@@ -138,7 +139,7 @@ function RenderOptionSelector({
                   />
                 }
                 disabled={
-                  submittedRouteSpeedRequest.sourceId === DataSource.ClearGuide
+                  submittedRouteSpeedRequest.sourceId?.[0] === DataSource.ClearGuide
                 }
               /> */}
             </RadioGroup>

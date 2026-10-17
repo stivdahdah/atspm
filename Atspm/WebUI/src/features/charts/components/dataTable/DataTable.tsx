@@ -7,11 +7,24 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import type { EChartsOption, SeriesOption } from 'echarts'
 import React from 'react'
 
-const DataTable = ({ option }) => {
-  const axisData = option.xAxis[0].data
-  const series = option.series
+const DataTable = ({ option }: { option: EChartsOption }) => {
+  const axis = Array.isArray(option.xAxis) ? option.xAxis[0] : option.xAxis
+  const axisData =
+    axis && 'data' in axis && Array.isArray(axis.data) ? axis.data : []
+  const series = Array.isArray(option.series)
+    ? option.series
+    : option.series
+      ? [option.series]
+      : []
+  const values = (s: SeriesOption): unknown[] =>
+    'data' in s && Array.isArray(s.data) ? s.data : []
+  const text = (value: unknown): string =>
+    value && typeof value === 'object' && 'value' in value
+      ? text(value.value)
+      : String(value ?? '')
 
   return (
     <TableContainer component={Paper} style={{ maxWidth: '100%' }}>
@@ -20,7 +33,7 @@ const DataTable = ({ option }) => {
           <TableRow>
             {series.map((s, index) => (
               <TableCell key={index} colSpan={2} align="center">
-                {s.name}
+                {String(s.name ?? '')}
               </TableCell>
             ))}
           </TableRow>
@@ -38,8 +51,10 @@ const DataTable = ({ option }) => {
             <TableRow key={rowIndex}>
               {series.map((s, seriesIndex) => (
                 <React.Fragment key={seriesIndex}>
-                  <TableCell align="center">{timestamp}</TableCell>
-                  <TableCell align="center">{s.data[rowIndex]}</TableCell>
+                  <TableCell align="center">{text(timestamp)}</TableCell>
+                  <TableCell align="center">
+                    {text(values(s)[rowIndex])}
+                  </TableCell>
                 </React.Fragment>
               ))}
             </TableRow>

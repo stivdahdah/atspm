@@ -79,7 +79,7 @@ export default function UsageEntryFilters({
       u.fullName?.trim() || `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim()
     const email = u.email || u.userName || ''
     if (name && email) return `${name} — ${email}`
-    return name || email || u.userId
+    return name || email || u.userId || ''
   }
 
   return (

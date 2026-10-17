@@ -1,8 +1,5 @@
-import {
-  DayOfWeek,
-  SpeedVariabilityOptions,
-} from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import { MultiSelectCheckbox } from '@/features/aggregateData/components/chartOptions/MultiSelectCheckbox'
+import { VariabilityOptions } from '@/features/speedManagementTool/api/speedChartContracts'
 import useSpeedManagementStore from '@/features/speedManagementTool/speedManagementStore'
 import { toUTCDateStamp } from '@/utils/dateTime'
 import { Box } from '@mui/material'
@@ -20,15 +17,15 @@ const daysOfWeekList: string[] = [
   'Sat',
 ]
 
-interface SpeedVariabilityOptionsProps {
-  onOptionsChange: (options: SpeedVariabilityOptions) => void
-  sourceId: number
+interface VariabilityOptionsProps {
+  onOptionsChange: (options: Partial<VariabilityOptions>) => void
+  sourceId: number[]
 }
 
 const SpeedVariabilityChartOptions = ({
   onOptionsChange,
   sourceId,
-}: SpeedVariabilityOptionsProps) => {
+}: VariabilityOptionsProps) => {
   const { submittedRouteSpeedRequest } = useSpeedManagementStore()
 
   const [startDate, setStartDate] = useState(
@@ -43,9 +40,7 @@ const SpeedVariabilityChartOptions = ({
         )
       : null
   )
-  const [daysOfWeek, setDaysOfWeek] = useState<DayOfWeek[]>([
-    0, 1, 2, 3, 4, 5, 6,
-  ])
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6])
   useEffect(() => {
     if (startDate && endDate && daysOfWeek) {
       onOptionsChange({
@@ -55,7 +50,7 @@ const SpeedVariabilityChartOptions = ({
         daysOfWeek,
       })
     }
-  }, [startDate, endDate, onOptionsChange, daysOfWeek])
+  }, [startDate, endDate, onOptionsChange, daysOfWeek, sourceId])
 
   const handleStartDateChange = (date: Date | null) => {
     if (date === null || isValid(date)) {
@@ -73,7 +68,7 @@ const SpeedVariabilityChartOptions = ({
     }
   }
 
-  const handleDaysOfWeekChange = (days: DayOfWeek[]) => {
+  const handleDaysOfWeekChange = (days: number[]) => {
     setDaysOfWeek(days)
   }
 

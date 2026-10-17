@@ -1,31 +1,21 @@
-import { Approach, Detector, Location } from '@/api/config'
-import { useGetLocation } from '@/features/locations/api'
+import { Location, SearchLocation, useGetLocationFromKey } from '@/api/config'
 import { sortApproachesByPhaseNumber } from '@/features/locations/components/editApproach/utils/sortApproaches'
 import { useEffect, useState } from 'react'
+import {
+  readConfigLocation,
+  type ConfigApproach,
+  type ConfigLocation,
+} from './editorModel'
 
 interface LocationHandlerProps {
-  location: Location | null
+  location: Pick<SearchLocation, 'id'> | null
 }
 
-export interface ConfigApproach
-  extends Omit<Approach, 'id' | 'detectors' | 'protectedPhaseNumber'> {
-  id?: number
-  index?: number
-  open?: boolean
-  isNew?: boolean
-  detectors: ConfigDetector[]
-  protectedPhaseNumber: number | null
-}
-
-export interface ConfigDetector extends Omit<Detector, 'id' | 'approachId'> {
-  id?: number
-  approachId?: number
-  isNew?: boolean
-}
+export type { ConfigApproach, ConfigDetector } from './editorModel'
 
 export interface LocationConfigHandler {
   approaches: ConfigApproach[]
-  expandedLocation: Location | null
+  expandedLocation: ConfigLocation | null
   updateApproaches: (approaches: ConfigApproach[]) => void
   updateExpandedLocation: (location: Location) => void
   handleAddNewApproach: () => void
@@ -36,29 +26,24 @@ export interface LocationConfigHandler {
 export const useLocationConfigHandler = ({
   location,
 }: LocationHandlerProps): LocationConfigHandler => {
-  const [expandedLocation, setExpandedLocation] = useState<Location | null>(
-    null
-  )
-  const [activeLocationId, setActiveLocationId] = useState(location?.id)
+  const [expandedLocation, setExpandedLocation] =
+    useState<ConfigLocation | null>(null)
   const [approaches, setApproaches] = useState<ConfigApproach[]>([])
 
   const { data: expandedData, refetch: refetchLocation } =
-    useGetLocation(activeLocationId)
-
+    useGetLocationFromKey(
+      location?.id ?? 0,
+      {
+        expand:
+          'areas, devices, approaches($expand=Detectors($expand=DetectionTypes, detectorComments))',
+      },
+      { query: { enabled: location?.id != null } }
+    )
   useEffect(() => {
-    if (activeLocationId) refetchLocation()
-  }, [activeLocationId, refetchLocation])
-
-  useEffect(() => {
-    if (!location) {
-      setActiveLocationId('')
-    } else if (location?.id !== activeLocationId) {
-      setActiveLocationId(location.id)
+    if (!expandedLocation) {
+      setApproaches([])
+      return
     }
-  }, [location, activeLocationId, refetchLocation])
-
-  useEffect(() => {
-    if (!expandedLocation) return
     const existingApproaches = sortApproachesByPhaseNumber(
       expandedLocation.approaches.map((approach, index) => ({
         ...approach,
@@ -68,25 +53,24 @@ export const useLocationConfigHandler = ({
       }))
     )
     const newApproaches = approaches.filter((item) => item.isNew)
-    setApproaches([
-      ...newApproaches,
-      ...(existingApproaches as ConfigApproach[]),
-    ])
+    setApproaches([...newApproaches, ...existingApproaches])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedLocation])
 
   useEffect(() => {
-    if (!expandedData) return
-    setExpandedLocation(expandedData.value[0])
+    const loaded = expandedData?.value[0]
+    setExpandedLocation(loaded ? readConfigLocation(loaded) : null)
   }, [expandedData])
 
   const addNewApproach = () => {
     const id = Math.round(Math.random() * 10000)
     const index = approaches.length
-    const newApproach: Partial<ConfigApproach> = {
+    const newApproach: ConfigApproach = {
       id: id,
       index,
       description: 'New Approach',
+      directionTypeId: 'NA',
+      protectedPhaseNumber: null,
       isNew: true,
       detectors: [],
       isProtectedPhaseOverlap: false,
@@ -97,14 +81,14 @@ export const useLocationConfigHandler = ({
       pedestrianDetectors: '',
       locationId: expandedLocation?.id,
       directionType: {
-        id: '0',
+        id: 0,
         abbreviation: 'NA',
         description: 'Unknown',
         displayOrder: 0,
       },
     }
 
-    setApproaches((prev) => [newApproach as ConfigApproach, ...prev])
+    setApproaches((prev) => [newApproach, ...prev])
   }
 
   const component: LocationConfigHandler = {
@@ -115,16 +99,15 @@ export const useLocationConfigHandler = ({
       refetchLocation()
     },
     updateExpandedLocation(location) {
-      setExpandedLocation(location)
+      setExpandedLocation(readConfigLocation(location))
     },
     handleAddNewApproach() {
       addNewApproach()
     },
     handleLocationEdit(name, value) {
-      setExpandedLocation({
-        ...expandedLocation,
-        [name as string]: value,
-      })
+      setExpandedLocation((previous) =>
+        previous ? { ...previous, [name]: value } : null
+      )
     },
     refetchLocation() {
       refetchLocation()

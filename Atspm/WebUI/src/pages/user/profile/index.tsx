@@ -63,8 +63,7 @@ const ProfilePage = () => {
   }, [profile, reset])
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    saveUser({ ...data, roles: profile?.roles })
-    setIsEditing(false)
+    saveUser(data, { onSuccess: () => setIsEditing(false) })
   }
 
   const cancel = () => {

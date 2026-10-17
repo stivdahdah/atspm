@@ -49,7 +49,7 @@ const DevicesAdmin = () => {
   }
 
   const handleCreateDeviceConfiguration = async (
-    deviceConfigurationData: DeviceConfiguration
+    deviceConfigurationData: DeviceConfiguration & { productName?: string }
   ) => {
     try {
       const { id, ...dataWithoutId } = deviceConfigurationData
@@ -69,9 +69,11 @@ const DevicesAdmin = () => {
   }
 
   const handleEditDeviceConfiguration = async (
-    deviceConfigurationData: DeviceConfiguration
+    deviceConfigurationData: DeviceConfiguration & { productName?: string }
   ) => {
     try {
+      if (deviceConfigurationData.id == null)
+        throw new Error('Missing device configuration ID.')
       const { productName, ...dataWithoutProductName } = deviceConfigurationData
 
       const deviceConfigDTO = removeAuditFields(dataWithoutProductName)
@@ -94,7 +96,8 @@ const DevicesAdmin = () => {
     }
   }
 
-  const HandleDeleteDevice = async (id: number) => {
+  const HandleDeleteDevice = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteMutation({ key: id })
       refetchDeviceConfiguration()
@@ -111,7 +114,7 @@ const DevicesAdmin = () => {
     }
   }
 
-  const getProductDetails = (productId: number) => {
+  const getProductDetails = (productId: number | null | undefined) => {
     const product = productData?.value.find((p) => p.id === productId)
     return product ? `${product.model}` : ''
   }
@@ -160,7 +163,7 @@ const DevicesAdmin = () => {
     { key: 'productName', label: 'Product Name' },
     { key: 'description', label: 'Description' },
     { key: 'protocol', label: 'Protocol' },
-    { key: 'port', label: 'Port', align: 'right' },
+    { key: 'port', label: 'Port', align: 'right' as const },
     { key: 'path', label: 'Path' },
     { key: 'query', label: 'Query' },
     { key: 'connectionProperties', label: 'Connection Properties' },

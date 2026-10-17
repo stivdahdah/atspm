@@ -5,15 +5,7 @@ import type { LatLngExpression } from 'leaflet'
 import React from 'react'
 import { Polyline, Popup, useMapEvent } from 'react-leaflet'
 
-interface Entity {
-  id: string
-  entityId: string
-  name?: string | null
-  direction?: string | null
-  entityType: string
-  startDate: string
-  coordinates: number[][]
-}
+import type { Entity } from '../../segmentEditorStore'
 
 interface ClearGuideSpiderLayerProps {
   entities: Entity[]

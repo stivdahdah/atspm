@@ -1,6 +1,5 @@
 import DirectionSelect from '@/features/routes/components/routeEditor/DirectionsSelect'
 import DistanceInput from '@/features/routes/components/routeEditor/DistanceInput'
-import { Route, RouteLocation } from '@/features/routes/types'
 import { Draggable } from '@hello-pangea/dnd'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
@@ -13,6 +12,10 @@ import {
   Tooltip,
   useTheme,
 } from '@mui/material'
+import type {
+  EditableRoute as Route,
+  RouteEditorLink as RouteLocation,
+} from './editorModel'
 
 interface RouteRowProps {
   link: RouteLocation

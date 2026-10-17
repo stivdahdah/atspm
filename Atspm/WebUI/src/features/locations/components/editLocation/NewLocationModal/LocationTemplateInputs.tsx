@@ -1,6 +1,7 @@
+import { SearchLocation as Location } from '@/api/config'
 import { LocationConfigHandler } from '@/features/locations/components/editLocation/editLocationConfigHandler'
 import LocationInput from '@/features/locations/components/selectLocation/LocationInput'
-import { Location, LocationExpanded } from '@/features/locations/types'
+import { LocationExpanded } from '@/features/locations/types'
 import { Box, TextField } from '@mui/material'
 import { Control, Controller, FieldErrors } from 'react-hook-form'
 
@@ -34,6 +35,7 @@ const LocationTemplateInputs = ({
     <Box sx={{ width: '60%', minWidth: '400px' }}>
       <Box sx={{ marginBottom: 1 }}>
         <LocationInput
+          filters={{}}
           location={selectedLocation}
           locations={locations}
           handleChange={handleCopyLocationChange}

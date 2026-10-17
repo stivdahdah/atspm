@@ -103,7 +103,9 @@ export const YellowAndRedActuationsChartOptions = ({
 
       <YAxisDefaultInput
         value={yAxisMax}
-        handleChange={updateYAxisDefault}
+        handleChange={(value) => {
+          if (value !== null) updateYAxisDefault(value)
+        }}
         isMeasureDefaultView={isMeasureDefaultView}
       />
     </Box>

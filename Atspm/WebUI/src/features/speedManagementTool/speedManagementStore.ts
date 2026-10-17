@@ -28,12 +28,13 @@ import { toUTCDateStamp } from '@/utils/dateTime'
 import { startOfMonth, subMonths } from 'date-fns'
 import { Map as LeafletMap } from 'leaflet'
 import { create } from 'zustand'
+import type { HotspotFeature } from './components/SM_Map/hotspotModel'
 
 const defaultRouteSpeedRequest = (): RouteSpeedOptions => ({
   sourceId: [DataSource.PeMS],
   timePeriod: TimePeriodFilter.AllDay,
   excludeSourceId: false,
-  category: null,
+  category: 'AverageSpeed',
   startDate: toUTCDateStamp(startOfMonth(subMonths(new Date(), 2))),
   endDate: toUTCDateStamp(startOfMonth(subMonths(new Date(), 1))),
   startTime: '1970-01-01T00:00:00.000Z',
@@ -85,11 +86,11 @@ interface StoreState {
   multiselect: boolean
   setMultiselect: (multiselect: boolean) => void
 
-  hotspotRoutes: any[]
-  setHotspotRoutes: (routes: any[]) => void
+  hotspotRoutes: HotspotFeature[]
+  setHotspotRoutes: (routes: HotspotFeature[]) => void
 
-  hoveredHotspot: any
-  setHoveredHotspot: (hotspot: any) => void
+  hoveredHotspot: string | null
+  setHoveredHotspot: (hotspot: string | null) => void
 
   mapRef: LeafletMap | null
   setMapRef: (map: LeafletMap) => void

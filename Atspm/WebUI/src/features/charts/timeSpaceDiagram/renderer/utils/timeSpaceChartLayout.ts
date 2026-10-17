@@ -148,7 +148,11 @@ export function buildChartOptionWithSidebar(
   return {
     ...option,
     legend: nextLegend,
-    grid: nextGrid,
+    grid: Array.isArray(nextGrid)
+      ? nextGrid.filter(
+          (grid): grid is NonNullable<typeof grid> => grid != null
+        )
+      : nextGrid,
     series,
     toolbox: nextToolbox,
   }

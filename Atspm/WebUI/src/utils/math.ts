@@ -15,6 +15,6 @@
 // limitations under the License.
 // #endregion
 export function round(num: number, decimalPlaces = 0) {
-  num = Math.round(num + 'e' + decimalPlaces)
+  num = Math.round(Number(num + 'e' + decimalPlaces))
   return Number(num + 'e' + -decimalPlaces)
 }

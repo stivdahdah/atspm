@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
+import type { EChartsOption } from 'echarts'
 import type { ECBasicOption } from 'echarts/types/dist/shared'
 
 export type PrintTweaks =
@@ -50,7 +51,7 @@ export function applyPrintMode<T extends ECBasicOption>(
           mutate: print.mutate,
         }
 
-  const o = JSON.parse(JSON.stringify(option))
+  const o: EChartsOption = JSON.parse(JSON.stringify(option))
 
   if (cfg.removeToolbox) delete o.toolbox
   if (cfg.removeDataZoom) delete o.dataZoom
@@ -61,7 +62,6 @@ export function applyPrintMode<T extends ECBasicOption>(
       const arr = Array.isArray(o.series) ? o.series : [o.series]
       arr.forEach((s) => {
         s.animation = false
-        if (s.emphasis) s.emphasis.animation = false
       })
     }
   }

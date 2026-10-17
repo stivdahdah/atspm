@@ -22,9 +22,10 @@ import { useQuery } from 'react-query'
 const getDetectionTypeCount = async (
   date: string
 ): Promise<DetectionTypeCount[]> => {
-  const response = await configAxios.get(
-    `/Location/GetDetectionTypeCount?date=${date}`
-  )
+  const response = await configAxios.get<
+    unknown,
+    { value: DetectionTypeCount[] }
+  >(`/Location/GetDetectionTypeCount?date=${date}`)
   return response.value
 }
 

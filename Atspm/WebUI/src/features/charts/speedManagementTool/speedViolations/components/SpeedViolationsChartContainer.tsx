@@ -1,12 +1,12 @@
 import ApacheEChart from '@/features/charts/components/apacheEChart'
 import DailySpeedViolationsTable from '@/features/charts/speedManagementTool/speedViolations/components/SpeedViolationsTable'
-import { ExtendedEChartsOption } from '@/features/charts/types'
 import { Box } from '@mui/material'
+import transformChart from '../speedViolations.transformer'
 
 const SpeedViolationsChartContainer = ({
   chartData,
 }: {
-  chartData: ExtendedEChartsOption
+  chartData: ReturnType<typeof transformChart>
 }) => {
   return (
     <Box>

@@ -127,26 +127,23 @@ export const transformData = (
     (c) => c.id === handler.visualChartType
   )?.id
 
-  const series: SeriesOption[] = []
-
-  if (data.series.length === 1) {
-    series.push({
-      name: dataName,
-      data: transformSeriesData(data.series[0].dataPoints),
-      type: seriesType ? seriesType : 'line',
-      symbolSize: 5,
-      color: Color.Green,
-    })
-  } else {
-    data.series.forEach((arr) =>
-      series.push({
-        name: arr.identifier,
-        data: transformSeriesData(arr.dataPoints),
-        type: seriesType ? seriesType : 'line',
-        symbolSize: 5,
-      })
-    )
-  }
+  const series: SeriesOption[] = data.series.map((arr) => {
+    const name = data.series.length === 1 ? dataName : arr.identifier
+    const points = transformSeriesData(arr.dataPoints)
+    const color = data.series.length === 1 ? Color.Green : undefined
+    if (seriesType === 'pie')
+      return {
+        name,
+        type: 'pie',
+        data: points.map(([name, value]) => ({
+          name: String(name),
+          value: Number(value),
+        })),
+        color,
+      }
+    if (seriesType === 'bar') return { name, type: 'bar', data: points, color }
+    return { name, type: 'line', data: points, symbolSize: 5, color }
+  })
 
   const chartOptions: EChartsOption = {
     title: title,

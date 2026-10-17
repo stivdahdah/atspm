@@ -299,37 +299,43 @@ const toOptions = (
   type: DataTypeOption['type']
 ) =>
   data
-    ? data.map((dataType) => {
-        const props = dataType.properties ?? []
+    ? data
+        .filter((type) => typeof type.name === 'string' && !!type.name.trim())
+        .map((dataType) => {
+          const props = dataType.properties ?? []
 
-        const isStart = (n: string | undefined | null) =>
-          n?.toLowerCase() === 'start'
-        const isEnd = (n: string | undefined | null) =>
-          n?.toLowerCase() === 'end'
+          const isStart = (n: string | undefined | null) =>
+            n?.toLowerCase() === 'start'
+          const isEnd = (n: string | undefined | null) =>
+            n?.toLowerCase() === 'end'
 
-        const start = props.find((p) => isStart(p?.name))
-        const end = props.find((p) => isEnd(p?.name))
-        const rest = props.filter((p) => !isStart(p?.name) && !isEnd(p?.name))
+          const start = props.find((p) => isStart(p?.name))
+          const end = props.find((p) => isEnd(p?.name))
+          const rest = props.filter((p) => !isStart(p?.name) && !isEnd(p?.name))
 
-        const ordered = [
-          ...(start ? [start] : []),
-          ...(end ? [end] : []),
-          ...rest,
-        ]
+          const ordered = [
+            ...(start ? [start] : []),
+            ...(end ? [end] : []),
+            ...rest,
+          ]
 
-        return {
-          name: dataType.name,
-          displayName: dataType?.name
-            ? createDisplayName(dataType.name)
-            : 'unknown',
-          description: dataType.description ?? null,
-          fields: ordered.map((f) => ({
-            name: f.name,
-            description: f.description ?? null,
-          })),
-          type,
-        }
-      })
+          return {
+            name: dataType.name ?? '',
+            displayName: dataType?.name
+              ? createDisplayName(dataType.name)
+              : 'unknown',
+            description: dataType.description ?? null,
+            fields: ordered
+              .filter(
+                (field) => typeof field.name === 'string' && !!field.name.trim()
+              )
+              .map((f) => ({
+                name: f.name ?? '',
+                description: f.description ?? null,
+              })),
+            type,
+          }
+        })
     : []
 
 const createDisplayName = (name: string) => {

@@ -109,7 +109,9 @@ export const SplitMonitorChartOptions = ({
 
       <YAxisDefaultInput
         value={yAxisMax}
-        handleChange={updateYAxisDefault}
+        handleChange={(value) => {
+          if (value != null) updateYAxisDefault(value)
+        }}
         isMeasureDefaultView={isMeasureDefaultView}
       />
     </Box>

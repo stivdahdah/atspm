@@ -1,7 +1,10 @@
-import { useGetDeviceConfigurationEventLogDecoders } from '@/api/config'
+import {
+  TransportProtocols,
+  useGetDeviceConfigurationEventLogDecoders,
+  type DeviceConfiguration,
+} from '@/api/config'
 import ATSPMDialog from '@/components/ATSPMDialog'
 import { knownKeys } from '@/features/devices/components/DeviceConfigCustomRenderCell'
-import { DeviceConfiguration } from '@/features/devices/types/index'
 import { useGetProducts } from '@/features/products/api'
 import { ConfigEnum, useConfigEnums } from '@/hooks/useConfigEnums'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -34,7 +37,7 @@ interface ModalProps {
   data?: DeviceConfiguration
   isOpen: boolean
   onClose: () => void
-  onSave: (device: DeviceConfiguration) => void
+  onSave: (device: DeviceConfiguration) => void | Promise<void>
 }
 
 const deviceConfigSchema = z.object({
@@ -44,7 +47,7 @@ const deviceConfigSchema = z.object({
   protocol: z.string().min(1),
   port: z.number().min(1),
   path: z.string().min(1),
-  query: z.array(z.string()),
+  query: z.array(z.object({ value: z.string() })),
   connectionProperties: z
     .array(
       z.object({
@@ -111,11 +114,11 @@ const DeviceConfigModal = ({
       setPathSuggestionsOpen(false)
       setFormatGroup(null)
     } else if (currentQueryIndex !== null) {
-      const currentValue = getValues(`query.${currentQueryIndex}`)
+      const currentValue = getValues(`query.${currentQueryIndex}.value`)
       const newValue = currentValue.endsWith('[')
         ? currentValue.slice(0, -1) + token
         : currentValue + token
-      setValue(`query.${currentQueryIndex}`, newValue)
+      setValue(`query.${currentQueryIndex}.value`, newValue)
       setSuggestionsOpen(false)
       setCurrentQueryIndex(null)
       setFormatGroup(null)
@@ -144,12 +147,15 @@ const DeviceConfigModal = ({
   } = useForm<DeviceConfigFormData>({
     resolver: zodResolver(deviceConfigSchema),
     defaultValues: {
-      description: deviceConfiguration?.description,
+      description: deviceConfiguration?.description ?? '',
       notes: deviceConfiguration?.notes || '',
-      protocol: deviceConfiguration?.protocol || '',
+      protocol:
+        deviceConfiguration?.protocol == null
+          ? ''
+          : String(deviceConfiguration.protocol),
       port: deviceConfiguration?.port,
       path: deviceConfiguration?.path || '',
-      query: deviceConfiguration?.query,
+      query: (deviceConfiguration?.query ?? []).map((value) => ({ value })),
       connectionTimeout: deviceConfiguration?.connectionTimeout,
       operationTimeout: deviceConfiguration?.operationTimeout,
       loggingOffset: deviceConfiguration?.loggingOffset ?? 0,
@@ -166,15 +172,24 @@ const DeviceConfigModal = ({
   useEffect(() => {
     if (!deviceConfiguration) return
 
-    setValue('protocol', deviceConfiguration.protocol)
+    setValue(
+      'protocol',
+      transportProtocols?.find(
+        (member) => member.value === deviceConfiguration.protocol
+      )?.name ?? String(deviceConfiguration.protocol ?? '')
+    )
+    setValue(
+      'query',
+      (deviceConfiguration.query ?? []).map((value) => ({ value }))
+    )
     setValue('productId', deviceConfiguration.productId ?? null)
 
     Object.entries(deviceConfiguration).forEach(([key, value]) => {
-      if (key !== 'protocol' && key !== 'productId') {
+      if (key !== 'protocol' && key !== 'productId' && key !== 'query') {
         setValue(key as keyof DeviceConfigFormData, value as any)
       }
     })
-  }, [deviceConfiguration, setValue])
+  }, [deviceConfiguration, setValue, transportProtocols])
 
   const onSubmit = async (data: DeviceConfigFormData) => {
     try {
@@ -182,7 +197,22 @@ const DeviceConfigModal = ({
         (product) => product.id === data.productId
       )
 
-      const { connectionProperties, ...rest } = data
+      const {
+        connectionProperties,
+        query,
+        protocol: protocolName,
+        id,
+        loggingOffset,
+        ...rest
+      } = data
+      const protocolValue =
+        transportProtocols?.find((member) => member.name === protocolName)
+          ?.value ?? Number(protocolName)
+      const protocol = Object.values(TransportProtocols).find(
+        (value) => value === protocolValue
+      )
+      if (protocol === undefined)
+        throw new Error('Choose a valid transport protocol.')
 
       const flattenedConnectionProperties = Array.isArray(connectionProperties)
         ? connectionProperties.reduce(
@@ -195,12 +225,15 @@ const DeviceConfigModal = ({
         : connectionProperties
 
       const mergedDevice = {
-        ...rest,
         ...flattenedConnectionProperties,
-        productName: selectedProduct?.model || '',
+        ...rest,
+        ...(id != null ? { id } : {}),
+        protocol,
+        loggingOffset: loggingOffset ?? 0,
+        query: query.map((item) => item.value),
       }
 
-      onSave(mergedDevice as DeviceConfiguration)
+      await onSave(mergedDevice)
       onClose()
     } catch (error) {
       console.error('Error occurred while editing/creating device:', error)
@@ -453,14 +486,12 @@ const DeviceConfigModal = ({
             }}
           >
             <TextField
-              {...register(`query.${index}`)}
+              {...register(`query.${index}.value`)}
               margin="dense"
               label={`Query ${index + 1}`}
               fullWidth
               error={!!errors.query?.[index]}
-              helperText={
-                errors.query?.[index] ? errors.query[index].message : ''
-              }
+              helperText={errors.query?.[index]?.value?.message ?? ''}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -611,7 +642,7 @@ const DeviceConfigModal = ({
         <Button
           variant="outlined"
           size="small"
-          onClick={() => appendQuery('')}
+          onClick={() => appendQuery({ value: '' })}
           sx={{ mt: 1 }}
         >
           + Query
@@ -769,7 +800,13 @@ const DeviceConfigModal = ({
           multiple
           value={watch('decoders') || []}
           onChange={(e) =>
-            setValue('decoders', e.target.value, { shouldValidate: true })
+            setValue(
+              'decoders',
+              typeof e.target.value === 'string'
+                ? e.target.value.split(',')
+                : e.target.value,
+              { shouldValidate: true }
+            )
           }
           renderValue={(selected) => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

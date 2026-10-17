@@ -19,6 +19,12 @@ import { createContext, useMemo, useState } from 'react'
 
 type modeOptions = 'light' | 'dark'
 
+declare module '@mui/material/styles' {
+  interface TypeBackground {
+    highlight?: string
+  }
+}
+
 export const themeSettings = (mode: modeOptions) => {
   return {
     palette: {

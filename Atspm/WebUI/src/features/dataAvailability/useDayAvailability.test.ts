@@ -119,7 +119,11 @@ describe('useDayAvailability', () => {
     const { result, rerender } = renderHook(
       ({ dataSource }: { dataSource: DayAvailabilityDataSource }) =>
         useDayAvailability(['7192'], startDate, endDate, undefined, dataSource),
-      { initialProps: { dataSource: rawSource } }
+      {
+        initialProps: { dataSource: rawSource } as {
+          dataSource: DayAvailabilityDataSource
+        },
+      }
     )
 
     await waitFor(() => expect(result.current).toHaveLength(2))

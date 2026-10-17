@@ -41,8 +41,8 @@ import {
 export default function transformTimingAndActuationData(
   response: RawTimingAndActuationResponse
 ): TransformedChartResponse {
-  const charts = response.data.map((data, i) => {
-    const chartOptions = transformData(data, i)
+  const charts = response.data.map((data) => {
+    const chartOptions = transformData(data)
     return {
       chart: chartOptions,
     }
@@ -50,9 +50,9 @@ export default function transformTimingAndActuationData(
 
   const legendItems = getAllEventDetails()
 
-  const title = createTitleOnlyChart(response.data[0])
+  const title = response.data[0] ? createTitleOnlyChart(response.data[0]) : {}
 
-  const legendChartOptions = createLegendOnlyChart(legendItems)
+  const legendChartOptions = createLegendOnlyChart()
 
   return {
     type: ChartType.TimingAndActuation,
@@ -164,13 +164,16 @@ function transformData(data: RawTimingAndActuationData) {
     )
   }
 
-  const detectorSeries = generateDetectorSeriesData([
-    ...pedestrianEvents,
-    ...stopBarDetectors,
-    ...advanceCountDetectors,
-    ...laneByLanesDetectors,
-    ...advancePresenceDetectors,
-  ])
+  const detectorSeries = generateDetectorSeriesData(
+    [
+      ...pedestrianEvents,
+      ...stopBarDetectors,
+      ...advanceCountDetectors,
+      ...laneByLanesDetectors,
+      ...advancePresenceDetectors,
+    ],
+    extractDetectorsNames(data)
+  )
 
   legendData.push(
     {
@@ -325,33 +328,41 @@ export enum CycleColor {
   Grey = Color.Grey,
 }
 
-function generateDetectorSeriesData(
-  detectors: BasicDetectors[]
+export function generateDetectorSeriesData(
+  detectors: BasicDetectors[],
+  categoryNames: string[]
 ): SeriesOption[] {
-  const onSeriesData = []
-  const offSeriesData = []
-  const lineSeriesData = []
+  const onSeriesData: Array<[string, string]> = []
+  const offSeriesData: Array<[string, string]> = []
+  const lineSeriesData: Array<{
+    coords: [[number, number], [number, number]]
+  }> = []
 
   detectors.forEach((detector) => {
     detector.events.forEach((event) => {
-      if (!event.detectorOn) return
-      const onPoint = [event?.detectorOn, detector.name]
+      if (!event.detectorOn || !Number.isFinite(Date.parse(event.detectorOn)))
+        return
+      const onPoint: [string, string] = [event?.detectorOn, detector.name]
       onSeriesData.push(onPoint)
 
       if (!detector.name.includes('Stop')) return
 
-      const offPoint = [event.detectorOff, detector.name]
+      if (!event.detectorOff || !Number.isFinite(Date.parse(event.detectorOff)))
+        return
+      const offPoint: [string, string] = [event.detectorOff, detector.name]
       offSeriesData.push(offPoint)
 
       if (event.detectorOn && event.detectorOff) {
-        lineSeriesData.push([
-          {
-            coord: [event.detectorOn, detector.name],
-          },
-          {
-            coord: [event.detectorOff, detector.name],
-          },
-        ])
+        const row = categoryNames.indexOf(detector.name)
+        const start = Date.parse(event.detectorOn),
+          end = Date.parse(event.detectorOff)
+        if (row >= 0 && end >= start)
+          lineSeriesData.push({
+            coords: [
+              [start, row],
+              [end, row],
+            ],
+          })
       }
     })
   })
@@ -570,18 +581,19 @@ function createLegendOnlyChart() {
   const legendItems = getAllEventDetails()
   legendItems.push({
     name: 'Line Connecting Detector On to Detector Off',
-    color: 'black',
+    codes: [],
+    color: CycleColor.Black,
     icon: SolidLineSeriesSymbol,
   })
 
-  const chartConfigurations = []
+  const chartConfigurations: EChartsOption[] = []
   const groupSizes = [5, 3, 3]
 
   let startIndex = 0
 
   groupSizes.forEach((size) => {
     const group = legendItems.slice(startIndex, startIndex + size)
-    const chartConfig = {
+    const chartConfig: EChartsOption = {
       legend: {
         data: group.map((item) => ({
           name: item.name,

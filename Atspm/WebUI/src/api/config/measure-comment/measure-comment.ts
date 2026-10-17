@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - measure-comment.ts
@@ -64,7 +65,7 @@ export const getMeasureCommentMeasureTypesFromKey = (
 ) => {
       
       
-      return configRequest<MeasureType[]>(
+      return configRequest<ODataCollection<MeasureType>>(
       {url: `/MeasureComment/${key}/measureTypes`, method: 'GET',
         params, signal
     },
@@ -132,7 +133,7 @@ export const getMeasureCommentMeasureTypesCountFromKey = (
 ) => {
       
       
-      return configRequest<MeasureType[]>(
+      return configRequest<number>(
       {url: `/MeasureComment/${key}/measureTypes/$count`, method: 'GET',
         params, signal
     },
@@ -196,7 +197,7 @@ export const getMeasureComment = (
 ) => {
       
       
-      return configRequest<MeasureComment[]>(
+      return configRequest<ODataCollection<MeasureComment>>(
       {url: `/MeasureComment`, method: 'GET',
         params, signal
     },
@@ -314,7 +315,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<MeasureComment[]>(
+      return configRequest<number>(
       {url: `/MeasureComment/$count`, method: 'GET',
         params, signal
     },

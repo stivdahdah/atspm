@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - measure-type.ts
@@ -70,7 +71,7 @@ export const getMeasureTypeDetectionTypesFromKey = (
 ) => {
       
       
-      return configRequest<DetectionType[]>(
+      return configRequest<ODataCollection<DetectionType>>(
       {url: `/MeasureType/${key}/detectionTypes`, method: 'GET',
         params, signal
     },
@@ -138,7 +139,7 @@ export const getMeasureTypeDetectionTypesCountFromKey = (
 ) => {
       
       
-      return configRequest<DetectionType[]>(
+      return configRequest<number>(
       {url: `/MeasureType/${key}/detectionTypes/$count`, method: 'GET',
         params, signal
     },
@@ -206,7 +207,7 @@ export const getMeasureTypeMeasureCommentsFromKey = (
 ) => {
       
       
-      return configRequest<MeasureComment[]>(
+      return configRequest<ODataCollection<MeasureComment>>(
       {url: `/MeasureType/${key}/measureComments`, method: 'GET',
         params, signal
     },
@@ -274,7 +275,7 @@ export const getMeasureTypeMeasureCommentsCountFromKey = (
 ) => {
       
       
-      return configRequest<MeasureComment[]>(
+      return configRequest<number>(
       {url: `/MeasureType/${key}/measureComments/$count`, method: 'GET',
         params, signal
     },
@@ -342,7 +343,7 @@ export const getMeasureTypeMeasureOptionPresetsFromKey = (
 ) => {
       
       
-      return configRequest<MeasureOptionPreset[]>(
+      return configRequest<ODataCollection<MeasureOptionPreset>>(
       {url: `/MeasureType/${key}/measureOptionPresets`, method: 'GET',
         params, signal
     },
@@ -410,7 +411,7 @@ export const getMeasureTypeMeasureOptionPresetsCountFromKey = (
 ) => {
       
       
-      return configRequest<MeasureOptionPreset[]>(
+      return configRequest<number>(
       {url: `/MeasureType/${key}/measureOptionPresets/$count`, method: 'GET',
         params, signal
     },
@@ -474,7 +475,7 @@ export const getMeasureType = (
 ) => {
       
       
-      return configRequest<MeasureType[]>(
+      return configRequest<ODataCollection<MeasureType>>(
       {url: `/MeasureType`, method: 'GET',
         params, signal
     },
@@ -592,7 +593,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<MeasureType[]>(
+      return configRequest<number>(
       {url: `/MeasureType/$count`, method: 'GET',
         params, signal
     },

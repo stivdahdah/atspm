@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
+import type { SearchLocation } from '@/api/config'
 import { CompressedDataBase } from '@/api/data/data-api.schemas'
 import { ResponseFormat } from '@/features/data/api/getEventLogs'
 import { DataTypeOption } from '@/features/data/components/dataTypeSelector'
@@ -24,7 +25,7 @@ export const formatData = (data: CompressedDataBase[], type: string) => {
     return JSON.stringify(data)
   }
   if (type === 'text/csv' || type === 'application/xml') {
-    const eventLogData = data.flatMap((d) => d.data)
+    const eventLogData = data.flatMap((d) => d.data ?? [])
     if (eventLogData.length === 0) return ''
 
     const headers = Object.keys(eventLogData[0])
@@ -64,11 +65,11 @@ export const formatData = (data: CompressedDataBase[], type: string) => {
       return xml
     }
   }
-  return data
+  return JSON.stringify(data)
 }
 
 export const generateFilename = (
-  location: Location | null,
+  location: Pick<SearchLocation, 'locationIdentifier'> | null,
   selectedDataType: DataTypeOption | null,
   start: Date,
   end: Date,

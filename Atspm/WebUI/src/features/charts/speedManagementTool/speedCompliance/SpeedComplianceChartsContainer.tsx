@@ -7,14 +7,19 @@ import {
   TableContainer,
   TableRow,
 } from '@mui/material'
+import type { SpeedProfileChart } from '../speedProfile'
 
-const SpeedComplianceChartsContainer = ({ chartData }: { chartData: any }) => {
-  let tableData = chartData.tableData
+const SpeedComplianceChartsContainer = ({
+  chartData,
+}: {
+  chartData: SpeedProfileChart
+}) => {
+  const tableData = chartData.tableData
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
         <ApacheEChart
-          id="speed-over-time-chart"
+          id="speed-compliance-chart"
           option={chartData}
           style={{ width: '1100px', height: '500px' }}
           hideInteractionMessage
@@ -97,7 +102,7 @@ const SpeedComplianceChartsContainer = ({ chartData }: { chartData: any }) => {
                   align="right"
                   key={i}
                 >
-                  {speed}
+                  {speed ?? 'No Data'}
                 </TableCell>
               ))}
             </TableRow>
@@ -120,7 +125,7 @@ const SpeedComplianceChartsContainer = ({ chartData }: { chartData: any }) => {
                   align="right"
                   key={i}
                 >
-                  {speed}
+                  {speed ?? 'No Data'}
                 </TableCell>
               ))}
             </TableRow>
@@ -174,7 +179,7 @@ const SpeedComplianceChartsContainer = ({ chartData }: { chartData: any }) => {
                   align="right"
                   key={i}
                 >
-                  {speed}
+                  {speed ?? 'No Data'}
                 </TableCell>
               ))}
             </TableRow>

@@ -1,4 +1,4 @@
-import { Location } from '@/api/config'
+import { SearchLocation as Location } from '@/api/config'
 import { useLatestVersionOfAllLocations } from '@/features/locations/api'
 import LocationInput from '@/features/locations/components/selectLocation/LocationInput'
 import SelectLocationMap from '@/features/locations/components/selectLocationMap'
@@ -6,7 +6,7 @@ import { Button } from '@mui/material'
 import { memo, useCallback, useMemo, useState } from 'react'
 
 interface SelectLocationProps {
-  location: Location | null
+  location: Pick<Location, 'id' | 'locationIdentifier'> | null
   setLocation: (location: Location) => void
   chartsDisabled?: boolean
   route?: number[][]
@@ -37,6 +37,14 @@ export function SelectLocation({
   const [filters, setFilters] = useState<Filters>({})
 
   const allLocations = useMemo(() => data?.value || [], [data])
+
+  const selectedLocation = location
+    ? (allLocations.find(
+        (l) =>
+          l.id === location?.id ||
+          l.locationIdentifier === location?.locationIdentifier
+      ) ?? null)
+    : null
 
   const filteredLocations = useMemo(() => {
     return allLocations.filter(
@@ -69,7 +77,7 @@ export function SelectLocation({
   return (
     <>
       <LocationInput
-        location={location}
+        location={selectedLocation}
         locations={filteredLocations}
         handleChange={handleChange}
         filters={filters}
@@ -77,7 +85,7 @@ export function SelectLocation({
       {addLocationBtn && <Button sx={{ ml: 0 }}>Add Location</Button>}
       <br />
       <SelectLocationMap
-        location={location}
+        location={selectedLocation}
         setLocation={setLocation}
         locations={allLocations}
         filteredLocations={filteredLocations}

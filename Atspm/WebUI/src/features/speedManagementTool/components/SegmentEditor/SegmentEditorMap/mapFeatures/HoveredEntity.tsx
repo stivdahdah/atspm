@@ -1,7 +1,3 @@
-import {
-  Entity,
-  Segment,
-} from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import { DataSource } from '@/features/speedManagementTool/enums'
 import {
   Paper,
@@ -11,6 +7,7 @@ import {
   TableContainer,
   TableRow,
 } from '@mui/material'
+import { Entity, Segment } from '../../segmentEditorStore'
 
 interface HoveredEntityProps {
   hoveredEntity: Segment | Entity | null
@@ -19,10 +16,12 @@ interface HoveredEntityProps {
 const HoveredEntity = ({ hoveredEntity }: HoveredEntityProps) => {
   if (!hoveredEntity) return null
 
-  const isSegment =
-    hoveredEntity && hoveredEntity?.geometry?.type === 'LineString'
+  const isSegment = (value: Segment | Entity): value is Segment =>
+    'properties' in value &&
+    typeof value.properties?.Id === 'string' &&
+    typeof value.properties?.UdotRouteNumber === 'string'
 
-  return isSegment ? (
+  return isSegment(hoveredEntity) ? (
     <Paper
       elevation={3}
       sx={{

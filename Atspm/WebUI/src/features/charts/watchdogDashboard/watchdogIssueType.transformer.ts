@@ -14,34 +14,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { EChartsOption } from 'echarts'
+import { EChartsOption, SunburstSeriesOption } from 'echarts'
 import { Color, lightenColor } from '../utils'
 
 interface RawWatchdogData {
   issueType: number
   products: {
-    manufacturer: string
-    model: string
-    firmware: string
-    counts: number
-  }[]
-  name: string
-}
-
-interface TransformedWatchdogData {
-  name: string
-  itemStyle: { color: string }
-  children: {
     name: string
-    itemStyle: { color: string }
-    value: number
+    model: { name: string; firmware: { name: string; counts: number }[] }[]
   }[]
+  name: string
 }
 
-interface TransformedData {
-  sunburst: EChartsOption
-  bar: EChartsOption
-}
+type TransformedWatchdogData = NonNullable<SunburstSeriesOption['data']>[number]
 
 //barchart
 
@@ -77,7 +62,12 @@ export default function transformWatchdogIssueTypeData(
     tooltip: {
       trigger: 'item',
       formatter: (params) => {
-        const { data, treePathInfo } = params
+        if (Array.isArray(params)) return ''
+        const { data } = params
+        if (!data || typeof data !== 'object' || !('name' in data)) return ''
+        const treePathInfo = 'treePathInfo' in params && Array.isArray(params.treePathInfo)
+          ? params.treePathInfo
+          : []
         const depth = treePathInfo.length - 1
 
         // Determine the layer type based on the depth in the hierarchy
@@ -89,7 +79,7 @@ export default function transformWatchdogIssueTypeData(
         else if (depth === 4) layer = 'Firmware'
 
         // Display layer, name, and value
-        return `${layer}: ${data.name}<br/>Count: ${data.value || 'N/A'}`
+        return `${layer}: ${data.name}<br/>Count: ${'value' in data ? data.value || 'N/A' : 'N/A'}`
       },
     },
     series: [

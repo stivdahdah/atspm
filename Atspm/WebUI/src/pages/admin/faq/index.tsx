@@ -54,6 +54,7 @@ const FaqAdmin = () => {
 
   const HandleEditFaq = async (faqData: Faq) => {
     try {
+      if (faqData.id == null) throw new Error('Missing FAQ ID.')
       await editMutation({
         data: faqData,
         key: faqData.id,
@@ -66,7 +67,8 @@ const FaqAdmin = () => {
     }
   }
 
-  const HandleDeleteFaq = async (id: number) => {
+  const HandleDeleteFaq = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteMutation({ key: id })
       refetchFaqData()
@@ -143,7 +145,7 @@ const FaqAdmin = () => {
   const cells = [
     { key: 'header', label: 'Header' },
     { key: 'body', label: 'Body', component: FaqBodyCell },
-    { key: 'displayOrder', label: 'Display Order', align: 'right' },
+    { key: 'displayOrder', label: 'Display Order', align: 'right' as const },
   ]
 
   return (
@@ -173,7 +175,7 @@ const FaqAdmin = () => {
             id={0}
             name={''}
             objectType="Faqs"
-            deleteLabel={(selectedRow: Faq) => selectedRow.header}
+            deleteLabel={(selectedRow: Faq) => selectedRow.header ?? ''}
             open={false}
             onClose={onModalClose}
             onConfirm={HandleDeleteFaq}

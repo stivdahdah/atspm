@@ -1,4 +1,4 @@
-import { getLocationFromKey, Location } from '@/api/config'
+import { getLocationFromKey } from '@/api/config'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import { StyledPaper } from '@/components/StyledPaper'
 import { AddButton } from '@/components/addButton'
@@ -6,6 +6,7 @@ import { PageNames, useViewPage } from '@/features/identity/pagesCheck'
 import { sortApproachesAndDetectors } from '@/features/locations/components/editApproach/utils/sortApproaches'
 import LocationEditor from '@/features/locations/components/editLocation/EditLocation'
 import NewLocationModal from '@/features/locations/components/editLocation/NewLocationModal'
+import { readConfigLocation } from '@/features/locations/components/editLocation/editorModel'
 import { useLocationStore } from '@/features/locations/components/editLocation/locationStore'
 import SelectLocation from '@/features/locations/components/selectLocation/SelectLocation'
 import { useRouter } from 'next/router'
@@ -17,7 +18,7 @@ export async function getLocation(locationId: number) {
       'areas, devices, approaches($expand=Detectors($expand=DetectionTypes, detectorComments))',
   })
   if (res?.value?.length) {
-    const newest = res.value[0]
+    const newest = readConfigLocation(res.value[0])
     newest.approaches = sortApproachesAndDetectors(newest.approaches)
     return newest
   }
@@ -37,7 +38,7 @@ const LocationsAdmin = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false)
 
   const onSelectLocation = useCallback(
-    (sel: Location | number | null) => {
+    (sel: { id?: string | number } | number | null) => {
       const id =
         sel && typeof sel === 'object'
           ? sel.id

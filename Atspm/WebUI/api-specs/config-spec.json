@@ -55372,7 +55372,12 @@
             "description": "Not Acceptable"
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RouteDto" }
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -55433,7 +55438,12 @@
             "description": "Not Acceptable"
           },
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RouteDto" }
+              }
+            }
           },
           "400": {
             "description": "Bad Request"

@@ -1,8 +1,10 @@
+import {
+  DataSource,
+  isViolationRenderOption,
+} from '@/features/speedManagementTool/enums'
 import useStore from '@/features/speedManagementTool/speedManagementStore'
 import { Box, Slider } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { isViolationRenderOption } from '@/features/speedManagementTool/enums'
-import { DataSource } from '@/features/speedManagementTool/enums'
 
 export const ViolationColors = {
   Low: '#abc746',
@@ -30,7 +32,8 @@ export default function ViolationRangeSlider() {
     setPerc([mediumMin, mediumMax].map((val) => (val / sliderMax) * 100))
   }, [mediumMin, mediumMax, sliderMax])
 
-  const onChange = (e, tValues) => {
+  const onChange = (_: Event, tValues: number | number[]) => {
+    if (!Array.isArray(tValues) || tValues.length !== 2) return
     const [minVal, maxVal] = tValues
     setMediumMin(minVal)
     setMediumMax(maxVal)
@@ -42,7 +45,7 @@ export default function ViolationRangeSlider() {
 
   const isViolation = isViolationRenderOption(routeRenderOption)
   const isNotClearGuide =
-    submittedRouteSpeedRequest.sourceId !== DataSource.ClearGuide
+    submittedRouteSpeedRequest.sourceId?.[0] !== DataSource.ClearGuide
 
   return (
     <Box

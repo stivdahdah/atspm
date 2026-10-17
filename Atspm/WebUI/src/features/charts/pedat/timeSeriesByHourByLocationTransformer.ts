@@ -23,14 +23,14 @@ import {
 import type { EChartsOption, ToolboxComponentOption } from 'echarts'
 
 type RawPoint = {
-  timestamp?: string
-  timeStamp?: string
-  pedestrianCount: number
+  timestamp?: string | null
+  timeStamp?: string | null
+  pedestrianCount?: number | null
 }
 type Loc = {
-  locationIdentifier?: string
-  names?: string
-  rawData?: RawPoint[]
+  locationIdentifier?: string | null
+  names?: string | null
+  rawData?: RawPoint[] | null
 }
 
 function formatDateParts(d: Date) {
@@ -85,7 +85,7 @@ function bucketize(row: Loc, timeUnit: string): Map<string, number> {
 
 export default function timeSeriesByHourByLocationTransformer(
   data: Loc[] = [],
-  timeUnit: string
+  timeUnit = 'Hour'
 ): EChartsOption {
   const xBuckets = gatherBuckets(data, timeUnit)
   const series = data.map((loc) => {
@@ -94,10 +94,10 @@ export default function timeSeriesByHourByLocationTransformer(
     const values = xBuckets.map((b) => m.get(b) ?? 0)
     return {
       name,
-      type: 'bar',
+      type: 'bar' as const,
       stack: 'total',
       barWidth: '100%',
-      emphasis: { focus: 'series' },
+      emphasis: { focus: 'series' as const },
       data: values,
     }
   })
@@ -108,12 +108,12 @@ export default function timeSeriesByHourByLocationTransformer(
   }
 
   const xAxis = {
-    type: 'category',
+    type: 'category' as const,
     name: 'Time',
     data: xBuckets,
   }
 
-  const yAxis = { type: 'value', name: 'Pedestrian Volume' }
+  const yAxis = { type: 'value' as const, name: 'Pedestrian Volume' }
   const grid = createGrid({ top: 80, left: 60, right: 150, bottom: 80 })
   const legend = createLegend({
     bottom: 0,
@@ -123,7 +123,7 @@ export default function timeSeriesByHourByLocationTransformer(
   const dataZoom = createDataZoom()
   const toolbox: ToolboxComponentOption = {
     feature: {
-      saveAsImage: { name: title },
+      saveAsImage: { name: title.text },
       dataView: {
         readOnly: true,
       },

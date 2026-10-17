@@ -198,7 +198,20 @@ const ImpactEditorModal = ({
   )
 
   const onSubmit = useCallback(
-    async (formData: Impact) => {
+    async (values: typeof defaultValues) => {
+      if (!values.start || values.startMile == null || values.endMile == null)
+        return
+      const formData: Impact = {
+        ...values,
+        startMile: values.startMile,
+        endMile: values.endMile,
+        speedLimit: data?.speedLimit ?? 0,
+        start: values.start?.toISOString() ?? '',
+        end: values.end?.toISOString() ?? null,
+        impactTypeIds: values.impactTypeIds.filter(
+          (id): id is string => typeof id === 'string'
+        ),
+      }
       try {
         if (formData.id) {
           await onEdit(formData)
@@ -211,7 +224,7 @@ const ImpactEditorModal = ({
         console.error('Error occurred while saving impact:', error)
       }
     },
-    [onClose, onCreate, onEdit, onSave]
+    [data?.speedLimit, onClose, onCreate, onEdit, onSave]
   )
 
   const handleFormSubmit = useCallback(

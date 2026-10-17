@@ -1,3 +1,4 @@
+import { cartesianBounds, categoryBandSize } from './priorityDetails.rendering'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - priorityDetails.priorityOverlay.ts
@@ -22,6 +23,7 @@ import {
   CustomSeriesRenderItemAPI,
   CustomSeriesRenderItemParams,
   graphic,
+  type CustomSeriesRenderItem,
   type SeriesOption,
 } from 'echarts'
 
@@ -77,7 +79,13 @@ function tspRowIndex(eventParam: number | null | undefined): number | null {
 function flattenTspEvents(rows: PriorityDetailsResult[]): PriorityEvent[] {
   const out: PriorityEvent[] = []
   for (const r of rows ?? []) {
-    const tspEvents = (r.tspEvents ?? []) as PriorityEvent[]
+    const tspEvents = (r.tspEvents ?? []).flatMap((event) =>
+      event.eventCode != null &&
+      event.timestamp &&
+      Number.isFinite(Date.parse(event.timestamp))
+        ? [{ ...event, eventCode: event.eventCode, timestamp: event.timestamp }]
+        : []
+    )
     if (!tspEvents?.length) continue
     out.push(...tspEvents)
   }
@@ -413,7 +421,7 @@ function buildRectSeries(
   color: string,
   yOffsetPx = 0
 ): SeriesOption {
-  const renderItem = (params: any, api: any) =>
+  const renderItem: CustomSeriesRenderItem = (params, api) =>
     renderThinRect(params, api, thicknessPx, yOffsetPx)
 
   return {
@@ -431,16 +439,18 @@ function buildRectSeries(
 }
 
 function renderThinRect(
-  params: any,
-  api: any,
+  params: CustomSeriesRenderItemParams,
+  api: CustomSeriesRenderItemAPI,
   thicknessPx: number,
   yOffsetPx: number
-) {
+): ReturnType<CustomSeriesRenderItem> {
   const categoryIndex = api.value(0)
   const start = api.coord([api.value(1), categoryIndex])
   const end = api.coord([api.value(2), categoryIndex])
 
-  const band = api.size([0, 1])[1]
+  const bounds = cartesianBounds(params.coordSys)
+  const band = categoryBandSize(api)
+  if (!bounds || band == null) return undefined
   const height = Math.max(1, Math.min(thicknessPx, band * 0.9))
 
   const rectShape = graphic.clipRectByRect(
@@ -450,12 +460,7 @@ function renderThinRect(
       width: Math.max(0, end[0] - start[0]),
       height,
     },
-    {
-      x: params.coordSys.x,
-      y: params.coordSys.y,
-      width: params.coordSys.width,
-      height: params.coordSys.height,
-    }
+    bounds
   )
 
   return (

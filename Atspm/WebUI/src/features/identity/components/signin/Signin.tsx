@@ -12,6 +12,7 @@ import Grid from '@mui/material/Grid'
 import Link from '@mui/material/Link'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import { isAxiosError } from 'axios'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 
@@ -72,7 +73,11 @@ export default function Signin() {
   useEffect(() => {
     setEmailError(null)
     if (queryDataError) {
-      setErrors(queryDataError.response.data.message)
+      setErrors(
+        isAxiosError<{ message?: string }>(queryDataError)
+          ? (queryDataError.response?.data?.message ?? 'Unable to sign in.')
+          : 'Unable to sign in.'
+      )
     }
   }, [queryDataError, email])
 

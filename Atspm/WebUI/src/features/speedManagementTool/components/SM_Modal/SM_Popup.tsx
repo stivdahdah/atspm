@@ -63,7 +63,7 @@ const SM_Popup = ({ routes, open, onClose }: SM_PopupProps) => {
   const isMediumOrSmaller = useMediaQuery(theme.breakpoints.down('md'))
 
   const distinctRoutes = useMemo(() => {
-    const map = new Map<number, SpeedManagementRoute>()
+    const map = new Map<string, SpeedManagementRoute>()
     for (const r of routes) {
       if (!map.has(r.properties.route_id)) {
         map.set(r.properties.route_id, r)
@@ -74,7 +74,7 @@ const SM_Popup = ({ routes, open, onClose }: SM_PopupProps) => {
 
   const routeNames = distinctRoutes.map((r) => r.properties.name)
   let mainLabel: string | null = null
-  let allRoutesFormatted: string[] = routeNames
+  const allRoutesFormatted: string[] = routeNames
 
   if (routeNames.length > 1) {
     const firstName = routeNames[0]
@@ -106,17 +106,20 @@ const SM_Popup = ({ routes, open, onClose }: SM_PopupProps) => {
 
   const { properties } = routes[0]
 
-  const formatNumber = (num: number | null, decimals = 1) =>
-    num ? `${num.toFixed(decimals)} mph` : 'N/A'
-  const formatPercent = (num: number | null) =>
-    !num || num === 0 ? 'N/A' : `${num.toFixed(1)}%`
-  const formatViolations = (count: number | null, percent: number | null) => {
-    if (!count || count === 0) return 'N/A'
+  const formatNumber = (num: number | null | undefined, decimals = 1) =>
+    num == null ? 'N/A' : `${num.toFixed(decimals)} mph`
+  const formatPercent = (num: number | null | undefined) =>
+    num == null ? 'N/A' : `${num.toFixed(1)}%`
+  const formatViolations = (
+    count: number | null | undefined,
+    percent: number | null | undefined
+  ) => {
+    if (count == null) return 'N/A'
     return `${count.toLocaleString()} (${formatPercent(percent)} of total)`
   }
   const formatPercentDifference = (
-    val: number | null,
-    limit: number | null
+    val: number | null | undefined,
+    limit: number | null | undefined
   ) => {
     if (!val || !limit) return ''
     const diff = ((val - limit) / limit) * 100
@@ -212,9 +215,11 @@ const SM_Popup = ({ routes, open, onClose }: SM_PopupProps) => {
       <DialogContent sx={{ p: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
           <Chip
-            label={getDataSourceName(properties.sourceId)}
+            label={getDataSourceName(properties.sourceId ?? undefined)}
             sx={{
-              backgroundColor: getDataSourceColor(properties.sourceId),
+              backgroundColor: getDataSourceColor(
+                properties.sourceId ?? undefined
+              ),
               color: 'white',
             }}
             size="small"

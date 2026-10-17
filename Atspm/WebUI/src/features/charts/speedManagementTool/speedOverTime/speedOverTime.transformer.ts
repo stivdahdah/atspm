@@ -28,9 +28,9 @@ import {
   createYAxis,
   transformSeriesData,
 } from '@/features/charts/common/transformers'
+import { createSpeedManagementTitle } from '@/features/charts/speedManagementTool/createSpeedManagementTitle'
 import { ExtendedEChartsOption } from '@/features/charts/types'
 import { Color, SolidLineSeriesSymbol } from '@/features/charts/utils'
-import { createSpeedManagementTitle } from '@/features/charts/speedManagementTool/createSpeedManagementTitle'
 import { SM_ChartType } from '@/features/speedManagementTool/api/getSMCharts'
 import { SeriesOption } from 'echarts'
 
@@ -54,7 +54,7 @@ export const dateFormat: Intl.DateTimeFormatOptions = {
 
 function transformData(
   response: SpeedOverTimeDto,
-  impactResponse: SpeedFromImpactDto
+  impactResponse: SpeedFromImpactDto[] | undefined
 ) {
   const dateRange =
     new Date(response?.startDate).toLocaleDateString('en-US', dateFormat) +
@@ -67,30 +67,29 @@ function transformData(
   })
 
   // todo add date range
-  interface Impact {
-    description: string
-    start: string
-    end: string
-    impactTypes: { name: string }[]
-  }
-
-  function transformImpactData(impactResponse: {
-    impacts: Impact[] | null
-  }): SeriesOption | null {
-    if (!impactResponse.impacts || impactResponse.impacts.length === 0) {
-      return null
-    }
-
+  function transformImpactData(
+    responses: SpeedFromImpactDto[]
+  ): SeriesOption | null {
+    const impacts = responses
+      .flatMap((response) => response.impacts ?? [])
+      .filter(
+        (impact) =>
+          Number.isFinite(Date.parse(impact.start)) &&
+          !!impact.end &&
+          Number.isFinite(Date.parse(impact.end)) &&
+          Date.parse(impact.start) <= Date.parse(impact.end)
+      )
+    if (!impacts.length) return null
     const planData: [string, number, string][] = []
 
-    impactResponse.impacts.forEach((impact) => {
+    impacts.forEach((impact) => {
       const startTime = new Date(impact.start).toISOString()
-      const endTime = new Date(impact.end).toISOString()
+      const endTime = new Date(impact.end ?? impact.start).toISOString()
       const middleTime = new Date(
         (new Date(startTime).getTime() + new Date(endTime).getTime()) / 2
       ).toISOString()
 
-      const impactInfo = `Impacts: {info|${impact.impactTypes
+      const impactInfo = `Impacts: {info|${(impact.impactTypes ?? [])
         .map((type) => type.name)
         .join(', ')}}`
 
@@ -112,7 +111,7 @@ function transformData(
       labelLayout: {
         y: 85,
         moveOverlap: 'shiftX',
-        hideOverlap: impactResponse.impacts.length > 10,
+        hideOverlap: impacts.length > 10,
         draggable: true,
       },
       labelLine: {
@@ -147,9 +146,9 @@ function transformData(
         },
       },
       markArea: {
-        data: impactResponse.impacts.map((impact) => [
+        data: impacts.map((impact) => [
           { xAxis: impact.start },
-          { xAxis: impact.end },
+          { xAxis: impact.end ?? impact.start },
         ]),
         itemStyle: {
           color: Color.Grey,
@@ -228,10 +227,10 @@ function transformData(
   return chartOptions
 }
 
-const transformSeries = (response) => {
+const transformSeries = (response: SpeedOverTimeDto) => {
   const result = {
-    average: [],
-    eightyFifth: [],
+    average: [] as { timestamp: string; value: number }[],
+    eightyFifth: [] as { timestamp: string; value: number }[],
   }
 
   response.data.forEach((entry) => {

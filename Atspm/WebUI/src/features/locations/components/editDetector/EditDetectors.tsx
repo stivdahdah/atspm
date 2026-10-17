@@ -14,7 +14,6 @@ import {
   ConfigApproach,
   useLocationStore,
 } from '@/features/locations/components/editLocation/locationStore'
-import { DetectionType } from '@/features/locations/types'
 import {
   alpha,
   Avatar,
@@ -78,7 +77,18 @@ const EditDetectors = ({
   const { data: dtData } = useGetDetectionType()
   const { data: ltData } = useGetLocationType()
   const detectionTypes = useMemo(
-    () => (dtData?.value ?? []) as DetectionType[],
+    () =>
+      (dtData?.value ?? []).flatMap((d) =>
+        d.abbreviation
+          ? [
+              {
+                ...d,
+                abbreviation: d.abbreviation,
+                description: d.description ?? '',
+              },
+            ]
+          : []
+      ),
     [dtData]
   )
   const locationType = ltData?.value?.find(
@@ -212,8 +222,8 @@ const EditDetectors = ({
                         )
                       }
                     }}
-                    error={errors && errors[det.id]}
-                    warning={warnings && warnings[det.id]}
+                    error={errors?.[det.id]}
+                    warning={warnings?.[det.id]}
                   />
                   <MultiSelectCell<string>
                     approachId={approach.id}

@@ -1,3 +1,6 @@
+import type { ApproachDto } from '@/api/config'
+import { configRequest } from '@/lib/axios'
+import { useMutation } from 'react-query'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - approach.ts
@@ -47,12 +50,9 @@ export function useCreateApproach() {
 }
 
 export function useEditApproach() {
-  const mutation = usePostRequest({
-    url: '/UpsertApproach',
-    axiosInstance: configAxios,
-    headers,
-  })
-  return mutation
+  return useMutation((data: ApproachDto) =>
+    configRequest<ApproachDto>({ url: '/UpsertApproach', method: 'POST', data })
+  )
 }
 
 export function useDeleteApproach() {

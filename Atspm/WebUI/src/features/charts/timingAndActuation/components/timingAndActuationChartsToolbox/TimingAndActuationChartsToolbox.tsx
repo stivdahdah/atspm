@@ -39,7 +39,8 @@ export default function TimingAndActuationChartsToolbox({
       if (
         chartData.data.charts[i].chart.displayProps.phaseType === 'Permissive'
       ) {
-        ref.current.style.maxHeight = isVisible ? '300px' : '0px'
+        if (ref.current)
+          ref.current.style.maxHeight = isVisible ? '300px' : '0px'
       }
     })
   }

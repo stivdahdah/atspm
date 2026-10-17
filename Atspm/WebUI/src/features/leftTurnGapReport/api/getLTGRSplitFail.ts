@@ -44,7 +44,7 @@ type QueryFnType = typeof getLTGRSplitFail
 type LTGR = {
   config?: QueryConfig<QueryFnType>
   body: LTGRDataCheck
-  approachIds: string[]
+  approachIds: number[]
 }
 
 export const useLTGRSplitFail = ({ config, body, approachIds }: LTGR) => {

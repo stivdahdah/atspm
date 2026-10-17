@@ -1,11 +1,14 @@
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'
 
 import WatchdogIgnoredEventsTable from './WatchdogIgnoredEventsTable'
 
-const adminTableMock = jest.fn(() => <div>Admin Table</div>)
+const adminTableMock = jest.fn((props: unknown) => {
+  void props
+  return <div>Admin Table</div>
+})
 
 jest.mock('@/components/AdminTable/AdminTable', () => ({
   __esModule: true,

@@ -12,6 +12,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Marker, Pane, Popup, Tooltip } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import LocationPopup, { type StreetViewAvailability } from './LocationPopup'
+import { isMapLocation, type MapLocation } from './mapLocation'
 import styles from './Markers.module.css'
 
 type MarkersProps = {
@@ -21,11 +22,11 @@ type MarkersProps = {
 }
 
 type MarkerItemProps = {
-  marker: Location
+  marker: MapLocation
   icon: L.DivIcon
   streetViewStatus: StreetViewAvailability | undefined
   onSelect: (loc: Location) => void
-  onPopupOpen: (m: Location) => void
+  onPopupOpen: (m: MapLocation) => void
   streetViewUrl: (lat: number, lng: number) => string
   googleMapsUrl: (lat: number, lng: number) => string
   regionName: string
@@ -118,10 +119,14 @@ const MarkerItem = memo(
 MarkerItem.displayName = 'MarkerItem'
 
 const Markers = ({
-  locations,
+  locations: rawLocations,
   setLocation,
   highlightedLocationId,
 }: MarkersProps) => {
+  const locations = useMemo(
+    () => rawLocations?.filter(isMapLocation) ?? [],
+    [rawLocations]
+  )
   const { data: regionsData } = useGetRegion()
   const { data: jurisdictionData } = useGetJurisdiction()
   const { data: areasData } = useGetArea()
@@ -189,7 +194,7 @@ const Markers = ({
       const iconResults = await Promise.all(
         locations.map(async (location) => ({
           id: location.id,
-          icon: await generatePin(location.locationTypeId),
+          icon: await generatePin(location.locationTypeId ?? 0),
         }))
       )
 
@@ -263,8 +268,8 @@ const Markers = ({
   )
 
   const handlePopupOpen = useCallback(
-    (marker: Location) => {
-      checkStreetView(marker.id, marker.latitude, marker.longitude)
+    (marker: MapLocation) => {
+      checkStreetView(String(marker.id), marker.latitude, marker.longitude)
     },
     [checkStreetView]
   )

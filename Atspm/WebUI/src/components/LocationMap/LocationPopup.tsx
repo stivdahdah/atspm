@@ -1,15 +1,15 @@
-import { SearchLocation as Location } from '@/api/config'
 import CloseIcon from '@mui/icons-material/Close'
 import MapIcon from '@mui/icons-material/Map'
 import StreetviewIcon from '@mui/icons-material/Streetview'
 import { Box, IconButton, Tooltip } from '@mui/material'
 import { memo } from 'react'
 import { useMap } from 'react-leaflet'
+import type { MapLocation } from './mapLocation'
 
 export type StreetViewAvailability = 'unknown' | 'available' | 'unavailable'
 
 type LocationPopupProps = {
-  marker: Location
+  marker: MapLocation
   regionName: string
   jurisdictionName: string
   areaNames: string[]

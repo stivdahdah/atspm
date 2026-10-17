@@ -44,7 +44,7 @@ export const LeftTurnGapAnalysisChartOptions = ({
       value: newBinSize,
     })
   }
-  const visuallyHidden = {
+  const visuallyHidden: React.CSSProperties = {
     position: 'absolute',
     width: '1px',
     height: '1px',
@@ -69,21 +69,21 @@ export const LeftTurnGapAnalysisChartOptions = ({
   }
 
   const handleInputChange =
-    (option: string, setter: (value: string) => void, id: number) =>
+    (option: string, setter: (value: string) => void, id: number | undefined) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { value } = event.target
       setter(value)
       handleChartOptionsUpdate({
         option,
         value,
-        id,
+        id: id ?? -1,
       })
     }
 
-  const formatGapLabel = (gapNumber: number) => `Gap ${gapNumber} Range`
+  const formatGapLabel = (gapNumber: 1 | 2 | 3 | 4) => `Gap ${gapNumber} Range`
 
   const renderGapInput = (
-    gapNumber: number,
+    gapNumber: 1 | 2 | 3 | 4,
     gapStart: string,
     setGapStart: (value: string) => void,
     gapEnd: string | null,
@@ -143,7 +143,9 @@ export const LeftTurnGapAnalysisChartOptions = ({
                   onChange={handleInputChange(
                     `gap${gapNumber}Max`,
                     setGapEnd,
-                    chartDefaults[`gap${gapNumber}Max`]?.id
+                    gapNumber === 4
+                      ? undefined
+                      : chartDefaults[`gap${gapNumber}Max`]?.id
                   )}
                   variant="standard"
                   size="small"

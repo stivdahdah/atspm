@@ -1,4 +1,4 @@
-import { ATErrorState, Location } from '@/pages/reports/pedestrian-activity'
+import type { ATErrorState } from '@/pages/reports/pedestrian-activity'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Box,
@@ -17,11 +17,15 @@ import {
   Typography,
 } from '@mui/material'
 import { useMemo } from 'react'
+import type {
+  PedestrianLocation as Location,
+  PedestrianPhase,
+} from '../reportModel'
 
 interface LocationsDisplayProps {
   locations: Location[]
-  phase?: number | ''
-  setPhase: (phase: number | '') => void
+  phase: PedestrianPhase
+  setPhase: (phase: PedestrianPhase) => void
   onLocationDelete: (location: Location) => void
   onDeleteAllLocations: (locations: Location[]) => void
   onUpdateLocation: (updatedLocation: Location) => void
@@ -62,7 +66,7 @@ const LocationsDisplay = ({
     return Array.from(set).sort((a, b) => a - b)
   }, [locations])
 
-  function handlePhaseChange(newPhase: number | '') {
+  function handlePhaseChange(newPhase: PedestrianPhase) {
     setPhase(newPhase)
   }
 
@@ -87,8 +91,12 @@ const LocationsDisplay = ({
           <Select
             labelId="phase-label"
             label="Phase"
-            value={phase || 'All'}
-            onChange={(e) => handlePhaseChange(e.target.value as number | '')}
+            value={phase ?? 'All'}
+            onChange={(e) =>
+              handlePhaseChange(
+                e.target.value === 'All' ? 'All' : Number(e.target.value)
+              )
+            }
           >
             <MenuItem value={'All'}>All</MenuItem>
             {pedestrianPhases.length === 0 ? (

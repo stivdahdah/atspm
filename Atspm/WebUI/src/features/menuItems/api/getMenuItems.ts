@@ -14,9 +14,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { MenuItems } from '@/features/links/types/linkDto'
+import { MenuItems } from '@/features/menuItems/types/linkDto'
 import { useGetRequest } from '@/hooks/useGetRequest'
 import { configAxios } from '@/lib/axios'
+import type { ApiResponse } from '@/types'
 import { AxiosHeaders } from 'axios'
 import Cookies from 'js-cookie'
 
@@ -28,7 +29,7 @@ const headers: AxiosHeaders = new AxiosHeaders({
 })
 
 export function useGetMenuItems() {
-  return useGetRequest<MenuItems>({
+  return useGetRequest<ApiResponse<MenuItems>>({
     route,
     headers,
     axiosInstance: configAxios,

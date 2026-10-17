@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 import { StyledComponentHeader } from '@/components/HeaderStyling/StyledComponentHeader'
 
 type Approach = {
-  id: string
+  id: number
   description: string
 }
 
 type LeftTurnGapOptionsProps = {
   approaches: Approach[]
-  approachIds: string[]
-  setApproachIds: (approachIds: string[]) => void
+  approachIds: number[]
+  setApproachIds: (approachIds: number[]) => void
 }
 
 export const LeftTurnGapOptions = ({
@@ -23,7 +23,7 @@ export const LeftTurnGapOptions = ({
 
   const handleCheckChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    approachId: string
+    approachId: number
   ) => {
     setChecked({ ...checked, [event.target.name]: event.target.checked })
     if (event.target.checked) {

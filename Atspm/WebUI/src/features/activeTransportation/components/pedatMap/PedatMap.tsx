@@ -1,7 +1,7 @@
 import '@/components/LeafletMap/leafletGlobalSetup'
 
-import { PedatChartsContainerProps } from '@/features/activeTransportation/components/PedatChartsContainer'
 import SmoothWheelZoom from '@/components/LeafletMap/SmoothWheelZoom'
+import { PedatChartsContainerProps } from '@/features/activeTransportation/components/PedatChartsContainer'
 import ControlsPanel from '@/features/activeTransportation/components/pedatMap/PedatMapControls'
 import { getEnv } from '@/utils/getEnv'
 import { Box } from '@mui/material'
@@ -180,7 +180,7 @@ function Legend({
 }) {
   const map = useMap()
   useEffect(() => {
-    const control = L.control({ position: 'topright' })
+    const control = new L.Control({ position: 'topright' })
     control.onAdd = () => {
       const div = L.DomUtil.create('div', 'pedat-legend')
       div.style.background = 'rgba(255,255,255,0.9)'
@@ -207,7 +207,9 @@ function Legend({
       return div
     }
     control.addTo(map)
-    return () => control.remove()
+    return () => {
+      control.remove()
+    }
   }, [map, title, vMin, vMax])
   return null
 }

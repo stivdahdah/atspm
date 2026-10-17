@@ -78,14 +78,6 @@ export interface ApproachDto {
   /** @nullable */
   modifiedBy?: string | null;
   /** @nullable */
-  created?: string | null;
-  /** @nullable */
-  modified?: string | null;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  modifiedBy?: string | null;
-  /** @nullable */
   description?: string | null;
   /** @nullable */
   mph?: number | null;
@@ -99,8 +91,6 @@ export interface ApproachDto {
   isPedestrianPhaseOverlap?: boolean;
   /** @nullable */
   pedestrianDetectors?: string | null;
-  /** @nullable */
-  transitSignalPriorityNumber?: number | null;
   /** @nullable */
   transitSignalPriorityNumber?: number | null;
   locationId?: number;
@@ -293,14 +283,6 @@ export interface DetectorComment {
 export interface DetectorDto {
   /** @nullable */
   id?: number | null;
-  /** @nullable */
-  created?: string | null;
-  /** @nullable */
-  modified?: string | null;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  modifiedBy?: string | null;
   /** @nullable */
   created?: string | null;
   /** @nullable */
@@ -1327,8 +1309,6 @@ export interface RouteApproachDto {
   locationId?: number;
   directionTypeId?: DirectionTypes;
   directionType?: DirectionTypeDto;
-  directionTypeId?: DirectionTypes;
-  directionType?: DirectionTypeDto;
   /** @nullable */
   detectors?: RouteDetectorDto[] | null;
 }
@@ -1391,14 +1371,6 @@ export interface RouteDistanceDto {
 export interface RouteDto {
   /** @nullable */
   id?: number | null;
-  /** @nullable */
-  created?: string | null;
-  /** @nullable */
-  modified?: string | null;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  modifiedBy?: string | null;
   /** @nullable */
   created?: string | null;
   /** @nullable */
@@ -1595,9 +1567,7 @@ export const TransportProtocols = {
   NUMBER_2: 2,
   NUMBER_3: 3,
   NUMBER_4: 4,
-  NUMBER_5: 5,
-  NUMBER_5: 5,
-} as const;
+  NUMBER_5: 5,} as const;
 
 export interface TurningMovementCountsOptions {
   /** @nullable */
@@ -1605,7 +1575,6 @@ export interface TurningMovementCountsOptions {
   start?: string;
   end?: string;
   binSize?: number;
-  combineThruRight?: boolean;
   combineThruRight?: boolean;
   readonly metricTypeId?: number;
 }
@@ -1721,8 +1690,6 @@ export interface WatchDogIgnoreEvent {
   phase?: number | null;
   /** @nullable */
   key?: string | null;
-  /** @nullable */
-  key?: string | null;
   id?: number;
   /** @nullable */
   created?: string | null;
@@ -1750,10 +1717,7 @@ export const WatchDogIssueTypes = {
   NUMBER_8: 8,
   NUMBER_9: 9,
   NUMBER_10: 10,
-  NUMBER_11: 11,
-  NUMBER_10: 10,
-  NUMBER_11: 11,
-} as const;
+  NUMBER_11: 11,} as const;
 
 export interface YellowRedActivationsOptions {
   /** @nullable */
@@ -3267,26 +3231,6 @@ skip?: number;
 count?: boolean;
 };
 
-export type GetVersionCurrentVersionParams = {
-select?: string;
-expand?: string;
-};
-
-export type GetVersionLatestVersionFromPreReleaseParams = {
-select?: string;
-expand?: string;
-};
-
-export type GetVersionVersionHistoryFromPreReleaseParams = {
-select?: string;
-expand?: string;
-filter?: string;
-orderby?: string;
-top?: number;
-skip?: number;
-count?: boolean;
-};
-
 export type GetWatchDogIgnoreEventParams = {
 select?: string;
 expand?: string;
@@ -3327,3 +3271,11 @@ select?: string;
 expand?: string;
 };
 
+
+/** OData collection payload; transport returns the envelope without unwrapping value. */
+export interface ODataCollection<T> {
+  value: T[];
+  "@odata.context"?: string;
+  "@odata.count"?: number;
+  "@odata.nextLink"?: string;
+}

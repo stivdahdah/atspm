@@ -27,6 +27,7 @@ export function toIconPoints(
   const out: Array<[string, number]> = []
 
   for (const c of cycles) {
+    if (!c.checkIn || !c.checkOut) continue
     const inMs = Date.parse(c.checkIn)
     const outMs = Date.parse(c.checkOut)
     if (!Number.isFinite(inMs) || !Number.isFinite(outMs)) continue

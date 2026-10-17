@@ -53,13 +53,13 @@ export default function transformHourlyPedVolByDayOfWeekTransformer(
   }
 
   const xAxis = {
-    type: 'category',
+    type: 'category' as const,
     name: 'Day',
     data: sortedData.map((d) => d.day),
   }
 
   const yAxis = {
-    type: 'value',
+    type: 'value' as const,
     name: 'Volume',
   }
 
@@ -81,7 +81,7 @@ export default function transformHourlyPedVolByDayOfWeekTransformer(
 
   const series = [
     {
-      type: 'bar',
+      type: 'bar' as const,
       name: 'Average Hourly Volume',
       data: sortedData.map((d) => d.averageVolume),
     },

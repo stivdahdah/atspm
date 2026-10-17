@@ -35,6 +35,7 @@ function buildLocation(
   overrides: Partial<RawTimeSpaceAverageData> = {}
 ): RawTimeSpaceAverageData {
   return {
+    order: 1,
     start: '2026-03-20T00:00:00Z',
     end: '2026-03-20T01:00:00Z',
     locationIdentifier: '6192',
@@ -90,7 +91,7 @@ function findTextStyle(
   fontSize?: unknown
   fontWeight?: unknown
   rich?: unknown
-  textAlign?: unknown
+  align?: unknown
   x?: unknown
 } | null {
   if (!node || typeof node !== 'object') {
@@ -105,7 +106,7 @@ function findTextStyle(
       fontSize?: unknown
       fontWeight?: unknown
       rich?: unknown
-      textAlign?: unknown
+      align?: unknown
       x?: unknown
     }
   }
@@ -116,7 +117,7 @@ function findTextStyle(
       fontSize: candidate.style.fontSize,
       fontWeight: candidate.style.fontWeight,
       rich: candidate.style.rich,
-      textAlign: candidate.style.textAlign,
+      align: candidate.style.align,
       x: candidate.style.x,
     }
   }
@@ -143,7 +144,7 @@ function findTextStyles(
   fontSize?: unknown
   fontWeight?: unknown
   rich?: unknown
-  textAlign?: unknown
+  align?: unknown
   x?: unknown
 }> {
   if (!node || typeof node !== 'object') {
@@ -158,7 +159,7 @@ function findTextStyles(
       fontSize?: unknown
       fontWeight?: unknown
       rich?: unknown
-      textAlign?: unknown
+      align?: unknown
       x?: unknown
     }
   }
@@ -171,7 +172,7 @@ function findTextStyles(
             fontSize: candidate.style.fontSize,
             fontWeight: candidate.style.fontWeight,
             rich: candidate.style.rich,
-            textAlign: candidate.style.textAlign,
+            align: candidate.style.align,
             x: candidate.style.x,
           },
         ]
@@ -418,17 +419,17 @@ describe('timeSpaceTransformerBase offset formatting', () => {
   })
 
   it('returns sign-aware visuals for the location card', () => {
-    expect(getOffsetDeltaVisuals(4, false)).toMatchObject({
+    expect(getOffsetDeltaVisuals(4)).toMatchObject({
       direction: 'positive',
       valueColor: '#357A60',
     })
 
-    expect(getOffsetDeltaVisuals(-2, false)).toMatchObject({
+    expect(getOffsetDeltaVisuals(-2)).toMatchObject({
       direction: 'negative',
       valueColor: '#B45757',
     })
 
-    expect(getOffsetDeltaVisuals(0, false)).toMatchObject({
+    expect(getOffsetDeltaVisuals(0)).toMatchObject({
       direction: 'neutral',
       valueColor: '#0F172A',
     })
@@ -537,10 +538,10 @@ describe('timeSpaceTransformerBase offset formatting', () => {
     )
 
     expect(unmodifiedOffsetStyle).toMatchObject({
-      textAlign: 'right',
+      align: 'right',
     })
     expect(adjustedOffsetStyle).toMatchObject({
-      textAlign: 'right',
+      align: 'right',
     })
     expect(unmodifiedOffsetStyle?.x).toBe(adjustedOffsetStyle?.x)
   })

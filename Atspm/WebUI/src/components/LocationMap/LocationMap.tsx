@@ -1,9 +1,9 @@
 import '@/components/LeafletMap/leafletGlobalSetup'
 
-import Markers from '@/components/LocationMap/Markers'
+import { SearchLocation as Location } from '@/api/config'
 import SmoothWheelZoom from '@/components/LeafletMap/SmoothWheelZoom'
+import Markers from '@/components/LocationMap/Markers'
 import MapFilters from '@/components/MapFilters'
-import { Location } from '@/features/locations/types'
 import { useEnv } from '@/hooks/useEnv'
 import ClearIcon from '@mui/icons-material/Clear'
 import {
@@ -18,8 +18,9 @@ import {
 import 'esri-leaflet-renderers'
 import L, { Map as LeafletMap } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { isMapLocation } from './mapLocation'
 
 interface Filters {
   areaId?: number | null
@@ -84,8 +85,8 @@ const DismissPopupOnInteraction = () => {
 const LocationMap = ({
   location,
   setLocation,
-  locations,
-  filteredLocations,
+  locations: rawLocations,
+  filteredLocations: rawFilteredLocations,
   route,
   center,
   zoom,
@@ -94,6 +95,14 @@ const LocationMap = ({
   updateFilters,
   highlightedLocationId,
 }: LocationMapProps) => {
+  const locations = useMemo(
+    () => rawLocations.filter(isMapLocation),
+    [rawLocations]
+  )
+  const filteredLocations = useMemo(
+    () => rawFilteredLocations.filter(isMapLocation),
+    [rawFilteredLocations]
+  )
   const theme = useTheme()
   const env = useEnv()
   const [mapRef, setMapRef] = useState<LeafletMap | null>(null)
@@ -286,7 +295,10 @@ const LocationMap = ({
           crossOrigin
         />
       ) : (
-        <TileLayer attribution={mapInfo.attribution} url={mapInfo.tile_layer} />
+        <TileLayer
+          attribution={mapInfo.attribution}
+          url={mapInfo.tile_layer ?? ''}
+        />
       )}
       <Markers
         locations={filteredLocations}

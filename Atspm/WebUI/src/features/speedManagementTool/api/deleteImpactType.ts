@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { QueryConfig } from '@/lib/react-query'
+import { MutationConfig } from '@/lib/react-query'
 import { useNotificationStore } from '@/stores/notifications'
 import { getEnv } from '@/utils/getEnv'
 import axios from 'axios'
@@ -33,7 +33,7 @@ const deleteImpactType = async (id: string): Promise<void> => {
 }
 
 export const useDeleteImpactType = (
-  config?: QueryConfig<typeof deleteImpactType>
+  config?: MutationConfig<typeof deleteImpactType>
 ) => {
   const { addNotification } = useNotificationStore() // Get notification method
 

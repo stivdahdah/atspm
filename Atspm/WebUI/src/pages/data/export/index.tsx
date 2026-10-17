@@ -1,4 +1,4 @@
-import { Location } from '@/api/config'
+import { SearchLocation as Location } from '@/api/config'
 import {
   getAggregationDataFromLocationIdentifierAndDataType,
   getEventLogDataFromLocationIdentifierAndDataType,
@@ -6,6 +6,10 @@ import {
 import OptionsWrapper from '@/components/OptionsWrapper'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import SelectDateTime from '@/components/selectTimeSpan'
+import {
+  isAggregationDataType,
+  isRawDataType,
+} from '@/features/data/api/dataTypeNames'
 import { ResponseFormat } from '@/features/data/api/getEventLogs'
 import {
   DataTypeOption,
@@ -44,6 +48,7 @@ const DEFAULT_DATA_TYPE: DataTypeOption = {
   name: 'IndianaEvent',
   displayName: 'Indiana Event',
   type: 'raw',
+  fields: [],
 }
 
 const EXPORT_FORMATS: ResponseFormat[] = ['csv', 'json']
@@ -122,12 +127,30 @@ const ExportData = () => {
       const locationId = location?.locationIdentifier || ''
       const range = buildRangeParams(startDateTime, endDateTime)
 
-      const fetchFn =
-        selectedDataType.type === 'raw'
-          ? getEventLogDataFromLocationIdentifierAndDataType
-          : getAggregationDataFromLocationIdentifierAndDataType
-
-      const data = await fetchFn(locationId, selectedDataType.name, range)
+      let data
+      if (
+        selectedDataType.type === 'raw' &&
+        isRawDataType(selectedDataType.name)
+      ) {
+        data = await getEventLogDataFromLocationIdentifierAndDataType(
+          locationId,
+          selectedDataType.name,
+          range
+        )
+      } else if (
+        selectedDataType.type === 'aggregation' &&
+        isAggregationDataType(selectedDataType.name)
+      ) {
+        data = await getAggregationDataFromLocationIdentifierAndDataType(
+          locationId,
+          selectedDataType.name,
+          range
+        )
+      } else {
+        throw new Error(
+          'Unsupported data type. Refresh the page to reload available types.'
+        )
+      }
 
       const filename = generateFilename(
         location,
@@ -181,6 +204,8 @@ const ExportData = () => {
                 dateFormat="MMM d, yyyy"
                 views={['year', 'month', 'day']}
                 startDateTime={startDateTime}
+                endDateTime={null}
+                changeEndDate={() => undefined}
                 startDateOnly
                 changeStartDate={handleStartDateTimeChange}
                 noCalendar={isMobileView}
@@ -201,7 +226,9 @@ const ExportData = () => {
             >
               <DataTypeSelector
                 selectedDataType={selectedDataType}
-                setSelectedDataType={setSelectedDataType}
+                setSelectedDataType={(value) => {
+                  if (value) setSelectedDataType(value)
+                }}
               />
 
               <OptionsWrapper header="Export Options" noPadding>

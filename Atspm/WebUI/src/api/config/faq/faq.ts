@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - faq.ts
@@ -57,7 +58,7 @@ export const getFaq = (
 ) => {
       
       
-      return configRequest<Faq[]>(
+      return configRequest<ODataCollection<Faq>>(
       {url: `/Faq`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Faq[]>(
+      return configRequest<number>(
       {url: `/Faq/$count`, method: 'GET',
         params, signal
     },

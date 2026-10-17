@@ -110,8 +110,7 @@ const NewLocationModal = ({
   const locationIdentifier = watch('locationIdentifier')
 
   const locationIsUnique = !allLocations.find(
-    (loc: { locationIdentifier: string }) =>
-      loc.locationIdentifier === locationIdentifier
+    (loc) => loc.locationIdentifier === locationIdentifier
   )
   const locationIsLessThan10Characters = (locationIdentifier || '').length <= 10
 

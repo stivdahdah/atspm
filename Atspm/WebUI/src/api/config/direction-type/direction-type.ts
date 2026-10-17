@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - direction-type.ts
@@ -69,7 +70,7 @@ export const getDirectionTypeApproachesFromKey = (
 ) => {
       
       
-      return configRequest<Approach[]>(
+      return configRequest<ODataCollection<Approach>>(
       {url: `/DirectionType/${key}/approaches`, method: 'GET',
         params, signal
     },
@@ -137,7 +138,7 @@ export const getDirectionTypeApproachesCountFromKey = (
 ) => {
       
       
-      return configRequest<Approach[]>(
+      return configRequest<number>(
       {url: `/DirectionType/${key}/approaches/$count`, method: 'GET',
         params, signal
     },
@@ -205,7 +206,7 @@ export const getDirectionTypePrimaryDirectionsFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<ODataCollection<RouteLocation>>(
       {url: `/DirectionType/${key}/primaryDirections`, method: 'GET',
         params, signal
     },
@@ -273,7 +274,7 @@ export const getDirectionTypePrimaryDirectionsCountFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<number>(
       {url: `/DirectionType/${key}/primaryDirections/$count`, method: 'GET',
         params, signal
     },
@@ -341,7 +342,7 @@ export const getDirectionTypeOpposingDirectionsFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<ODataCollection<RouteLocation>>(
       {url: `/DirectionType/${key}/opposingDirections`, method: 'GET',
         params, signal
     },
@@ -409,7 +410,7 @@ export const getDirectionTypeOpposingDirectionsCountFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<number>(
       {url: `/DirectionType/${key}/opposingDirections/$count`, method: 'GET',
         params, signal
     },
@@ -473,7 +474,7 @@ export const getDirectionType = (
 ) => {
       
       
-      return configRequest<DirectionType[]>(
+      return configRequest<ODataCollection<DirectionType>>(
       {url: `/DirectionType`, method: 'GET',
         params, signal
     },
@@ -591,7 +592,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<DirectionType[]>(
+      return configRequest<number>(
       {url: `/DirectionType/$count`, method: 'GET',
         params, signal
     },

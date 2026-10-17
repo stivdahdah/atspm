@@ -15,7 +15,7 @@
 // limitations under the License.
 // #endregion
 import { Impact } from '@/features/speedManagementTool/types/impact'
-import { QueryConfig } from '@/lib/react-query'
+import { MutationConfig } from '@/lib/react-query'
 import { useNotificationStore } from '@/stores/notifications'
 import { getEnv } from '@/utils/getEnv'
 import axios from 'axios'
@@ -43,17 +43,16 @@ const editImpact = async (
   return data
 }
 
-export const useEditImpact = (config?: QueryConfig<typeof editImpact>) => {
+const editImpactMutation = ({ impactId, impactData }: {
+  impactId: string
+  impactData: Impact
+}) => editImpact(impactId, impactData)
+
+export const useEditImpact = (config?: MutationConfig<typeof editImpactMutation>) => {
   const { addNotification } = useNotificationStore()
 
   return useMutation({
-    mutationFn: ({
-      impactId,
-      impactData,
-    }: {
-      impactId: string
-      impactData: Impact
-    }) => editImpact(impactId, impactData),
+    mutationFn: editImpactMutation,
 
     onError: (error: any) => {
       addNotification({

@@ -114,7 +114,7 @@ export default function Topbar() {
             item.parentId === null && item.link ? (
               <Button
                 key={item.name}
-                onClick={() => handleNavigation(item.link)}
+                onClick={() => item.link && handleNavigation(item.link)}
                 sx={{
                   mx: '2px',
                   textTransform: 'none',
