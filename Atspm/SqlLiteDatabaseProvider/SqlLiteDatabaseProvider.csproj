@@ -16,6 +16,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+		<!-- Update the native SQLite library without changing the EF Core provider. -->
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.14" />
 	</ItemGroup>
 
 	<ItemGroup>

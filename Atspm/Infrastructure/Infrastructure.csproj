@@ -51,6 +51,8 @@
 		<PackageReference Include="FluentFTP" Version="52.1.0" />
 		<PackageReference Include="Lextm.SharpSnmpLib" Version="12.5.5" />
 		<PackageReference Include="MailKit" Version="4.16.0" />
+		<!-- Keep MailKit's transitive PKCS dependency on the patched .NET 8 version. -->
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.22" />
