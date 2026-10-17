@@ -68,6 +68,7 @@ dkms.conf
 # Local configuration files
 .env
 **/.env
+**/.recovery-compose.json
 nginx/certs/
 **/Properties/launchSettings.json
 appsettings.Development.json
