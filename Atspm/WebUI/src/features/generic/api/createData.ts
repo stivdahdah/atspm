@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import areaDto from '@/features/areas/types/areaDto'
+import type { Area as areaDto } from '@/features/areas/types'
 import { configAxios } from '@/lib/axios'
 import { MutationConfig, queryClient } from '@/lib/react-query'
 import { useNotificationStore } from '@/stores/notifications'

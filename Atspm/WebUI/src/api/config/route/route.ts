@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - route.ts
@@ -67,7 +68,7 @@ export const getRouteRouteLocationsFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<ODataCollection<RouteLocation>>(
       {url: `/Route/${key}/routeLocations`, method: 'GET',
         params, signal
     },
@@ -135,7 +136,7 @@ export const getRouteRouteLocationsCountFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<number>(
       {url: `/Route/${key}/routeLocations/$count`, method: 'GET',
         params, signal
     },
@@ -327,7 +328,7 @@ export const getRoute = (
 ) => {
       
       
-      return configRequest<Route[]>(
+      return configRequest<ODataCollection<Route>>(
       {url: `/Route`, method: 'GET',
         params, signal
     },
@@ -445,7 +446,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Route[]>(
+      return configRequest<number>(
       {url: `/Route/$count`, method: 'GET',
         params, signal
     },

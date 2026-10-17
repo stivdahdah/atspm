@@ -1,4 +1,5 @@
-import { ATErrorState, Location } from '@/pages/reports/pedestrian-activity'
+import type { ATErrorState } from '@/pages/reports/pedestrian-activity'
+import type { Location } from '@/api/config'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
   Box,

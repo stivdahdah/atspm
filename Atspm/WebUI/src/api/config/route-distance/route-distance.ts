@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - route-distance.ts
@@ -67,7 +68,7 @@ export const getRouteDistancePreviousLocationsFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<ODataCollection<RouteLocation>>(
       {url: `/RouteDistance/${key}/previousLocations`, method: 'GET',
         params, signal
     },
@@ -135,7 +136,7 @@ export const getRouteDistancePreviousLocationsCountFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<number>(
       {url: `/RouteDistance/${key}/previousLocations/$count`, method: 'GET',
         params, signal
     },
@@ -203,7 +204,7 @@ export const getRouteDistanceNextLocationsFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<ODataCollection<RouteLocation>>(
       {url: `/RouteDistance/${key}/nextLocations`, method: 'GET',
         params, signal
     },
@@ -271,7 +272,7 @@ export const getRouteDistanceNextLocationsCountFromKey = (
 ) => {
       
       
-      return configRequest<RouteLocation[]>(
+      return configRequest<number>(
       {url: `/RouteDistance/${key}/nextLocations/$count`, method: 'GET',
         params, signal
     },
@@ -407,7 +408,7 @@ export const getRouteDistance = (
 ) => {
       
       
-      return configRequest<RouteDistance[]>(
+      return configRequest<ODataCollection<RouteDistance>>(
       {url: `/RouteDistance`, method: 'GET',
         params, signal
     },
@@ -525,7 +526,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<RouteDistance[]>(
+      return configRequest<number>(
       {url: `/RouteDistance/$count`, method: 'GET',
         params, signal
     },

@@ -15,7 +15,7 @@
 // limitations under the License.
 // #endregion
 import { BaseChartData, ChartType, DataPoint } from '../common/types'
-import { TimeSpaceDetectorEvent } from '../timeSpaceDiagram/types'
+import { TimeSpaceDetectorEvent } from '../timeSpaceDiagram/shared/types'
 import { DetectorEvent } from '../timingAndActuation/types'
 
 export interface RampMeteringChartOptionsDefaults {

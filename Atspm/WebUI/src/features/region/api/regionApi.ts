@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { regionDto } from '@/features/region/types/regionDto'
+import type { Region as regionDto } from '@/api/config'
 import { useDeleteRequest } from '@/hooks/useDeleteRequest'
 import { useGetRequest } from '@/hooks/useGetRequest'
 import { usePatchRequest } from '@/hooks/usePatchRequest'

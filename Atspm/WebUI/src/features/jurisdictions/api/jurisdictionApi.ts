@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import jurisdictionDto from '@/features/jurisdictions/types/jurisdictionDto'
+import type { Jurisdiction as jurisdictionDto } from '@/features/jurisdictions/types'
 import { useDeleteRequest } from '@/hooks/useDeleteRequest'
 import { useGetRequest } from '@/hooks/useGetRequest'
 import { usePatchRequest } from '@/hooks/usePatchRequest'

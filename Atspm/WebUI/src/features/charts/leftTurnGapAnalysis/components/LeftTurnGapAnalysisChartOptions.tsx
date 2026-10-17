@@ -44,7 +44,7 @@ export const LeftTurnGapAnalysisChartOptions = ({
       value: newBinSize,
     })
   }
-  const visuallyHidden = {
+  const visuallyHidden: React.CSSProperties = {
     position: 'absolute',
     width: '1px',
     height: '1px',

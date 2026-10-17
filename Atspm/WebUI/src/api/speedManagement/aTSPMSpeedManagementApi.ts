@@ -91,7 +91,7 @@ import type {
   PostApiV1EntityFileAtspmRefreshParams,
   PostApiV1EntityFileGeojsonFetchFileParams,
   PostApiV1EntityFileShapefileFetchFileParams,
-  PostApiV1EntityGetEntitiesWithinRangeParams,
+  PostApiV1EntityGetEntitiesWithingRangeParams,
   PostApiV1EntityVersionEntitiesAreaParams,
   PostApiV1EntityVersionEntitiesTableIdAreaParams,
   PostApiV1EntityVersionEntitiesTableIdParams,
@@ -706,7 +706,7 @@ export const usePostApiV1EffectivenessOfStrategiesGetReportData = <
 
 export const postApiV1EntityGetEntitiesWithinRange = (
   entityRequestOptions: EntityRequestOptions,
-  params?: PostApiV1EntityGetEntitiesWithinRangeParams
+  params?: PostApiV1EntityGetEntitiesWithingRangeParams
 ) => {
   return speedRequest<void>({
     url: `/api/v1/Entity/GetEntitiesWithinRange`,
@@ -726,7 +726,7 @@ export const getPostApiV1EntityGetEntitiesWithinRangeMutationOptions = <
     TError,
     {
       data: EntityRequestOptions
-      params?: PostApiV1EntityGetEntitiesWithinRangeParams
+      params?: PostApiV1EntityGetEntitiesWithingRangeParams
     },
     TContext
   >
@@ -735,7 +735,7 @@ export const getPostApiV1EntityGetEntitiesWithinRangeMutationOptions = <
   TError,
   {
     data: EntityRequestOptions
-    params?: PostApiV1EntityGetEntitiesWithinRangeParams
+    params?: PostApiV1EntityGetEntitiesWithingRangeParams
   },
   TContext
 > => {
@@ -745,7 +745,7 @@ export const getPostApiV1EntityGetEntitiesWithinRangeMutationOptions = <
     Awaited<ReturnType<typeof postApiV1EntityGetEntitiesWithinRange>>,
     {
       data: EntityRequestOptions
-      params?: PostApiV1EntityGetEntitiesWithinRangeParams
+      params?: PostApiV1EntityGetEntitiesWithingRangeParams
     }
   > = (props) => {
     const { data, params } = props ?? {}
@@ -772,7 +772,7 @@ export const usePostApiV1EntityGetEntitiesWithinRange = <
     TError,
     {
       data: EntityRequestOptions
-      params?: PostApiV1EntityGetEntitiesWithinRangeParams
+      params?: PostApiV1EntityGetEntitiesWithingRangeParams
     },
     TContext
   >
@@ -781,7 +781,7 @@ export const usePostApiV1EntityGetEntitiesWithinRange = <
   TError,
   {
     data: EntityRequestOptions
-    params?: PostApiV1EntityGetEntitiesWithinRangeParams
+    params?: PostApiV1EntityGetEntitiesWithingRangeParams
   },
   TContext
 > => {

@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { WatchdogIgnoreEvents } from '@/features/watchdogignoreevents/types'
+import type { WatchDogIgnoreEvent as WatchdogIgnoreEvents } from '@/api/config'
 import { useDeleteRequest } from '@/hooks/useDeleteRequest'
 import { useGetRequest } from '@/hooks/useGetRequest'
 import { usePatchRequest } from '@/hooks/usePatchRequest'

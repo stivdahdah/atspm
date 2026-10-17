@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - usage-entry.ts
@@ -57,7 +58,7 @@ export const getUsageEntry = (
 ) => {
       
       
-      return configRequest<UsageEntry[]>(
+      return configRequest<ODataCollection<UsageEntry>>(
       {url: `/UsageEntry`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<UsageEntry[]>(
+      return configRequest<number>(
       {url: `/UsageEntry/$count`, method: 'GET',
         params, signal
     },

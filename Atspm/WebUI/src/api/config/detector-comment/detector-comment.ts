@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - detector-comment.ts
@@ -57,7 +58,7 @@ export const getDetectorComment = (
 ) => {
       
       
-      return configRequest<DetectorComment[]>(
+      return configRequest<ODataCollection<DetectorComment>>(
       {url: `/DetectorComment`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<DetectorComment[]>(
+      return configRequest<number>(
       {url: `/DetectorComment/$count`, method: 'GET',
         params, signal
     },

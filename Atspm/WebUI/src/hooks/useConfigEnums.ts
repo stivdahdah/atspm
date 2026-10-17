@@ -52,8 +52,8 @@ const parseEnumsFromXml = (
     const name = enumType.getAttribute('Name') as string
     const members = Array.from(enumType.getElementsByTagName('Member')).map(
       (member) => ({
-        name: member.getAttribute('Name'),
-        value: parseInt(member.getAttribute('Value')),
+        name: member.getAttribute('Name') ?? '',
+        value: parseInt(member.getAttribute('Value') ?? '', 10),
       })
     )
 
@@ -64,9 +64,9 @@ const parseEnumsFromXml = (
 }
 
 export function useConfigEnums(enumName: ConfigEnum) {
-  const { data, ...rest } = useGetRequest<EnumType>({
+  const { data, ...rest } = useGetRequest<string, EnumType | undefined>({
     route: '/$metadata',
-    configAxios,
+    axiosInstance: configAxios,
     config: {
       select: (xmlData: string) => parseEnumsFromXml(xmlData, enumName),
     },

@@ -56,7 +56,7 @@ export function usePutRequest<T, D>({
 }: UseDataOptions) {
   const { addNotification } = useNotificationStore()
 
-  return useMutation<AxiosResponse<T>, unknown, MutationParams<D>, unknown>({
+  return useMutation<AxiosResponse<T>, unknown, MutationParams<D>, { previousData: T | undefined }>({
     onMutate: async ({ data }) => {
       await queryClient.cancelQueries([url])
 

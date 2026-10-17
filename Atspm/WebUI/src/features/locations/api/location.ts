@@ -83,7 +83,7 @@ export const useAllVersionsOfLocation = (
 }
 
 export const useLatestVersionOfAllLocations = (
-  config?: UseQueryOptions<Location, unknown, Location, QueryKey>
+  config?: UseQueryOptions<ApiResponse<Location>, unknown, ApiResponse<Location>, QueryKey>
 ) => {
   return useGetRequest<ApiResponse<Location>>({
     route: `${route}/GetLocationsForSearch?count=false`,

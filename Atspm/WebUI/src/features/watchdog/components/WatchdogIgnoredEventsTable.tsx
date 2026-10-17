@@ -232,7 +232,7 @@ export default function WatchdogIgnoredEvents() {
         <IgnoreEventEditorModal
           open={true}
           onSave={handleEditRow}
-          onClose={() => {}}
+          onClose={() => undefined}
         />
       }
       deleteModal={
@@ -241,7 +241,7 @@ export default function WatchdogIgnoredEvents() {
           name={''}
           objectType="Ignored Event"
           open={false}
-          onClose={() => {}}
+          onClose={() => undefined}
           onConfirm={handleDeleteById}
           associatedObjects={[]}
           associatedObjectsLabel=""

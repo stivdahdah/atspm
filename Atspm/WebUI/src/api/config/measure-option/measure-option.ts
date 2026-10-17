@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - measure-option.ts
@@ -57,7 +58,7 @@ export const getMeasureOption = (
 ) => {
       
       
-      return configRequest<MeasureOption[]>(
+      return configRequest<ODataCollection<MeasureOption>>(
       {url: `/MeasureOption`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<MeasureOption[]>(
+      return configRequest<number>(
       {url: `/MeasureOption/$count`, method: 'GET',
         params, signal
     },

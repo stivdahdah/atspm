@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - product.ts
@@ -57,7 +58,7 @@ export const getProduct = (
 ) => {
       
       
-      return configRequest<Product[]>(
+      return configRequest<ODataCollection<Product>>(
       {url: `/Product`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Product[]>(
+      return configRequest<number>(
       {url: `/Product/$count`, method: 'GET',
         params, signal
     },

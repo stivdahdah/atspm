@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - location-type.ts
@@ -64,7 +65,7 @@ export const getLocationTypeLocationsFromKey = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/LocationType/${key}/locations`, method: 'GET',
         params, signal
     },
@@ -132,7 +133,7 @@ export const getLocationTypeLocationsCountFromKey = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<number>(
       {url: `/LocationType/${key}/locations/$count`, method: 'GET',
         params, signal
     },
@@ -196,7 +197,7 @@ export const getLocationType = (
 ) => {
       
       
-      return configRequest<LocationType[]>(
+      return configRequest<ODataCollection<LocationType>>(
       {url: `/LocationType`, method: 'GET',
         params, signal
     },
@@ -314,7 +315,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<LocationType[]>(
+      return configRequest<number>(
       {url: `/LocationType/$count`, method: 'GET',
         params, signal
     },

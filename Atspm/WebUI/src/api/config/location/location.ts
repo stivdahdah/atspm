@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - location.ts
@@ -80,7 +81,7 @@ export const getLocationApproachesFromKey = (
 ) => {
       
       
-      return configRequest<Approach[]>(
+      return configRequest<ODataCollection<Approach>>(
       {url: `/Location/${key}/approaches`, method: 'GET',
         params, signal
     },
@@ -148,7 +149,7 @@ export const getLocationApproachesCountFromKey = (
 ) => {
       
       
-      return configRequest<Approach[]>(
+      return configRequest<number>(
       {url: `/Location/${key}/approaches/$count`, method: 'GET',
         params, signal
     },
@@ -216,7 +217,7 @@ export const getLocationAreasFromKey = (
 ) => {
       
       
-      return configRequest<Area[]>(
+      return configRequest<ODataCollection<Area>>(
       {url: `/Location/${key}/areas`, method: 'GET',
         params, signal
     },
@@ -284,7 +285,7 @@ export const getLocationAreasCountFromKey = (
 ) => {
       
       
-      return configRequest<Area[]>(
+      return configRequest<number>(
       {url: `/Location/${key}/areas/$count`, method: 'GET',
         params, signal
     },
@@ -352,7 +353,7 @@ export const getLocationDevicesFromKey = (
 ) => {
       
       
-      return configRequest<Device[]>(
+      return configRequest<ODataCollection<Device>>(
       {url: `/Location/${key}/devices`, method: 'GET',
         params, signal
     },
@@ -420,7 +421,7 @@ export const getLocationDevicesCountFromKey = (
 ) => {
       
       
-      return configRequest<Device[]>(
+      return configRequest<number>(
       {url: `/Location/${key}/devices/$count`, method: 'GET',
         params, signal
     },
@@ -748,7 +749,7 @@ export const getLocationAllVersionsOfLocationFromIdentifier = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/Location/GetAllVersionsOfLocation(identifier=${identifier})`, method: 'GET',
         params, signal
     },
@@ -815,7 +816,7 @@ export const getLocationLatestVersionOfAllLocations = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/Location/GetLatestVersionOfAllLocations`, method: 'GET',
         params, signal
     },
@@ -879,7 +880,7 @@ export const getLocationDetectionTypeCount = (
 ) => {
       
       
-      return configRequest<DetectionTypeGroup[]>(
+      return configRequest<ODataCollection<DetectionTypeGroup>>(
       {url: `/Location/GetDetectionTypeCount`, method: 'GET',
         params, signal
     },
@@ -943,7 +944,7 @@ export const getLocationLocationsForSearch = (
 ) => {
       
       
-      return configRequest<SearchLocation[]>(
+      return configRequest<ODataCollection<SearchLocation>>(
       {url: `/Location/GetLocationsForSearch`, method: 'GET',
         params, signal
     },
@@ -1004,7 +1005,7 @@ export const getLocation = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/Location`, method: 'GET',
         params, signal
     },
@@ -1122,7 +1123,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<number>(
       {url: `/Location/$count`, method: 'GET',
         params, signal
     },

@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - detector.ts
@@ -67,7 +68,7 @@ export const getDetectorDetectorCommentsFromKey = (
 ) => {
       
       
-      return configRequest<DetectorComment[]>(
+      return configRequest<ODataCollection<DetectorComment>>(
       {url: `/Detector/${key}/detectorComments`, method: 'GET',
         params, signal
     },
@@ -135,7 +136,7 @@ export const getDetectorDetectorCommentsCountFromKey = (
 ) => {
       
       
-      return configRequest<DetectorComment[]>(
+      return configRequest<number>(
       {url: `/Detector/${key}/detectorComments/$count`, method: 'GET',
         params, signal
     },
@@ -203,7 +204,7 @@ export const getDetectorDetectionTypesFromKey = (
 ) => {
       
       
-      return configRequest<DetectionType[]>(
+      return configRequest<ODataCollection<DetectionType>>(
       {url: `/Detector/${key}/detectionTypes`, method: 'GET',
         params, signal
     },
@@ -271,7 +272,7 @@ export const getDetectorDetectionTypesCountFromKey = (
 ) => {
       
       
-      return configRequest<DetectionType[]>(
+      return configRequest<number>(
       {url: `/Detector/${key}/detectionTypes/$count`, method: 'GET',
         params, signal
     },
@@ -335,7 +336,7 @@ export const getDetector = (
 ) => {
       
       
-      return configRequest<Detector[]>(
+      return configRequest<ODataCollection<Detector>>(
       {url: `/Detector`, method: 'GET',
         params, signal
     },
@@ -453,7 +454,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Detector[]>(
+      return configRequest<number>(
       {url: `/Detector/$count`, method: 'GET',
         params, signal
     },

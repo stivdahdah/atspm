@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import type { EChartsOption, SeriesOption } from 'echarts'
+import type { EChartsOption, LineSeriesOption, SeriesOption } from 'echarts'
 import {
   applyTimeSpaceAppearanceToOption,
   createDefaultTimeSpaceAppearanceSettings,
@@ -173,57 +173,57 @@ describe('applyTimeSpaceAppearanceToOption', () => {
     const series = nextOption.series as SeriesOption[]
 
     expect(
-      (series[0].lineStyle as { color?: string; opacity?: number }).color
+      ((series[0] as LineSeriesOption).lineStyle as { color?: string; opacity?: number }).color
     ).toBe('#345678')
     expect(
-      (series[0].lineStyle as { color?: string; opacity?: number }).opacity
+      ((series[0] as LineSeriesOption).lineStyle as { color?: string; opacity?: number }).opacity
     ).toBe(0.65)
     expect(
-      (series[1].lineStyle as { color?: string; opacity?: number }).color
+      ((series[1] as LineSeriesOption).lineStyle as { color?: string; opacity?: number }).color
     ).toBe('#2a2a2a')
     expect(
-      (series[1].lineStyle as { color?: string; opacity?: number }).opacity
+      ((series[1] as LineSeriesOption).lineStyle as { color?: string; opacity?: number }).opacity
     ).toBe(0.6)
     expect(
-      (series[2].lineStyle as { color?: string; opacity?: number }).color
+      ((series[2] as LineSeriesOption).lineStyle as { color?: string; opacity?: number }).color
     ).toBe('#3b3b3b')
     expect(
-      (series[2].lineStyle as { color?: string; opacity?: number }).opacity
+      ((series[2] as LineSeriesOption).lineStyle as { color?: string; opacity?: number }).opacity
     ).toBe(0.75)
     const tspRequestGraphic = (
       series[3] as SeriesOption & { renderItem: () => GraphicNode }
     ).renderItem()
-    expect(tspRequestGraphic.style.fill).toBe('#56789a')
-    expect(tspRequestGraphic.style.opacity).toBe(0.5)
+    expect(tspRequestGraphic.style?.fill).toBe('#56789a')
+    expect(tspRequestGraphic.style?.opacity).toBe(0.5)
 
     const greenBandGraphic = (
       series[5] as SeriesOption & { renderItem: () => GraphicNode }
     ).renderItem()
-    expect(greenBandGraphic.style.fill).toBe('#234567')
-    expect(greenBandGraphic.style.opacity).toBe(0.4)
+    expect(greenBandGraphic.style?.fill).toBe('#234567')
+    expect(greenBandGraphic.style?.opacity).toBe(0.4)
 
     const tspServiceGraphic = (
       series[4] as SeriesOption & { renderItem: () => GraphicNode }
     ).renderItem()
-    expect(tspServiceGraphic.style.fill).toBe('transparent')
-    expect(tspServiceGraphic.style.stroke).toBe('#6789ab')
-    expect(tspServiceGraphic.style.strokeOpacity).toBe(0.45)
-    expect(tspServiceGraphic.style.opacity).toBe(1)
+    expect(tspServiceGraphic.style?.fill).toBe('transparent')
+    expect(tspServiceGraphic.style?.stroke).toBe('#6789ab')
+    expect(tspServiceGraphic.style?.strokeOpacity).toBe(0.45)
+    expect(tspServiceGraphic.style?.opacity).toBe(1)
 
     const stopBarGraphic = (
       series[6] as SeriesOption & { renderItem: () => GraphicNode }
     ).renderItem()
-    expect(stopBarGraphic.style.fill).toBe('#456789')
-    expect(stopBarGraphic.style.fillOpacity).toBe(0.7)
-    expect(stopBarGraphic.style.opacity).toBe(1)
+    expect(stopBarGraphic.style?.fill).toBe('#456789')
+    expect(stopBarGraphic.style?.fillOpacity).toBe(0.7)
+    expect(stopBarGraphic.style?.opacity).toBe(1)
 
     const cycleGraphic = (
       series[7] as SeriesOption & { renderItem: () => GraphicNode }
     ).renderItem()
-    expect(cycleGraphic.children[0].style.fill).toBe('#123456')
-    expect(cycleGraphic.children[0].style.opacity).toBe(0.55)
-    expect(cycleGraphic.children[1].style.fill).toBe('#000')
-    expect(cycleGraphic.children[1].style.opacity).toBe(1)
+    expect(cycleGraphic.children?.[0]?.style?.fill).toBe('#123456')
+    expect(cycleGraphic.children?.[0]?.style?.opacity).toBe(0.55)
+    expect(cycleGraphic.children?.[1]?.style?.fill).toBe('#000')
+    expect(cycleGraphic.children?.[1]?.style?.opacity).toBe(1)
   })
 
   it('styles green bands while preserving detection continuation fills', () => {

@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - menu-items.ts
@@ -57,7 +58,7 @@ export const getMenuItems = (
 ) => {
       
       
-      return configRequest<MenuItem[]>(
+      return configRequest<ODataCollection<MenuItem>>(
       {url: `/MenuItems`, method: 'GET',
         params, signal
     },
@@ -175,7 +176,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<MenuItem[]>(
+      return configRequest<number>(
       {url: `/MenuItems/$count`, method: 'GET',
         params, signal
     },

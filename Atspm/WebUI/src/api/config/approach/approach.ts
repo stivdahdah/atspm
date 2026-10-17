@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - approach.ts
@@ -67,7 +68,7 @@ export const getApproachDetectorsFromKey = (
 ) => {
       
       
-      return configRequest<Detector[]>(
+      return configRequest<ODataCollection<Detector>>(
       {url: `/Approach/${key}/detectors`, method: 'GET',
         params, signal
     },
@@ -135,7 +136,7 @@ export const getApproachDetectorsCountFromKey = (
 ) => {
       
       
-      return configRequest<Detector[]>(
+      return configRequest<number>(
       {url: `/Approach/${key}/detectors/$count`, method: 'GET',
         params, signal
     },
@@ -321,7 +322,7 @@ export const getApproach = (
 ) => {
       
       
-      return configRequest<Approach[]>(
+      return configRequest<ODataCollection<Approach>>(
       {url: `/Approach`, method: 'GET',
         params, signal
     },
@@ -439,7 +440,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Approach[]>(
+      return configRequest<number>(
       {url: `/Approach/$count`, method: 'GET',
         params, signal
     },

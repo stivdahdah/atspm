@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { MenuItems } from '@/features/links/types/linkDto'
+import { MenuItems } from '@/features/menuItems/types/linkDto'
 import { useGetRequest } from '@/hooks/useGetRequest'
 import { configAxios } from '@/lib/axios'
 import { AxiosHeaders } from 'axios'

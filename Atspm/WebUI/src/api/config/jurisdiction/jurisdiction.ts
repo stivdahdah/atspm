@@ -1,3 +1,4 @@
+import type { ODataCollection } from '../config-api.schemas';
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - jurisdiction.ts
@@ -64,7 +65,7 @@ export const getJurisdictionLocationsFromKey = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<ODataCollection<Location>>(
       {url: `/Jurisdiction/${key}/locations`, method: 'GET',
         params, signal
     },
@@ -132,7 +133,7 @@ export const getJurisdictionLocationsCountFromKey = (
 ) => {
       
       
-      return configRequest<Location[]>(
+      return configRequest<number>(
       {url: `/Jurisdiction/${key}/locations/$count`, method: 'GET',
         params, signal
     },
@@ -196,7 +197,7 @@ export const getJurisdiction = (
 ) => {
       
       
-      return configRequest<Jurisdiction[]>(
+      return configRequest<ODataCollection<Jurisdiction>>(
       {url: `/Jurisdiction`, method: 'GET',
         params, signal
     },
@@ -314,7 +315,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return configRequest<Jurisdiction[]>(
+      return configRequest<number>(
       {url: `/Jurisdiction/$count`, method: 'GET',
         params, signal
     },

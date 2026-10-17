@@ -20,13 +20,15 @@ export interface SingularListDataItems {
   [key: string]: unknown
 }
 
+export type PossibleValues = number | number[] | string | string[] | undefined
+
 type DataType = SingularListDataItems[] | undefined
 
 interface CustomSelectProps
   extends Omit<SelectProps<unknown>, 'onChange' | 'value'> {
   label: string
   name: string
-  value: number | number[] | string | string[] | undefined
+  value: PossibleValues
   data: DataType
   onChange: (event: SelectChangeEvent<unknown>) => void
   onDelete?: (id: number | string) => void

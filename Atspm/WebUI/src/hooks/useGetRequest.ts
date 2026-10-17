@@ -26,22 +26,22 @@ export async function getRequest<T>(
   return axiosInstance.get<T>(route, { headers }) as unknown as T
 }
 
-type UseDataOptions<T> = {
+type UseDataOptions<T, TSelected = T> = {
   route: string
   axiosInstance?: AxiosInstance
-  config?: UseQueryOptions<T, unknown, T, QueryKey>
+  config?: UseQueryOptions<T, unknown, TSelected, QueryKey>
   headers?: AxiosHeaders
   enabled?: boolean
 }
 
-export function useGetRequest<T>({
+export function useGetRequest<T, TSelected = T>({
   route,
   axiosInstance = configAxios,
   config = {},
   headers,
   enabled = true,
-}: UseDataOptions<T>) {
-  return useQuery<T, unknown>(
+}: UseDataOptions<T, TSelected>) {
+  return useQuery<T, unknown, TSelected>(
     [route],
     () => getRequest<T>(route, axiosInstance, headers),
     { ...config, enabled }

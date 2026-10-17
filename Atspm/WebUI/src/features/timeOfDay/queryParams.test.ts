@@ -11,7 +11,9 @@ jest.mock('nuqs', () => ({
   createParser: (parser: unknown) => parser,
 }))
 
-const getLocationsForSearchMock = jest.mocked(getLocationLocationsForSearch)
+const getLocationsForSearchMock = getLocationLocationsForSearch as jest.MockedFunction<
+  (...args: Parameters<typeof getLocationLocationsForSearch>) => Promise<unknown>
+>
 
 describe('resolveSearchLocationsByIdentifier', () => {
   beforeEach(() => {
@@ -35,7 +37,7 @@ describe('resolveSearchLocationsByIdentifier', () => {
     ]
     getLocationsForSearchMock.mockResolvedValue({
       value: locations,
-    } as unknown as SearchLocation[])
+    })
 
     await expect(
       resolveSearchLocationsByIdentifier(['1005', '7418'])
