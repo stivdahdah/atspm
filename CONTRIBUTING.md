@@ -72,9 +72,11 @@ git diff --check
 git push -u origin enhancement/describe-the-change
 ```
 
-For this fork, open a PR with **base repository `stivdahdah/atspm`, base branch `main`**. Review the combined diff and results, then merge when ready. Keep `main` history intact; do not force-push it.
+Before opening any new PR, obtain explicit approval from the repository owner. Prepare the target repository/base branch, title, description, and validation summary first so the approval covers a concrete contribution. Authorization to implement, push, or merge does not authorize opening a PR.
 
-For upstream, open a separate PR with **base repository `OpenSourceTransportation/ATSPM`, base branch `main`**, using the focused contribution branch from the fork. Address review feedback on that branch. Keep it available while its upstream PR is open, even after the change is integrated into the fork. Bring later corrections into the fork as well.
+For this fork, the PR target is **base repository `stivdahdah/atspm`, base branch `main`**. After approval, open the PR, review the combined diff and results, and merge when authorized. If the owner explicitly authorizes a direct merge instead, validate the enhancement branch and merge it into the fork's `main` without a PR, provided repository safeguards permit it. Keep `main` history intact; do not force-push it or bypass required checks.
+
+For upstream, prepare a separate PR with **base repository `OpenSourceTransportation/ATSPM`, base branch `main`**, using the focused contribution branch from the fork. Obtain approval before opening it. Address review feedback on that branch. Keep it available while its upstream PR is open, even after the change is integrated into the fork. Bring later corrections into the fork as well.
 
 ## 4. Bring upstream updates into the fork
 
@@ -87,4 +89,4 @@ git switch -c enhancement/sync-upstream-YYYYMMDD origin/main
 git merge upstream/main
 ```
 
-Resolve conflicts deliberately, rerun affected and combined checks, and open a PR into **this fork's `main`**. Use a fresh date or suffix for each sync branch. Do not reset the fork to upstream or force-sync away its improvements. Once upstream accepts a contribution, include that upstream merge through this same process; do not apply its patch a second time.
+Resolve conflicts deliberately, rerun affected and combined checks, and prepare a PR into **this fork's `main`** for approval before opening it. An explicitly authorized direct merge follows the same validation and safeguards. Use a fresh date or suffix for each sync branch. Do not reset the fork to upstream or force-sync away its improvements. Once upstream accepts a contribution, include that upstream merge through this same process; do not apply its patch a second time.
