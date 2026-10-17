@@ -11,3 +11,5 @@
 <!-- Note effects on existing installs, data, configuration, and upstream compatibility; write "None" if not applicable. -->
 
 <!-- Before submitting, set a concise PR title that describes the result. Use an enhancement/ branch name. -->
+<!-- Verify the base repository: this fork for integration, upstream for a focused contribution. -->
+<!-- Keep the description about the change and evidence; omit billing and development-tool commentary. -->

@@ -65,6 +65,9 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DownloaderClients
             {
                 ArgumentNullException.ThrowIfNull(resource);
 
+                if (!resource.IsAbsoluteUri)
+                    throw new UriFormatException("Resource URI must be absolute");
+
                 await DeleteResource(resource, token);
             }
             catch (Exception e)
@@ -78,8 +81,8 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DownloaderClients
         {
             token.ThrowIfCancellationRequested();
 
-            //if (!IsConnected)
-            //    throw new DownloaderClientConnectionException(null, this, "Client not connected");
+            if (!IsConnected)
+                throw new DownloaderClientConnectionException(null, this, "Client not connected");
 
             try
             {
@@ -98,8 +101,8 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DownloaderClients
         {
             token.ThrowIfCancellationRequested();
 
-            //if (!IsConnected)
-            //    throw new DownloaderClientConnectionException(null, this, "Client not connected");
+            if (!IsConnected)
+                throw new DownloaderClientConnectionException(null, this, "Client not connected");
 
             try
             {
