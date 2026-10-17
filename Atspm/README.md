@@ -169,9 +169,11 @@ The installer should show **`Exited (0)`**, meaning its one-time job finished su
 
 ## 5. Open ATSPM and sign in
 
-Open **[https://localhost:3443](https://localhost:3443)** on the same computer.
+Open **[https://localhost:3443/login](https://localhost:3443/login)** on the same computer to go straight to the login form.
 
 Accept the browser's warning for the self-signed local certificate. Sign in with **`ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`**. The installer already created the account; registration is not needed for that admin.
+
+If you opened the dashboard first, open the navigation menu at the top left, then the user icon and **Log in**. After signing in, the **Admin** menu should appear. Open **Admin > Users** to check that your account is listed with the **Admin** role.
 
 **You are ready to configure locations and import event data.** Empty charts are expected until you add data. See the [database installer guide](DatabaseInstaller/README.md) for transfer and test-data commands.
 
@@ -202,6 +204,8 @@ Keep your private `.env`, certificates, and database backups when updating. **Do
 | Login fails after editing `ADMIN_PASSWORD` | Seeding does not reset an existing account's password. Use its existing password or the application's password-reset process once email delivery is configured. |
 
 ## Optional settings
+
+For every Compose setting, defaults, WatchDog command-line options, and migration from older `.env` files, see the **[advanced configuration reference](CONFIGURATION.md)**. You can skip it for the quick local installation above.
 
 <details>
 <summary>Email delivery and WatchDog</summary>
