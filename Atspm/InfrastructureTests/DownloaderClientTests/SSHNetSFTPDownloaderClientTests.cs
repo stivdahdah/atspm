@@ -20,8 +20,10 @@ using Renci.SshNet;
 using Renci.SshNet.Sftp;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Utah.Udot.Atspm.Infrastructure.Services.DownloaderClients;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Utah.Udot.Atspm.InfrastructureTests.DownloaderClientTests
@@ -36,7 +38,12 @@ namespace Utah.Udot.Atspm.InfrastructureTests.DownloaderClientTests
         {
             var client = new Mock<ISftpClientWrapper>();
 
-            client.Setup(s => s.Connect()).Callback(() => client.SetupGet(p => p.IsConnected).Returns(true));
+            client.Setup(s => s.ConnectAsync(It.IsAny<CancellationToken>()))
+                .Returns(() =>
+                {
+                    client.SetupGet(p => p.IsConnected).Returns(true);
+                    return Task.CompletedTask;
+                });
 
             Sut = new SSHNetSFTPDownloaderClient(client.Object);
 
@@ -47,7 +54,8 @@ namespace Utah.Udot.Atspm.InfrastructureTests.DownloaderClientTests
         {
             var client = new Mock<ISftpClientWrapper>();
 
-            client.Setup(s => s.Connect()).Callback(() => client.SetupGet(p => p.IsConnected).Returns(true));
+            client.Setup(s => s.ConnectAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             Sut = new SSHNetSFTPDownloaderClient(client.Object);
 
@@ -58,7 +66,8 @@ namespace Utah.Udot.Atspm.InfrastructureTests.DownloaderClientTests
         {
             var client = new Mock<ISftpClientWrapper>();
 
-            client.Setup(s => s.Connect()).Callback(() => client.SetupGet(p => p.IsConnected).Returns(true));
+            client.Setup(s => s.ConnectAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             Sut = new SSHNetSFTPDownloaderClient(client.Object);
 
@@ -69,7 +78,8 @@ namespace Utah.Udot.Atspm.InfrastructureTests.DownloaderClientTests
         {
             var client = new Mock<ISftpClientWrapper>();
 
-            client.Setup(s => s.Connect()).Throws<Exception>();
+            client.Setup(s => s.ConnectAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("SFTP connection failed"));
 
             Sut = new SSHNetSFTPDownloaderClient(client.Object);
 
@@ -303,13 +313,32 @@ namespace Utah.Udot.Atspm.InfrastructureTests.DownloaderClientTests
 
             client.SetupGet(p => p.IsConnected).Returns(true);
 
+            var completed = new Mock<ISftpFile>();
+            completed.SetupGet(file => file.LastWriteTime).Returns(new DateTime(2024, 1, 1));
+            completed.SetupGet(file => file.FullName).Returns("/a/b/c");
+            var newest = new Mock<ISftpFile>();
+            newest.SetupGet(file => file.LastWriteTime).Returns(new DateTime(2024, 1, 2));
+            newest.SetupGet(file => file.FullName).Returns("/a/b/c/newest");
+
             client.Setup(s => s.ListDirectoryAsync(It.IsAny<string>(), It.Is<string[]>(a => true)))
-                .ReturnsAsync((string a, string[] b) => Mock.Of<ISftpFile[]>());
-            //.ReturnsAsync((string a, string[] b) => [a]);
+                .ReturnsAsync((string a, string[] b) => new ISftpFile[] { completed.Object, newest.Object });
 
             Sut = new SSHNetSFTPDownloaderClient(client.Object);
 
             await base.ListResourcesAsyncSucceeded();
+        }
+
+        [Fact]
+        public async Task ListResourcesAsyncEmptyDirectoryReturnsNoResources()
+        {
+            var client = new Mock<ISftpClientWrapper>();
+            client.SetupGet(p => p.IsConnected).Returns(true);
+            client.Setup(s => s.ListDirectoryAsync(It.IsAny<string>(), It.IsAny<string[]>()))
+                .ReturnsAsync(Array.Empty<ISftpFile>());
+
+            Sut = new SSHNetSFTPDownloaderClient(client.Object);
+
+            Assert.Empty(await Sut.ListResourcesAsync("/empty"));
         }
 
         public override async Task ListResourcesAsyncNotConnected()
