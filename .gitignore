@@ -136,6 +136,10 @@ Thumbs.db
 # SonarQube analysis directory
 **/.sonarqube/
 
+# Resolved recovery configuration contains private environment values.
+**/.recovery-compose.json
+**/__pycache__/
+
 **/nuget.config
 *.rsp
 *.rsp
