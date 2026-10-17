@@ -28,6 +28,7 @@ import { toUTCDateStamp } from '@/utils/dateTime'
 import { startOfMonth, subMonths } from 'date-fns'
 import { Map as LeafletMap } from 'leaflet'
 import { create } from 'zustand'
+import type { HotspotFeature } from './components/SM_Map/hotspotModel'
 
 const defaultRouteSpeedRequest = (): RouteSpeedOptions => ({
   sourceId: [DataSource.PeMS],
@@ -85,11 +86,11 @@ interface StoreState {
   multiselect: boolean
   setMultiselect: (multiselect: boolean) => void
 
-  hotspotRoutes: any[]
-  setHotspotRoutes: (routes: any[]) => void
+  hotspotRoutes: HotspotFeature[]
+  setHotspotRoutes: (routes: HotspotFeature[]) => void
 
-  hoveredHotspot: any
-  setHoveredHotspot: (hotspot: any) => void
+  hoveredHotspot: string | null
+  setHoveredHotspot: (hotspot: string | null) => void
 
   mapRef: LeafletMap | null
   setMapRef: (map: LeafletMap) => void

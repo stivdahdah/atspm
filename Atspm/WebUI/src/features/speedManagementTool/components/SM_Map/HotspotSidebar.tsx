@@ -1,8 +1,4 @@
-import {
-  useGetApiV1MonthlyAggregationSpeedCategoryFilters,
-  usePostApiV1ImpactHotspots,
-  usePostApiV1MonthlyAggregationHotspots,
-} from '@/api/speedManagement/aTSPMSpeedManagementApi'
+import { ImpactSpeedAggregationCategoryFilter } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import { SM_Height } from '@/features/speedManagementTool/components/SM_Map'
 import HotspotTable from '@/features/speedManagementTool/components/SM_Map/HotspotTable'
 import ImpactHotspotTable from '@/features/speedManagementTool/components/SM_Map/ImpactHotspotsTable'
@@ -14,6 +10,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -25,115 +22,32 @@ import {
   MenuItem,
   Popover,
   Select,
+  SelectChangeEvent,
   Typography,
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers'
-import { parseISO } from 'date-fns'
+import { format, isValid, parseISO, startOfMonth } from 'date-fns'
 import { throttle } from 'lodash'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import {
+  useHotspotCategories,
+  useImpactHotspots,
+  useMonthlyHotspots,
+} from './hotspotApi'
+export { ImpactSpeedAggregationCategoryFilter } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 
-export const ImpactSpeedAggregationCategoryFilter = {
-  ChangeInAverageSpeed: 'ChangeInAverageSpeed',
-  ChangeInEightyFifthPercentileSpeed: 'ChangeInEightyFifthPercentileSpeed',
-  ChangeInVariability: 'ChangeInVariability',
-  ChangeInPercentViolations: 'ChangeInPercentViolations',
-  ChangeInPercentExtremeViolations: 'ChangeInPercentExtremeViolations',
-  BeforeFlow: 'BeforeFlow',
-  BeforeMinSpeed: 'BeforeMinSpeed',
-  BeforeMaxSpeed: 'BeforeMaxSpeed',
-  BeforeAverageSpeed: 'BeforeAverageSpeed',
-  BeforeAverageEightyFifthSpeed: 'BeforeAverageEightyFifthSpeed',
-  BeforeVariability: 'BeforeVariability',
-  BeforePercentViolations: 'BeforePercentViolations',
-  BeforePercentExtremeViolations: 'BeforePercentExtremeViolations',
-  AfterFlow: 'AfterFlow',
-  AfterMinSpeed: 'AfterMinSpeed',
-  AfterMaxSpeed: 'AfterMaxSpeed',
-  AfterAverageSpeed: 'AfterAverageSpeed',
-  AfterAverageEightyFifthSpeed: 'AfterAverageEightyFifthSpeed',
-  AfterVariability: 'AfterVariability',
-  AfterPercentViolations: 'AfterPercentViolations',
-  AfterPercentExtremeViolations: 'AfterPercentExtremeViolations',
-} as const
-
-type HotspotGeometry = {
-  coordinates?: unknown
-  geometries?: Array<{
-    coordinates?: unknown
-    [key: string]: unknown
-  }>
-  [key: string]: unknown
-}
-
-type HotspotFeature = {
-  geometry?: HotspotGeometry
-  hotspotSource?: 'impact' | 'monthly'
-  [key: string]: unknown
-}
-
-type HotspotResponse =
-  | {
-      features?: HotspotFeature[]
-    }
-  | HotspotFeature[]
-  | null
-  | undefined
-
-const isCoordinatePair = (value: unknown): value is number[] =>
-  Array.isArray(value) &&
-  value.length >= 2 &&
-  typeof value[0] === 'number' &&
-  typeof value[1] === 'number'
-
-const flipCoordinateOrder = (value: unknown): unknown => {
-  if (isCoordinatePair(value)) {
-    const [longitude, latitude, ...rest] = value
-    return [latitude, longitude, ...rest]
-  }
-
-  if (Array.isArray(value)) {
-    return value.map(flipCoordinateOrder)
-  }
-
-  return value
-}
-
-const getHotspotFeatures = (hotspots: HotspotResponse): HotspotFeature[] => {
-  if (Array.isArray(hotspots)) return hotspots
-  return hotspots?.features ?? []
-}
-
-const flipHotspotCoordinates = (
-  hotspots: HotspotResponse
-): HotspotFeature[] =>
-  getHotspotFeatures(hotspots).map((feature) => ({
-    ...feature,
-    geometry: feature.geometry
-      ? {
-          ...feature.geometry,
-          coordinates: feature.geometry.coordinates
-            ? flipCoordinateOrder(feature.geometry.coordinates)
-            : feature.geometry.coordinates,
-          geometries: feature.geometry.geometries?.map((geometry) => ({
-            ...geometry,
-            coordinates: geometry.coordinates
-              ? flipCoordinateOrder(geometry.coordinates)
-              : geometry.coordinates,
-          })),
-        }
-      : feature.geometry,
-  }))
-
-const tagHotspotSource = (
-  hotspots: HotspotFeature[],
-  hotspotSource: HotspotFeature['hotspotSource']
-): HotspotFeature[] =>
-  hotspots.map((hotspot) => ({
-    ...hotspot,
-    hotspotSource,
-  }))
-
-const HotspotSidebar = ({ handleRouteSelection }) => {
+const HotspotSidebar = ({
+  handleRouteSelection,
+}: {
+  handleRouteSelection: (id: string) => void
+}) => {
   const {
     submittedRouteSpeedRequest,
     hotspotRoutes,
@@ -141,23 +55,23 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
     setHoveredHotspot,
   } = useSpeedManagementStore()
 
-  const { mutateAsync: fetchHotspotsAsync } =
-    usePostApiV1MonthlyAggregationHotspots()
+  const { mutateAsync: fetchHotspotsAsync } = useMonthlyHotspots()
 
-  const { mutateAsync: fetchImpactHotspots } = usePostApiV1ImpactHotspots()
-  const { data: categoryFilters } =
-    useGetApiV1MonthlyAggregationSpeedCategoryFilters()
+  const { mutateAsync: fetchImpactHotspots } = useImpactHotspots()
+  const { data: categoryFilters, isError: categoryError } =
+    useHotspotCategories()
 
   const [order, setOrder] = useState('DESC')
   const [limit, setLimit] = useState(25)
   const [sortBy, setSortBy] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [requestError, setRequestError] = useState<string | null>(null)
   const [width, setWidth] = useState(800)
   const [isCompareDates, setIsCompareDates] = useState(false)
-  const [baseMonth, setBaseMonth] = useState(
+  const [baseMonth, setBaseMonth] = useState<Date | null>(
     parseISO(submittedRouteSpeedRequest.startDate)
   )
-  const [comparisonMonth, setComparisonMonth] = useState(
+  const [comparisonMonth, setComparisonMonth] = useState<Date | null>(
     parseISO(submittedRouteSpeedRequest.endDate)
   )
 
@@ -165,7 +79,7 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
   const open = Boolean(anchorEl)
   const id = open ? 'hotspot-popover' : undefined
 
-  const handleOpenPopover = (event: MouseEvent) => {
+  const handleOpenPopover = (event: ReactMouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
 
@@ -174,19 +88,26 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
   }
 
   // New state for selecting the category when sortBy = 100 (Effectiveness of Strategies)
-  const [selectedImpactCategory, setSelectedImpactCategory] = useState(
-    ImpactSpeedAggregationCategoryFilter.ChangeInAverageSpeed
-  )
+  const [selectedImpactCategory, setSelectedImpactCategory] =
+    useState<ImpactSpeedAggregationCategoryFilter>(
+      ImpactSpeedAggregationCategoryFilter.ChangeInAverageSpeed
+    )
 
   // New state for showing/hiding before/after columns
   const [showBeforeAfter, setShowBeforeAfter] = useState(false)
 
   useEffect(() => {
-    setBaseMonth(parseISO(submittedRouteSpeedRequest.startDate))
-    setComparisonMonth(parseISO(submittedRouteSpeedRequest.endDate))
-  }, [submittedRouteSpeedRequest])
+    const start = parseISO(submittedRouteSpeedRequest.startDate)
+    const end = parseISO(submittedRouteSpeedRequest.endDate)
+    setBaseMonth((current) =>
+      current?.getTime() === start.getTime() ? current : start
+    )
+    setComparisonMonth((current) =>
+      current?.getTime() === end.getTime() ? current : end
+    )
+  }, [submittedRouteSpeedRequest.startDate, submittedRouteSpeedRequest.endDate])
 
-  const containerRef = useRef(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
   const initialMouseX = useRef(0)
   const initialWidth = useRef(0)
@@ -196,6 +117,7 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
     const requestId = ++latestHotspotRequest.current
     try {
       setIsLoading(true)
+      setRequestError(null)
       setHotspotRoutes([])
       setHoveredHotspot(null)
       const {
@@ -205,15 +127,36 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
         region,
         county,
         city,
-        daysOfWeek,
         functionalType,
         timePeriod,
         aggClassification,
         accessCategory,
       } = submittedRouteSpeedRequest
 
-      const startTime = isCompareDates ? baseMonth : startDate
-      const endTime = isCompareDates ? comparisonMonth : endDate
+      if (
+        sortBy !== 100 &&
+        isCompareDates &&
+        (!baseMonth ||
+          !comparisonMonth ||
+          !isValid(baseMonth) ||
+          !isValid(comparisonMonth))
+      ) {
+        setRequestError('Choose valid base and comparison months.')
+        return
+      }
+      if (
+        sortBy !== 100 &&
+        isCompareDates &&
+        baseMonth &&
+        comparisonMonth &&
+        startOfMonth(baseMonth).getTime() >
+          startOfMonth(comparisonMonth).getTime()
+      ) {
+        setRequestError(
+          'The comparison month must be on or after the base month.'
+        )
+        return
+      }
 
       // If rank by is "Effectiveness of Strategies" (sortBy=100), use the impact hotspots API
       if (sortBy === 100) {
@@ -225,38 +168,37 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
           limit,
         }
 
-        const impactHotspots = tagHotspotSource(
-          flipHotspotCoordinates(await fetchImpactHotspots({ data: payload })),
-          'impact'
-        )
+        const impactHotspots = await fetchImpactHotspots({ data: payload })
         if (requestId === latestHotspotRequest.current) {
           setHotspotRoutes(impactHotspots)
         }
       } else {
-        const hotspots = tagHotspotSource(
-          flipHotspotCoordinates(
-            await fetchHotspotsAsync({
-              data: {
-                category: sortBy,
-                accessCategory,
-                functionalType,
-                timePeriod,
-                aggClassification,
-                startTime,
-                endTime,
-                sourceId,
-                region,
-                county,
-                city,
-                daysOfWeek,
-                order,
-                limit,
-                differenceBetweenStartAndEndMonth: isCompareDates,
-              },
-            })
-          ),
-          'monthly'
-        )
+        const startTime =
+          isCompareDates && baseMonth
+            ? format(baseMonth, 'yyyy-MM-dd')
+            : startDate
+        const endTime =
+          isCompareDates && comparisonMonth
+            ? format(comparisonMonth, 'yyyy-MM-dd')
+            : endDate
+        const hotspots = await fetchHotspotsAsync({
+          data: {
+            category: sortBy,
+            accessCategory,
+            functionalType,
+            timePeriod,
+            aggClassification,
+            startTime,
+            endTime,
+            sourceId,
+            region,
+            county,
+            city,
+            order,
+            limit,
+            differenceBetweenStartAndEndMonth: isCompareDates,
+          },
+        })
         if (requestId === latestHotspotRequest.current) {
           setHotspotRoutes(hotspots)
         }
@@ -264,6 +206,7 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
     } catch (error) {
       if (requestId !== latestHotspotRequest.current) return
       console.error('Failed to fetch hotspots', error)
+      setRequestError('Unable to load hotspots. Please try again.')
       setHotspotRoutes([])
     } finally {
       if (requestId === latestHotspotRequest.current) {
@@ -303,16 +246,23 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
     fetchHotspots,
   ])
 
-  const handleLimitChange = (event) => {
-    setLimit(event.target.value)
+  const handleLimitChange = (event: SelectChangeEvent<number>) => {
+    const value = Number(event.target.value)
+    if ([10, 25, 100].includes(value)) setLimit(value)
   }
 
-  const handleOrderChange = (event) => {
-    setOrder(event.target.value)
+  const handleOrderChange = (event: SelectChangeEvent<string>) => {
+    if (event.target.value === 'ASC' || event.target.value === 'DESC')
+      setOrder(event.target.value)
   }
 
-  const handleSortByChange = (event) => {
-    setSortBy(event.target.value)
+  const handleSortByChange = (event: SelectChangeEvent<number>) => {
+    const value = Number(event.target.value)
+    if (
+      value === 100 ||
+      categoryFilters?.some((filter) => filter.number === value)
+    )
+      setSortBy(value)
 
     // If we switch away from the categories that use functionalType
     // if (![0, 1].includes(event.target.value)) {
@@ -325,12 +275,17 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
   //   setSelectedFunctionalType(value)
   // }
 
-  const handleImpactCategoryChange = (event) => {
-    setSelectedImpactCategory(event.target.value)
+  const handleImpactCategoryChange = (
+    event: SelectChangeEvent<ImpactSpeedAggregationCategoryFilter>
+  ) => {
+    const value = Object.values(ImpactSpeedAggregationCategoryFilter).find(
+      (category) => category === event.target.value
+    )
+    if (value) setSelectedImpactCategory(value)
   }
 
   const handleMouseDown = useCallback(
-    (event) => {
+    (event: ReactMouseEvent<HTMLDivElement>) => {
       isDragging.current = true
       initialMouseX.current = event.clientX
       initialWidth.current =
@@ -346,7 +301,7 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
     document.body.style.userSelect = 'auto'
   }, [])
 
-  const handleMouseMove = useCallback((event) => {
+  const handleMouseMove = useCallback((event: MouseEvent) => {
     if (isDragging.current) {
       const deltaX = event.clientX - initialMouseX.current
       const newWidth = initialWidth.current - deltaX
@@ -655,13 +610,10 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
                     value={selectedImpactCategory}
                     onChange={handleImpactCategoryChange}
                   >
-                    {Object.keys(ImpactSpeedAggregationCategoryFilter).map(
-                      (key) => (
-                        <MenuItem
-                          key={key}
-                          value={ImpactSpeedAggregationCategoryFilter[key]}
-                        >
-                          {addSpaces(ImpactSpeedAggregationCategoryFilter[key])}
+                    {Object.values(ImpactSpeedAggregationCategoryFilter).map(
+                      (category) => (
+                        <MenuItem key={category} value={category}>
+                          {addSpaces(category)}
                         </MenuItem>
                       )
                     )}
@@ -739,7 +691,19 @@ const HotspotSidebar = ({ handleRouteSelection }) => {
       )}
 
       <Box sx={{ flex: 1, overflowY: 'auto' }}>
-        {sortBy === 100 ? (
+        {categoryError && (
+          <Alert severity="warning">
+            Unable to load hotspot ranking options.
+          </Alert>
+        )}
+        {requestError ? (
+          <Alert
+            severity="error"
+            action={<Button onClick={fetchHotspots}>Retry</Button>}
+          >
+            {requestError}
+          </Alert>
+        ) : sortBy === 100 ? (
           <ImpactHotspotTable
             hotspots={hotspotRoutes}
             handleRouteSelection={handleRouteSelection}
