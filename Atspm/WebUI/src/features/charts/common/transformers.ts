@@ -104,7 +104,7 @@ export function createPlans<T extends BasePlan>(
       if (value == null) continue
 
       const formatter = options[key]
-      planInfo += `\n{info|${formatter(value)}}`
+      planInfo += `\n{info|${formatter?.(value) ?? ''}}`
     }
 
     const middleTime = getMidpointTimestamp(startTime, endTime)
@@ -280,7 +280,7 @@ export function createYAxis(
   hasPlans: boolean,
   ...configs: YAXisComponentOption[]
 ): YAXisComponentOption[] {
-  const defaultYAxis: YAXisComponentOption = {
+  const defaultYAxis: Extract<YAXisComponentOption, { type?: 'value' }> = {
     type: 'value',
     nameLocation: 'middle',
     nameGap: 30,
@@ -296,7 +296,25 @@ export function createYAxis(
   const yAxisConfigs: YAXisComponentOption[] = []
 
   for (const config of configs) {
-    yAxisConfigs.push({ ...defaultYAxis, ...config })
+    if (config.type === 'value') {
+      yAxisConfigs.push({ ...defaultYAxis, ...config, type: 'value' })
+    } else {
+      yAxisConfigs.push({
+        nameLocation: 'middle',
+        nameGap: 30,
+        min: 0,
+        ...config,
+        ...(!config.type && !config.axisLabel
+          ? {
+              alignTicks: true,
+              axisLabel: {
+                formatter: (value: number | string) =>
+                  typeof value === 'number' ? String(Math.round(value)) : value,
+              },
+            }
+          : {}),
+      })
+    }
   }
 
   if (hasPlans) {

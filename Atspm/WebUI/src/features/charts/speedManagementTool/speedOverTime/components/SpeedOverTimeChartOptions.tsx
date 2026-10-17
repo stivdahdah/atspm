@@ -1,5 +1,5 @@
-import { SpeedOverTimeOptions } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
-import { DataSource, TimeOptions } from '@/features/speedManagementTool/enums'
+import { TimeChartOptions } from '@/features/speedManagementTool/api/speedChartContracts'
+import { TimeOptions } from '@/features/speedManagementTool/enums'
 import useSpeedManagementStore from '@/features/speedManagementTool/speedManagementStore'
 import { toUTCDateStamp } from '@/utils/dateTime'
 import {
@@ -14,15 +14,15 @@ import { DatePicker } from '@mui/x-date-pickers'
 import { endOfMonth, isValid, parse } from 'date-fns'
 import { useEffect, useState } from 'react'
 
-interface SpeedOverTimeOptionsProps {
-  onOptionsChange: (options: Partial<SpeedOverTimeOptions>) => void
-  sourceId: number
+interface TimeChartOptionsProps {
+  onOptionsChange: (options: Partial<TimeChartOptions>) => void
+  sourceId: number[]
 }
 
 const SpeedOverTimeChartOptions = ({
   onOptionsChange,
   sourceId,
-}: SpeedOverTimeOptionsProps) => {
+}: TimeChartOptionsProps) => {
   const { submittedRouteSpeedRequest } = useSpeedManagementStore()
 
   const [startDate, setStartDate] = useState(
@@ -38,7 +38,7 @@ const SpeedOverTimeChartOptions = ({
       : null
   )
 
-  const [selectedSource, setSelectedSource] = useState<DataSource>(sourceId)
+  const [selectedSource, setSelectedSource] = useState<number[]>(sourceId)
   const [selectedTimeOptions, setSelectedTimeOptions] = useState<TimeOptions>(
     TimeOptions.Hour
   )
@@ -93,7 +93,7 @@ const SpeedOverTimeChartOptions = ({
   }
 
   const handleSourceChange = (event: SelectChangeEvent<number>) => {
-    setSelectedSource(event.target.value as DataSource)
+    setSelectedSource([Number(event.target.value)])
   }
 
   const handleTimeOptionsChange = (event: SelectChangeEvent<TimeOptions>) => {

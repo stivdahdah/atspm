@@ -1,4 +1,4 @@
-import { getLocationFromKey, SearchLocation as Location } from '@/api/config'
+import { getLocationFromKey } from '@/api/config'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import { StyledPaper } from '@/components/StyledPaper'
 import { AddButton } from '@/components/addButton'
@@ -38,7 +38,7 @@ const LocationsAdmin = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false)
 
   const onSelectLocation = useCallback(
-    (sel: Location | number | null) => {
+    (sel: { id?: string | number } | number | null) => {
       const id =
         sel && typeof sel === 'object'
           ? sel.id

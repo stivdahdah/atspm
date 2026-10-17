@@ -17,9 +17,23 @@
 import { EChartsOption } from 'echarts'
 import { ApproachVolumeSummaryData } from './approachVolume/types'
 import { ChartType, ToolType } from './common/types'
+import type { SplitMonitorPlan } from './splitMonitor/types'
 import type { RawTurningMovementCountTableRow } from './turningMovementCounts/types'
 
 export interface ExtendedEChartsOption extends EChartsOption {
+  displayProps?: {
+    height?: number
+    description?: string
+    phaseType?: string
+    isPermissivePhase?: boolean
+    useNumberForZoom?: boolean
+    plans?: SplitMonitorPlan[]
+    phaseNumber?: string | number
+    approachDescription?: string
+    amountOfChannels?: number
+    locations?: string[]
+    [key: string]: unknown
+  }
   displayProp?: {
     height: number
     description: string
@@ -51,6 +65,7 @@ export interface TransformedToolResponse {
 
 export interface TransformedTimeSpaceResponse {
   type: ToolType
+  errors?: string[]
   data: StandardChart
 }
 

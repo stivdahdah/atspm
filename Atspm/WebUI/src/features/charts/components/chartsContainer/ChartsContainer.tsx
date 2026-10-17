@@ -48,11 +48,11 @@ export default function ChartsContainer({
 
   let useChartsController = false
 
-  const chartOptions = {
+  const chartOptions: Partial<ChartOptions> = {
+    ...options,
     locationIdentifier: location,
     start: startDateTime,
     end: endDateTime,
-    ...options,
   }
 
   const {
@@ -84,7 +84,7 @@ export default function ChartsContainer({
     location,
     chartType,
     alert,
-    options?.binSize,
+    options && 'binSize' in options ? options.binSize : undefined,
     startDateTime,
     endDateTime,
     options,
@@ -120,11 +120,12 @@ export default function ChartsContainer({
 
     if (options) {
       Object.entries(options).forEach(([k, v]) => {
-        if (v == null || v === '') return
+        if (v == null || (typeof v === 'string' && v === '')) return
 
         if (Array.isArray(v)) {
           v.forEach((item) => {
-            if (item == null || item === '') return
+            if (item == null || (typeof item === 'string' && item === ''))
+              return
             params.append(k, String(item))
           })
         } else {
@@ -187,16 +188,22 @@ export default function ChartsContainer({
           />
         )
       case ChartType.TimingAndActuation:
+        if (!('title' in chartData.data) || !('legends' in chartData.data))
+          return null
         return (
           <TimingAndActuationChartsResults
-            chartData={chartData}
+            chartData={{
+              type: ChartType.TimingAndActuation,
+              data: chartData.data,
+            }}
             refs={chartRefs.current}
           />
         )
       case ChartType.TurningMovementCounts:
+        if (!('labels' in chartData.data)) return null
         return (
           <>
-            <TurningMovementCountsTable chartData={chartData} />
+            <TurningMovementCountsTable chartData={{ data: chartData.data }} />
             <DefaultChartResults
               refs={chartRefs.current}
               chartData={chartData}

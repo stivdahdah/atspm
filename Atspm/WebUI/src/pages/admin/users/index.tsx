@@ -2,8 +2,8 @@ import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import { useDeleteUser } from '@/features/identity/api/deleteUser'
-import { UserAssignmentCell } from '@/features/identity/components/users/UserAssignmentCell'
 import { useGetAllUsers } from '@/features/identity/api/getAllUsers'
+import { UserAssignmentCell } from '@/features/identity/components/users/UserAssignmentCell'
 import UserModal from '@/features/identity/components/users/UserModal'
 import { UserRolesCell } from '@/features/identity/components/users/UserRolesCell'
 import {
@@ -14,7 +14,6 @@ import {
 import UserDto from '@/features/identity/types/userDto'
 import { identityRequest } from '@/lib/axios'
 import { useNotificationStore } from '@/stores/notifications'
-import { formatInstantAsLocalDate } from '@/utils/dateTime'
 import { Backdrop, CircularProgress } from '@mui/material'
 
 const UsersAdmin = () => {
@@ -40,7 +39,9 @@ const UsersAdmin = () => {
           .filter((value) => !Number.isNaN(value))
       : []
 
-  const handleEditUser = async (userData) => {
+  const handleEditUser = async (
+    userData: Parameters<React.ComponentProps<typeof UserModal>['onSave']>[0]
+  ) => {
     const {
       userId,
       firstName,
@@ -59,16 +60,16 @@ const UsersAdmin = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         data: {
-        userId,
-        firstName,
-        lastName,
-        agency,
-        email: email.toLowerCase(),
-        userName: userName.toLowerCase(),
-        roles,
-        areaIds: normalizeIds(areaIds),
-        regionIds: normalizeIds(regionIds),
-        jurisdictionIds: normalizeIds(jurisdictionIds),
+          userId,
+          firstName,
+          lastName,
+          agency,
+          email: email.toLowerCase(),
+          userName: userName.toLowerCase(),
+          roles,
+          areaIds: normalizeIds(areaIds),
+          regionIds: normalizeIds(regionIds),
+          jurisdictionIds: normalizeIds(jurisdictionIds),
         },
       })
       addNotification({
@@ -79,13 +80,13 @@ const UsersAdmin = () => {
     } catch (error) {
       console.error('Mutation Error:', error)
       addNotification({
-        title: `Error updating user: ${error.message}`,
+        title: `Error updating user: ${error instanceof Error ? error.message : 'Request failed'}`,
         type: 'error',
       })
     }
   }
 
-  const handleDeleteUser = async (id: number) => {
+  const handleDeleteUser = async (id: string | number) => {
     try {
       await deleteMutation(id)
       addNotification({
@@ -96,7 +97,7 @@ const UsersAdmin = () => {
     } catch (error) {
       console.error('Error deleting user:', error)
       addNotification({
-        title: `Error deleting user: ${error.message}`,
+        title: `Error deleting user: ${error instanceof Error ? error.message : 'Request failed'}`,
         type: 'error',
       })
     }
@@ -109,9 +110,9 @@ const UsersAdmin = () => {
   const filteredData = users?.map((user) => {
     return {
       ...user,
-      roles: user.roles?.sort(),
-      created: formatInstantAsLocalDate(user.created),
-      modified: formatInstantAsLocalDate(user.modified),
+      id: user.userId,
+      name: user.fullName,
+      roles: [...(user.roles ?? [])].sort(),
     }
   })
 
@@ -176,7 +177,12 @@ const UsersAdmin = () => {
         hasDeletePrivileges={hasUserDeleteClaim}
         hideAuditProperties
         editModal={
-          <UserModal isOpen={true} onSave={handleEditUser} data={null} />
+          <UserModal
+            isOpen={true}
+            onSave={handleEditUser}
+            data={null}
+            onClose={() => undefined}
+          />
         }
         deleteModal={
           <DeleteModal
@@ -186,6 +192,7 @@ const UsersAdmin = () => {
             objectType="User"
             deleteLabel={(selectedRow: UserDto) => selectedRow.fullName}
             open={false}
+            onClose={() => undefined}
             onConfirm={handleDeleteUser}
           />
         }

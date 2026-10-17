@@ -46,7 +46,7 @@ type LocationAxisDatum = {
   userAdjustment: number
 }
 
-type GridRectProvider = ECharts & {
+type GridRectProvider = {
   getModel?: () => {
     getComponent?: (
       mainType: string,
@@ -63,7 +63,7 @@ type GridRectProvider = ECharts & {
 }
 
 function getGridLeft(chart: ECharts, option?: EChartsOption) {
-  const gridRect = (chart as GridRectProvider)
+  const gridRect = (chart as unknown as GridRectProvider)
     ?.getModel?.()
     ?.getComponent?.('grid', 0)
     ?.coordinateSystem?.getRect?.()
@@ -85,7 +85,7 @@ export function getGridRect(chart: ECharts, option?: EChartsOption) {
     | undefined
 
   try {
-    gridRect = (chart as GridRectProvider)
+    gridRect = (chart as unknown as GridRectProvider)
       ?.getModel?.()
       ?.getComponent?.('grid', 0)
       ?.coordinateSystem?.getRect?.()

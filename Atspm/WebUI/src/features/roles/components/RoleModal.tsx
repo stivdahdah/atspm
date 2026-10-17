@@ -76,7 +76,16 @@ const RoleModal = ({ isOpen, onSave, onClose, data }: ModalProps) => {
 
   if (rolesIsLoading || claimsIsLoading) return null
   if (rolesError || claimsError) {
-    return <div>Error: {rolesError?.message || claimsError?.message}</div>
+    return (
+      <div>
+        Error:{' '}
+        {rolesError instanceof Error
+          ? rolesError.message
+          : claimsError instanceof Error
+            ? claimsError.message
+            : 'Unable to load role permissions'}
+      </div>
+    )
   }
 
   return (
@@ -84,7 +93,7 @@ const RoleModal = ({ isOpen, onSave, onClose, data }: ModalProps) => {
       isOpen={isOpen}
       onClose={onClose}
       title={isNewRole ? 'Create New Role' : `Role Permissions - ${roleId}`}
-      auditInfo={data}
+      auditInfo={data ?? undefined}
       onSubmit={handleSubmit(onSubmit)}
       dialogProps={{ sx: { minWidth: 600 } }}
     >
@@ -113,8 +122,6 @@ const RoleModal = ({ isOpen, onSave, onClose, data }: ModalProps) => {
         id={isNewRole ? watchedRoleName : (roleId ?? '')}
         currentClaims={rolesData || []}
         onClaimsChange={handleClaimsChange}
-        currentRole={currentRole}
-        setCurrentRole={setCurrentRole}
         userClaims={userClaims}
         setUserClaims={setUserClaims}
         claimsData={claimsData}

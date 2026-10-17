@@ -64,13 +64,13 @@ interface transformWatchDogLog {
   regionDescription: string
   jurisdictionName: string
   areas: string
-  issueType: number
+  issueType: number | string
   phase: string | null
   details: string
   componentType: number
   componentId: number
-  start: Date
-  end: Date
+  start?: Date
+  end?: Date
   ignored: boolean
 }
 
@@ -109,7 +109,7 @@ const ignoreEventSchema = z.object({
   end: z
     .date()
     .nullable()
-    .refine((value) => value !== null, {
+    .refine((value): boolean => value !== null, {
       message: 'End date is required',
     }),
 })
@@ -184,7 +184,7 @@ const WatchDogLogs = () => {
 
   const issueTypes = useMemo(() => {
     if (!issueTypesData) return null
-    return issueTypesData.reduce(
+    return issueTypesData.reduce<Record<number, string>>(
       (acc, issueType) => ({ ...acc, [issueType.id]: issueType.name }),
       {}
     )
@@ -199,6 +199,7 @@ const WatchDogLogs = () => {
 
   const isEventIgnored = useCallback(
     (logEvent: {
+      key?: string | number | null
       locationId: number
       locationIdentifier: string | null
       componentType: number
@@ -270,7 +271,6 @@ const WatchDogLogs = () => {
           matchesComponentId &&
           matchesPhase &&
           matchesKey
-
 
         if (!matchesEvent) return false
         if (isBefore(now, ignoreStart)) return false

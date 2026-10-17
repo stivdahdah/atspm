@@ -34,7 +34,7 @@ const defaultRouteSpeedRequest = (): RouteSpeedOptions => ({
   sourceId: [DataSource.PeMS],
   timePeriod: TimePeriodFilter.AllDay,
   excludeSourceId: false,
-  category: null,
+  category: 'AverageSpeed',
   startDate: toUTCDateStamp(startOfMonth(subMonths(new Date(), 2))),
   endDate: toUTCDateStamp(startOfMonth(subMonths(new Date(), 1))),
   startTime: '1970-01-01T00:00:00.000Z',

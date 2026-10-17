@@ -37,17 +37,26 @@ const OptionalWatchDogFilters = ({
   const jurisdictions = jurisdictionsData?.value || []
   const locations = locationsData?.value || []
 
-  const handleAreaChange = (_: SyntheticEvent, val: string | null) => {
+  const handleAreaChange = (
+    _: SyntheticEvent,
+    val: string | null | undefined
+  ) => {
     const area = areas.find((a) => a.name === val)
-    setAreaId(area ? area.id : null)
+    setAreaId(area?.id ?? null)
   }
 
-  const handleRegionChange = (_: SyntheticEvent, val: string | null) => {
+  const handleRegionChange = (
+    _: SyntheticEvent,
+    val: string | null | undefined
+  ) => {
     const region = regions.find((r) => r.description === val)
-    setRegionId(region ? region.id : null)
+    setRegionId(region?.id ?? null)
   }
 
-  const handleJurisdictionChange = (_: SyntheticEvent, val: string | null) => {
+  const handleJurisdictionChange = (
+    _: SyntheticEvent,
+    val: string | null | undefined
+  ) => {
     const jurisdiction = jurisdictions.find((j) => j.name === val)
     setJurisdictionId(jurisdiction ? jurisdiction.id : null)
   }
@@ -85,7 +94,9 @@ const OptionalWatchDogFilters = ({
       <Box sx={{ marginTop: '-25px' }}>
         <IssueTypeSelect
           issueTypeData={issueType}
-          setSelectedIssueTypeData={setSelectedIssueType}
+          setSelectedIssueTypeData={(id) => {
+            if (id !== null) setSelectedIssueType(id)
+          }}
         />
       </Box>
     </Box>

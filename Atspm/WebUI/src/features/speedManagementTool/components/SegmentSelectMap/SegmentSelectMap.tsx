@@ -106,9 +106,9 @@ const SegmentSelectMap = ({
         try {
           const env = await getEnv()
           const newCenter: { lat: number; lng: number; zoom: number } = {
-            lat: parseFloat(env?.MAP_DEFAULT_LATITUDE),
-            lng: parseFloat(env?.MAP_DEFAULT_LONGITUDE),
-            zoom: parseInt(env?.MAP_DEFAULT_ZOOM, 10) || 10,
+            lat: parseFloat(env?.MAP_DEFAULT_LATITUDE ?? '0'),
+            lng: parseFloat(env?.MAP_DEFAULT_LONGITUDE ?? '0'),
+            zoom: parseInt(env?.MAP_DEFAULT_ZOOM ?? '10', 10) || 10,
           }
           setMapCenter(newCenter)
         } catch (error) {
@@ -145,7 +145,7 @@ const SegmentSelectMap = ({
       <SegmentPolylines
         segments={allSegments || []}
         onSegmentSelect={onSegmentSelect}
-        selectedSegmentIds={selectedSegmentIds}
+        selectedSegmentIds={selectedSegmentIds ?? []}
         zoomLevel={mapCenter?.zoom ?? 10}
         setHoveredSegment={setHoveredSegment}
       />

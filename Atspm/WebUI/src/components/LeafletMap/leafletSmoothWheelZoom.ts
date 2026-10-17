@@ -1,9 +1,6 @@
 import L from 'leaflet'
 
-import {
-  clampZoom,
-  getEasedZoom,
-} from './smoothWheelZoomUtils'
+import { clampZoom, getEasedZoom } from './smoothWheelZoomUtils'
 
 declare module 'leaflet' {
   interface MapOptions {
@@ -41,24 +38,15 @@ export class SmoothWheelZoomHandler extends L.Handler {
   _zoomAnimationId?: number
 
   addHooks() {
-    L.DomEvent.on(
-      this._map.getContainer(),
-      'wheel',
-      this._onWheelScroll,
-      this
-    )
+    L.DomEvent.on(this._map.getContainer(), 'wheel', this._onWheelScroll, this)
   }
 
   removeHooks() {
-    L.DomEvent.off(
-      this._map.getContainer(),
-      'wheel',
-      this._onWheelScroll,
-      this
-    )
+    L.DomEvent.off(this._map.getContainer(), 'wheel', this._onWheelScroll, this)
   }
 
-  _onWheelScroll(event: WheelEvent) {
+  _onWheelScroll(event: Event) {
+    if (!(event instanceof WheelEvent)) return
     L.DomEvent.preventDefault(event)
 
     if (!this._isWheeling) {
@@ -96,8 +84,7 @@ export class SmoothWheelZoomHandler extends L.Handler {
     const sensitivity = map.options.smoothSensitivity ?? 1
 
     this._goalZoom =
-      (this._goalZoom ?? map.getZoom()) -
-      event.deltaY * 0.003 * sensitivity
+      (this._goalZoom ?? map.getZoom()) - event.deltaY * 0.003 * sensitivity
 
     if (
       this._goalZoom < map.getMinZoom() ||
@@ -137,8 +124,7 @@ export class SmoothWheelZoomHandler extends L.Handler {
       this._centerPoint = map.getSize().divideBy(2)
       this._startLatLng = map.containerPointToLatLng(this._centerPoint)
       if (wheelPosition) {
-        this._wheelStartLatLng =
-          map.containerPointToLatLng(wheelPosition)
+        this._wheelStartLatLng = map.containerPointToLatLng(wheelPosition)
       }
       this._goalZoom = clampZoom(
         currentZoom + remainingZoom,
@@ -188,10 +174,9 @@ L.Map.mergeOptions({
   smoothSensitivity: 1,
   smoothWheelZoom: true,
 })
-
-;(L.Map as unknown as { SmoothWheelZoom: typeof SmoothWheelZoomHandler })
-  .SmoothWheelZoom = SmoothWheelZoomHandler
-
+;(
+  L.Map as unknown as { SmoothWheelZoom: typeof SmoothWheelZoomHandler }
+).SmoothWheelZoom = SmoothWheelZoomHandler
 ;(L.Map.addInitHook as (...args: unknown[]) => void)(
   'addHandler',
   'smoothWheelZoom',

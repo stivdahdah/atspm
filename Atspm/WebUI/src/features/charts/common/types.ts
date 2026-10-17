@@ -120,7 +120,7 @@ export type MarkAreaData = [
 ]
 
 export type PlanOptions<T> = {
-  [K in keyof Omit<T, keyof BasePlan>]: (value: T[K]) => string | number
+  [K in keyof Omit<T, keyof BasePlan>]?: (value: T[K]) => string | number
 }
 
 export interface BaseChartData {

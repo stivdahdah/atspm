@@ -68,7 +68,8 @@ const MenuItemsAdmin = () => {
     }
   }
 
-  const HandleDeleteMenuItem = async (id: number) => {
+  const HandleDeleteMenuItem = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteMenuItem({ key: id })
       refetchMenuItems()
@@ -99,6 +100,7 @@ const MenuItemsAdmin = () => {
     if (link !== undefined) sanitizedMenuItem.link = link
 
     try {
+      if (id == null) throw new Error('Missing menu item ID.')
       await editMenuItem({ data: sanitizedMenuItem, key: id })
       refetchMenuItems()
       addNotification({
@@ -140,7 +142,7 @@ const MenuItemsAdmin = () => {
   const cells = [
     { key: 'name', label: 'Name' },
     { key: 'link', label: 'Link' },
-    { key: 'displayOrder', label: 'Display Order', align: 'right' },
+    { key: 'displayOrder', label: 'Display Order', align: 'right' as const },
     { key: 'parentIdName', label: 'Parent' },
   ]
 

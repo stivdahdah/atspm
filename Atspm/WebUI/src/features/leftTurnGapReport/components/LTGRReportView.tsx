@@ -22,7 +22,7 @@ interface PercentCyclesWithSplitFailList {
   [key: string]: number
 }
 
-interface LTGRData {
+export interface LTGRData {
   startDate: string
   endDate: string
   approachDescription: string
@@ -63,7 +63,7 @@ interface LTGRData {
   opposingDirection: string
 }
 
-interface ApproachData {
+export interface ApproachData {
   leftTurnVolumeOk: boolean
   gapOutOk: boolean
   pedCycleOk: boolean

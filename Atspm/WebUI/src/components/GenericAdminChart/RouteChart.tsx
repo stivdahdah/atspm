@@ -87,9 +87,7 @@ interface EditToolbarProps {
   ) => void
 }
 
-function EditToolbar(props: EditToolbarProps) {
-  const { baseRowType, setRows, setRowModesModel } = props
-
+function EditToolbar() {
   return (
     <GridToolbarContainer>
       <GridToolbarColumnsButton />
@@ -113,7 +111,7 @@ function RouteChart({
   hasEditPrivileges,
   hasDeletePrivileges,
 }: GenericChartProps) {
-  const [rows, setRows] = useState(data)
+  const [rows, setRows] = useState<GridRowsProp>(data)
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({})
   const [open, setOpen] = useState(false)
   const [id, setId] = useState(-1)
@@ -168,7 +166,7 @@ function RouteChart({
       onDelete(itemToDelete)
     } else {
       alert(
-        `The role "${itemToDelete.role}"Item cannot be deleted as it is protected by the developers of ATSPM.`
+        `The role "${itemToDelete?.role ?? id}"Item cannot be deleted as it is protected by the developers of ATSPM.`
       )
       setOpen(false)
     }
@@ -306,7 +304,6 @@ function RouteChart({
           processRowUpdate={processRowUpdate}
           autoHeight
           slots={{ toolbar: EditToolbar }}
-          slotProps={{ toolbar: { baseRowType, setRows, setRowModesModel } }}
           pageSizeOptions={[{ value: 100, label: '100' }]}
           sx={{
             [`& .${gridClasses.cell}`]: {

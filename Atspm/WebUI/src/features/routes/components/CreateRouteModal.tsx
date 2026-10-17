@@ -39,7 +39,7 @@ const CreateRouteModal = ({
 
   useEffect(() => {
     if (route) {
-      setValue('name', route.name)
+      setValue('name', route.name ?? '')
     }
   }, [route, setValue])
 

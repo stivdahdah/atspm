@@ -96,7 +96,9 @@ export function getStickyAxisBackground(direction: 'top' | 'bottom') {
   return `linear-gradient(to bottom, rgba(255,255,255,0) 0px, rgba(255,255,255,0) ${STICKY_BOTTOM_BACKGROUND_FADE_START}px, rgba(255,255,255,1) ${STICKY_BOTTOM_BACKGROUND_FADE_END}px, rgba(255,255,255,1) 100%)`
 }
 
-export function extractTopAxisConfig(option?: EChartsOption): TopAxisConfig | null {
+export function extractTopAxisConfig(
+  option?: EChartsOption
+): TopAxisConfig | null {
   if (!option?.xAxis) return null
 
   const xAxes = Array.isArray(option.xAxis) ? option.xAxis : [option.xAxis]
@@ -144,10 +146,12 @@ export function extractTopAxisConfig(option?: EChartsOption): TopAxisConfig | nu
   }
 }
 
-export function stripTopAxisVisuals(option?: EChartsOption): EChartsOption['xAxis'] {
+export function stripTopAxisVisuals(
+  option?: EChartsOption
+): EChartsOption['xAxis'] {
   if (!option?.xAxis) return option?.xAxis
 
-  const stripAxisName = <T,>(axis: T): T => {
+  const stripAxisName = <T>(axis: T): T => {
     if (!axis || typeof axis !== 'object') return axis
 
     const candidate = axis as T & { position?: unknown }
@@ -218,7 +222,7 @@ export function stripBottomAxisVisuals(
 
   let hasStrippedBottomAxis = false
 
-  const stripAxis = <T,>(axis: T): T => {
+  const stripAxis = <T>(axis: T): T => {
     if (!axis || typeof axis !== 'object') return axis
 
     const candidate = axis as T & { position?: unknown; show?: unknown }
@@ -253,7 +257,7 @@ export function stripSliderDataZoomVisuals(
 ): EChartsOption['dataZoom'] {
   if (!option?.dataZoom) return option?.dataZoom
 
-  const hideSlider = <T,>(zoom: T): T => {
+  const hideSlider = <T>(zoom: T): T => {
     if (!zoom || typeof zoom !== 'object') return zoom
 
     const candidate = zoom as T & {
@@ -317,8 +321,14 @@ export function buildStickyBottomAxisOption(
   if (!bottomAxisConfig) return null
 
   const { axis, sliderDataZoom } = bottomAxisConfig
-  const axisMin = axis.min
-  const axisMax = axis.max
+  const axisMin =
+    typeof axis.min === 'number' || typeof axis.min === 'string'
+      ? axis.min
+      : undefined
+  const axisMax =
+    typeof axis.max === 'number' || typeof axis.max === 'string'
+      ? axis.max
+      : undefined
 
   return {
     animation: false,

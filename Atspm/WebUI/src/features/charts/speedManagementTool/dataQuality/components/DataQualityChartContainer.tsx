@@ -1,7 +1,12 @@
 import ApacheEChart from '@/features/charts/components/apacheEChart/ApacheEChart'
 import { Box, Divider } from '@mui/material'
+import transformChart from '../dataQuality.transformer'
 
-const DataQualityChartsContainer = ({ chartData }: { chartData: any }) => {
+const DataQualityChartsContainer = ({
+  chartData,
+}: {
+  chartData: ReturnType<typeof transformChart>
+}) => {
   if (!chartData?.charts) {
     return null
   }

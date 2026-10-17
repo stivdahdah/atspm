@@ -16,7 +16,6 @@
 // #endregion
 import { reportsAxios } from '@/lib/axios'
 import { ExtractFnReturnType, QueryConfig } from '@/lib/react-query'
-import { ApiResponse } from '@/types'
 import { useQuery } from 'react-query'
 
 export interface LeftTurnGapReportParams {
@@ -42,11 +41,9 @@ export interface LeftTurnGapReportParams {
 
 export const getLeftTurnGapReport = async (
   params: LeftTurnGapReportParams
-): Promise<any> => {
-  const result: ApiResponse<any> = await reportsAxios.post(
-    `/api/v1/LeftTurnGapReport/getReportData`,
-    params
-  )
+): Promise<import('../components/LTGRReportView').LTGRData[]> => {
+  const result: import('../components/LTGRReportView').LTGRData[] =
+    await reportsAxios.post(`/api/v1/LeftTurnGapReport/getReportData`, params)
   return result
 }
 

@@ -46,10 +46,10 @@ export const LinkPivotOptionsComponent = (props: Props) => {
 
         return {
           locationIdentifier: `${location.locationIdentifier} - ${location.primaryName} & ${location.secondaryName}`,
-          primaryName: location.primaryName,
-          secondaryName: location.secondaryName,
-          approachId: approach?.description,
-          order: approach?.order || 0,
+          primaryName: location.primaryName ?? '',
+          secondaryName: location.secondaryName ?? '',
+          approachId: approach?.description ?? '',
+          order: location.order || 0,
         }
       })
       // sort so 1 comes before 2, etc.
@@ -105,7 +105,7 @@ export const LinkPivotOptionsComponent = (props: Props) => {
           noCalendar
         />
       </StyledPaper>
-      <StyledPaper display="flex">
+      <StyledPaper sx={{ display: 'flex' }}>
         <MultiSelectCheckbox
           itemList={daysOfWeekList}
           selectedItems={handler.selectedDays}

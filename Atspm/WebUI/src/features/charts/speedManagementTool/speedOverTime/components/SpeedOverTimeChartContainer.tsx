@@ -1,10 +1,11 @@
 import ApacheEChart from '@/features/charts/components/apacheEChart/ApacheEChart'
 import { Box } from '@mui/material'
+import transformChart from '../speedOverTime.transformer'
 
 const SpeedOverTimeChartContainer = ({
   chartData: chartOptions,
 }: {
-  chartData: number
+  chartData: ReturnType<typeof transformChart>
 }) => {
   const chartData = chartOptions.charts[0]
   return (

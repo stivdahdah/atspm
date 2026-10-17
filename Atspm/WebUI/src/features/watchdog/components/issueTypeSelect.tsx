@@ -2,20 +2,23 @@ import { Autocomplete, TextField } from '@mui/material'
 import React from 'react'
 
 interface IssueType {
-  Id: number
+  id: number
   name: string
 }
 
 interface IssueTypeSelectProps {
   issueTypeData: Record<number, string> | null
-  setSelectedIssueTypeData: (id: number) => void
+  setSelectedIssueTypeData: (id: number | null) => void
 }
 
 export const IssueTypeSelect: React.FC<IssueTypeSelectProps> = ({
   issueTypeData,
   setSelectedIssueTypeData,
 }) => {
-  const handleChange = (event: any, newValue: IssueType | null) => {
+  const handleChange = (
+    event: React.SyntheticEvent,
+    newValue: IssueType | null
+  ) => {
     if (newValue) {
       setSelectedIssueTypeData(newValue.id)
     } else {
@@ -26,7 +29,7 @@ export const IssueTypeSelect: React.FC<IssueTypeSelectProps> = ({
   const options = issueTypeData
     ? Object.keys(issueTypeData).map((key) => ({
         id: Number(key),
-        name: issueTypeData[key],
+        name: issueTypeData[Number(key)],
       }))
     : []
 

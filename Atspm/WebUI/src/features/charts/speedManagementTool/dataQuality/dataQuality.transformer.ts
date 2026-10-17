@@ -27,8 +27,8 @@ import {
   formatExportFileName,
   transformSeriesData,
 } from '@/features/charts/common/transformers'
-import { ExtendedEChartsOption } from '@/features/charts/types'
 import { createSpeedManagementTitle } from '@/features/charts/speedManagementTool/createSpeedManagementTitle'
+import { ExtendedEChartsOption } from '@/features/charts/types'
 import {
   Color,
   formatChartDateRange,
@@ -62,8 +62,17 @@ export type RawDataQualitySource = {
 export type RawDataQualityResponse = RawDataQualitySource[]
 
 export default function transformDataQualityData(
-  response: DataQualitySource[]
+  rawResponse: DataQualitySource[]
 ) {
+  const response: RawDataQualityResponse = rawResponse.map((source) => ({
+    ...source,
+    name: source.name ?? String(source.sourceId),
+    segments: (source.segments ?? []).map((segment) => ({
+      ...segment,
+      segmentName: segment.segmentName ?? segment.segmentId,
+      dataPoints: segment.dataPoints ?? [],
+    })),
+  }))
   // Check if only one segment exists across all sources
   const allSegments = response.flatMap((source) => source.segments)
   const uniqueSegmentIds = [
@@ -90,7 +99,7 @@ export default function transformDataQualityData(
       const chartOptions = transformData(source)
       return chartOptions ? { chart: chartOptions } : null
     })
-    .filter(Boolean)
+    .filter((chart): chart is NonNullable<typeof chart> => chart !== null)
 
   return {
     type: SM_ChartType.DATA_QUALITY,
@@ -144,8 +153,8 @@ function transformSingleSegmentAcrossSources(
   const toolbox = createToolbox({
     title: formatExportFileName(
       `Data Quality - ${segmentsWithData[0].segmentName} (All Sources)`,
-      segmentsWithData[0].startingMilePoint,
-      segmentsWithData[0].endingMilePoint
+      response[0].startDate,
+      response[0].endDate
     ),
     dateRange,
   })
@@ -181,7 +190,7 @@ function transformSingleSegmentAcrossSources(
     const segment = source.segments.find((seg) => seg.segmentId === segmentId)
     return {
       name: source.name,
-      data: transformSeriesData(segment.dataPoints),
+      data: transformSeriesData(segment?.dataPoints ?? []),
       type: 'line',
       color: getSourceColor(source.name, index),
       tooltip: {
@@ -274,7 +283,7 @@ function transformData(
 
   const seriesData: SeriesOption[] = segmentsWithData.map((segment, index) => ({
     name: segment.segmentName,
-    data: transformSeriesData(segment.dataPoints),
+    data: transformSeriesData(segment?.dataPoints ?? []),
     type: 'line',
     color: getColor(index),
     tooltip: {

@@ -22,13 +22,13 @@ export default function transformDailyPedVolByMonthTransformer(
   }
 
   const xAxis = {
-    type: 'category',
+    type: 'category' as const,
     name: 'Month',
     data: data.map((d) => d.month),
   }
 
   const yAxis = {
-    type: 'value',
+    type: 'value' as const,
     name: 'Volume',
   }
 
@@ -50,7 +50,7 @@ export default function transformDailyPedVolByMonthTransformer(
 
   const series = [
     {
-      type: 'bar',
+      type: 'bar' as const,
       name: 'Average Hourly Volume',
       data: data.map((d) => d.averageVolume),
     },

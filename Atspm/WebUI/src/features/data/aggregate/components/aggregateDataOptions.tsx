@@ -164,7 +164,7 @@ export const AggregateDataOptions = ({ handler }: props) => {
     )
   }
   const handleAggregateChange = (e: SelectChangeEvent<unknown>) => {
-    handler.changeMetricType(e.target.value)
+    handler.changeMetricType(String(e.target.value))
   }
   const renderAggregateChartOptions = () => {
     return (

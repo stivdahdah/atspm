@@ -29,7 +29,10 @@ const headers: AxiosHeaders = new AxiosHeaders({
 
 export function useGetAggDataTypes() {
   return useQuery<ApiResponse<string[]>>('aggDataTypes', async () => {
-    const response = await dataAxios.get(route, { headers })
+    const response = await dataAxios.get<unknown, ApiResponse<string[]>>(
+      route,
+      { headers }
+    )
     return response
   })
 }

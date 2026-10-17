@@ -45,28 +45,29 @@ interface MonthlyAverage {
 }
 
 interface Properties {
-  createdDate: string
-  binStartTime: string
+  hasData?: boolean
+  createdDate?: string | null
+  binStartTime?: string | null
   route_id: string
-  sourceId: number
+  sourceId?: number | null
   name: string
   speedLimit: number
-  region: string
-  city: string
-  county: string
-  averageSpeed: number
-  averageEightyFifthSpeed: number
-  violations: number
-  extremeViolations: number
-  flow: number
-  minSpeed: number
-  maxSpeed: number
-  variability: number
-  percentViolations: number
-  percentExtremeViolations: number
-  avgSpeedVsSpeedLimit: number
-  eightyFifthSpeedVsSpeedLimit: number
-  percentObserved: number
+  region?: string | null
+  city?: string | null
+  county?: string | null
+  averageSpeed?: number | null
+  averageEightyFifthSpeed?: number | null
+  violations?: number | null
+  extremeViolations?: number | null
+  flow?: number | null
+  minSpeed?: number | null
+  maxSpeed?: number | null
+  variability?: number | null
+  percentViolations?: number | null
+  percentExtremeViolations?: number | null
+  avgSpeedVsSpeedLimit?: number | null
+  eightyFifthSpeedVsSpeedLimit?: number | null
+  percentObserved?: number | null
 }
 
 // interface Properties {
@@ -89,7 +90,7 @@ export interface SpeedManagementRoute {
   type: 'Feature'
   geometry: Geometry
   properties: Properties
-  coordinates: [number, number][]
+  coordinates?: [number, number][]
   color?: string
 }
 

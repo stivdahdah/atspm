@@ -15,7 +15,11 @@
 // limitations under the License.
 // #endregion
 import { getEnv, type EnvVariables } from '@/utils/getEnv'
-import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from 'axios'
 import Cookies from 'js-cookie'
 
 export let configAxios: ReturnType<typeof createAxiosInstance>
@@ -25,6 +29,11 @@ export let dataAxios: ReturnType<typeof createAxiosInstance>
 export let speedAxios: ReturnType<typeof createAxiosInstance>
 
 const API_VERSION_PATH = '/api/v1'
+
+// The response interceptor returns the payload, not an AxiosResponse wrapper.
+type PayloadAxios = {
+  request<T = unknown, R = T>(config: AxiosRequestConfig): Promise<R>
+} & AxiosInstance
 
 function normalizeApiRoot(baseURL: string): string {
   return baseURL.replace(/\/api\/v1\/?$/i, '').replace(/\/+$/, '')
@@ -83,7 +92,7 @@ function createAxiosInstance(baseURL: string) {
     (error) => Promise.reject(error)
   )
 
-  return instance
+  return instance as PayloadAxios
 }
 
 // Request interceptor to add the Authorization header

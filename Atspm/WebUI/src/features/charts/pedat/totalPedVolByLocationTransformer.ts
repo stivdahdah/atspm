@@ -64,7 +64,7 @@ export function transformBlockChartTransformer(
     series: [
       {
         type: 'treemap',
-        sort: null,
+        sort: false,
         colorMappingBy: 'id',
         data: data.map((d) => ({
           id: d.locationIdentifier,

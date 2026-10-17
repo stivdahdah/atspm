@@ -53,9 +53,17 @@ export const TypeApiMap: Partial<Record<ChartType, string>> = {
   [ChartType.RampMetering]: '/api/v1/RampMetering/GetReportData',
 }
 
-type StringBooleanMap = Record<string, boolean | string | Date>
+type StringBooleanMap = Record<
+  string,
+  | ChartOptions[keyof ChartOptions]
+  | number
+  | number[]
+  | boolean
+  | null
+  | undefined
+>
 
-const mapStringBooleansToBoolean = (obj: ChartOptions) => {
+const mapStringBooleansToBoolean = (obj: Partial<ChartOptions>) => {
   return Object.entries(obj).reduce<StringBooleanMap>((acc, [key, value]) => {
     // Check if the value is exactly "true" or "false" (case-insensitive)
     if (typeof value === 'string') {
@@ -77,13 +85,22 @@ const mapStringBooleansToBoolean = (obj: ChartOptions) => {
 
 export const getCharts = async (
   type: ChartType,
-  options: ChartOptions
+  options: Partial<ChartOptions>
 ): Promise<TransformedChartResponse> => {
   const endpoint = TypeApiMap[type]
   if (!endpoint) {
     throw new Error(`No report endpoint configured for ${type}.`)
   }
 
+  if (
+    !(options.start instanceof Date) ||
+    !(options.end instanceof Date) ||
+    !Number.isFinite(options.start.getTime()) ||
+    !Number.isFinite(options.end.getTime()) ||
+    options.start > options.end
+  ) {
+    throw new Error('Choose a valid start and end date before running a chart.')
+  }
   const transformedOptions = mapStringBooleansToBoolean(options)
   transformedOptions.start = dateToTimestamp(transformedOptions.start as Date)
   transformedOptions.end = dateToTimestamp(transformedOptions.end as Date)
@@ -99,7 +116,7 @@ type QueryFnType = typeof getCharts
 
 type UseChartsOptions = BaseOptions & {
   chartType: ChartType
-  chartOptions: ChartOptions
+  chartOptions: Partial<ChartOptions>
 }
 
 type BaseOptions = {

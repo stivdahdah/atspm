@@ -38,8 +38,8 @@ function ReportMap(props: Props) {
       const env = await getEnv()
       if (env) {
         setInitialLatLong([
-          parseFloat(env.MAP_DEFAULT_LATITUDE),
-          parseFloat(env.MAP_DEFAULT_LONGITUDE),
+          parseFloat(env.MAP_DEFAULT_LATITUDE ?? '0'),
+          parseFloat(env.MAP_DEFAULT_LONGITUDE ?? '0'),
         ])
       }
     }

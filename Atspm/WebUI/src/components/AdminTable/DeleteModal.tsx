@@ -11,7 +11,11 @@ import {
   Typography,
 } from '@mui/material'
 
-interface DeleteModalProps<T> {
+interface AssociatedObject {
+  id?: string | number | null
+  name?: string | null
+}
+interface DeleteModalProps<T, A extends AssociatedObject> {
   id: string | number
   name: string
   objectType: string
@@ -20,16 +24,13 @@ interface DeleteModalProps<T> {
   onConfirm: (keyValue: string | number) => void
   deleteLabel?: (selectedRow: T) => string
   selectedRow?: T
-  associatedObjects?: { id: number; name: string }[]
+  associatedObjects?: A[]
   associatedObjectsLabel?: string
-  filterFunction?: (
-    id: number,
-    associatedObjects: { id: number; name: string }[]
-  ) => { id: number; name: string }[]
+  filterFunction?: (id: number, associatedObjects: A[]) => AssociatedObject[]
   deleteByKey?: keyof T
 }
 
-const DeleteModal = <T,>({
+const DeleteModal = <T, A extends AssociatedObject>({
   id,
   name,
   objectType,
@@ -42,10 +43,11 @@ const DeleteModal = <T,>({
   associatedObjectsLabel,
   filterFunction,
   deleteByKey, // NEW PROP
-}: DeleteModalProps<T>) => {
+}: DeleteModalProps<T, A>) => {
   const handleConfirm = () => {
     const keyValue = deleteByKey && selectedRow ? selectedRow[deleteByKey] : id
-    onConfirm(keyValue as string | number)
+    if (typeof keyValue !== 'string' && typeof keyValue !== 'number') return
+    onConfirm(keyValue)
     onClose()
   }
 

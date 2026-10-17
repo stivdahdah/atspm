@@ -14,7 +14,7 @@ export default function DaysOfWeekOptionsPopup() {
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
-    let aggClassification
+    let aggClassification: AggClassification
 
     if (value === 'wholeWeek') {
       aggClassification = AggClassification.Total
@@ -22,6 +22,8 @@ export default function DaysOfWeekOptionsPopup() {
       aggClassification = AggClassification.Weekday
     } else if (value === 'weekends') {
       aggClassification = AggClassification.Weekend
+    } else {
+      return
     }
 
     setRouteSpeedRequest({

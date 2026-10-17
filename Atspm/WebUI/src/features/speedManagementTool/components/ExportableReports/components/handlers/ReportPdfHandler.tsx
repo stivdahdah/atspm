@@ -113,7 +113,7 @@ const createLeaderShipFilterDescription = (
 
   return `The following report for ${
     SourceIdToNamingMapping[
-      options.sourceId as keyof typeof SourceIdToNamingMapping
+      options.sourceId?.[0] as keyof typeof SourceIdToNamingMapping
     ]
   } details the results of speed analyses on Utah state routes in ${locationFilter} between ${startDate} and ${endDate}. Only ${daysOfWeekFilter} and the hours between ${hoursFilter} were included in the analysis.`
 }
@@ -727,7 +727,7 @@ export const usePDFHandler = (props: Props): SpeedPdfHandler => {
             filterDescriptions.push(
               `Source ID: ${
                 SourceIdToNamingMapping[
-                  opts.sourceId as keyof typeof SourceIdToNamingMapping
+                  opts.sourceId?.[0] as keyof typeof SourceIdToNamingMapping
                 ]
               }`
             )

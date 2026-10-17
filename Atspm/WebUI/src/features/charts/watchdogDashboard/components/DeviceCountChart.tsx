@@ -2,7 +2,7 @@ import ApacheEChart from '@/features/charts/components/apacheEChart/ApacheEChart
 import transformDeviceCountData from '@/features/charts/watchdogDashboard/deviceCount.transformer'
 import { DeviceCount } from '@/features/watchdog/types'
 import { Paper } from '@mui/material'
-import React, { useMemo, useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 
 interface DeviceCountChartProps {
   data: DeviceCount[]
@@ -40,7 +40,6 @@ const DeviceCountChart: React.FC<DeviceCountChartProps> = ({
     <Paper elevation={3} sx={{ height: 375, padding: 1 }}>
       {!isLoading && deviceCountChartOption && (
         <ApacheEChart
-          ref={chartRef}
           id="watchdog-device-count-chart"
           option={deviceCountChartOption}
           loading={isLoading}

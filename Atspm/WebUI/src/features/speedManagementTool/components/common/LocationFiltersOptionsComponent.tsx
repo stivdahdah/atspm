@@ -1,6 +1,6 @@
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
 import { Alert, Box } from '@mui/material'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { LocationFiltersHandler } from './handlers/LocationFiltersHandler'
 
 interface Props {
@@ -19,17 +19,16 @@ export const LocationFiltersOptions = (props: Props) => {
 
   // Map each filter key to its update function.
   // wrap in useCallback to prevent unnecessary re-renders.
-  const updateFunctions: Record<FilterKey, (value: string | null) => void> =
-    useCallback(
-      {
-        county: handler.updateCounty,
-        accessCategory: handler.updateAccessCategory,
-        city: handler.updateCity,
-        functionalType: handler.updateFunctionalType,
-        region: handler.updateRegion,
-      },
-      [handler]
-    )
+  const updateFunctions: Record<FilterKey, (value: string[]) => void> = useMemo(
+    () => ({
+      county: handler.updateCounty,
+      accessCategory: handler.updateAccessCategory,
+      city: handler.updateCity,
+      functionalType: handler.updateFunctionalType,
+      region: handler.updateRegion,
+    }),
+    [handler]
+  )
 
   /**
    * Handles changes from the autocomplete components.
@@ -37,9 +36,9 @@ export const LocationFiltersOptions = (props: Props) => {
    * then passes that single value (or null) to the appropriate update function.
    */
   const handleAutocompleteChange = useCallback(
-    <T extends { name: string }>(key: FilterKey, value: T[] | null) => {
+    (key: FilterKey, value: string[] | null) => {
       // Extract the name from the first object if available.
-      updateFunctions[key](value)
+      updateFunctions[key](value ?? [])
     },
     [updateFunctions]
   )
@@ -63,7 +62,6 @@ export const LocationFiltersOptions = (props: Props) => {
           onChange={(_, newValue) =>
             handleAutocompleteChange('county', newValue)
           }
-          getOptionLabelProperty="name"
         />
 
         {/* Access Category Filter */}
@@ -74,7 +72,6 @@ export const LocationFiltersOptions = (props: Props) => {
           onChange={(_, newValue) =>
             handleAutocompleteChange('accessCategory', newValue)
           }
-          getOptionLabelProperty="name"
         />
 
         {/* City Filter */}
@@ -83,7 +80,6 @@ export const LocationFiltersOptions = (props: Props) => {
           options={handler.cities}
           value={handler.city}
           onChange={(_, newValue) => handleAutocompleteChange('city', newValue)}
-          getOptionLabelProperty="name"
         />
 
         {/* Functional Type Filter */}
@@ -94,7 +90,6 @@ export const LocationFiltersOptions = (props: Props) => {
           onChange={(_, newValue) =>
             handleAutocompleteChange('functionalType', newValue)
           }
-          getOptionLabelProperty="name"
         />
 
         {/* Region Filter */}
@@ -105,7 +100,6 @@ export const LocationFiltersOptions = (props: Props) => {
           onChange={(_, newValue) =>
             handleAutocompleteChange('region', newValue)
           }
-          getOptionLabelProperty="name"
         />
 
         {handler.showWarning && (

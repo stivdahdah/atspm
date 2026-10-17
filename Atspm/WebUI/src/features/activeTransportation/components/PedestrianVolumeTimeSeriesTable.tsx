@@ -30,12 +30,14 @@ const PedestrianVolumeTimeSeriesTable = ({
             longitude,
           }
 
-          return phase != null && phase !== 'All'
-            ? { ...baseRow, phase }
-            : baseRow
+          return phase != null ? { ...baseRow, phase } : baseRow
         })
       })
-      .filter((r) => r.timestamp)
+      .filter(
+        (r): r is typeof r & { timestamp: string } =>
+          typeof r.timestamp === 'string' &&
+          Number.isFinite(Date.parse(r.timestamp))
+      )
       .sort((a, b) => {
         const ta = new Date(a.timestamp).getTime()
         const tb = new Date(b.timestamp).getTime()
@@ -64,7 +66,7 @@ const PedestrianVolumeTimeSeriesTable = ({
           <thead>
             <tr>
               <th style={thStyle}>Signal ID</th>
-              {phase && phase !== 'All' && <th style={thStyle}>Phase</th>}
+              {phase != null && <th style={thStyle}>Phase</th>}
               <th style={thStyle}>Address</th>
               <th style={thStyle}>Timestamp</th>
               <th style={thStyle}>Pedestrians</th>
@@ -77,8 +79,8 @@ const PedestrianVolumeTimeSeriesTable = ({
             {rows.map((row, idx) => (
               <tr key={`${row.locationIdentifier}-${row.timestamp}-${idx}`}>
                 <td style={tdStyle}>{row.locationIdentifier}</td>
-                {phase && phase !== 'All' && (
-                  <td style={tdStyle}>{row.phase}</td>
+                {phase != null && (
+                  <td style={tdStyle}>{'phase' in row ? row.phase : ''}</td>
                 )}
                 <td style={tdStyle}>{row.address}</td>
                 <td style={tdStyle}>

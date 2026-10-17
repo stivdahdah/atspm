@@ -23,7 +23,7 @@ import { SolidLineSeriesSymbol } from '@/features/charts/utils'
 import { getDataSourceColor } from '@/features/speedManagementTool/components/SM_Modal/SM_Popup'
 import { RouteRenderOption } from '@/features/speedManagementTool/enums'
 import { compareAsc, eachDayOfInterval, format } from 'date-fns'
-import { EChartsOption, SeriesOption, TitleComponentOption } from 'echarts'
+import { EChartsOption, LineSeriesOption, TitleComponentOption } from 'echarts'
 
 const sourceMapping = {
   1: 'ATSPM',
@@ -50,8 +50,11 @@ export function createAverageChart(
           const matchedEntry = findMatchedEntry(source, label, granularity)
 
           if (matchedEntry) {
-            const value = matchedEntry[valueKey as keyof typeof matchedEntry]
-            if (value) {
+            const value =
+              valueKey in matchedEntry
+                ? matchedEntry[valueKey as keyof typeof matchedEntry]
+                : null
+            if (typeof value === 'number' && Number.isFinite(value)) {
               return [label, parseFloat(value.toFixed(2))]
             }
           }
@@ -66,7 +69,7 @@ export function createAverageChart(
         data: sourceData,
         symbol: 'none',
         color: getDataSourceColor(source.sourceId),
-      } as SeriesOption
+      } satisfies LineSeriesOption
     })
     .filter((series) => series.data.some((point) => point[1] !== null))
 
@@ -145,29 +148,39 @@ function getValueKeyAndTitle(routeRenderOption: RouteRenderOption) {
   return { valueKey, percentileTitle }
 }
 
-function generateLegend(seriesData: SeriesOption[]) {
+function generateLegend(seriesData: LineSeriesOption[]) {
   return {
     y: 50,
     data: seriesData.map((series) => {
       return {
-        name: series.name,
+        name: String(series.name ?? ''),
         icon: SolidLineSeriesSymbol,
-        color: series.color,
       }
     }),
   }
 }
 
-function generateXAxisLabels(startDate, endDate, granularity, data) {
+function generateXAxisLabels(
+  startDate: string,
+  endDate: string,
+  granularity: Granularity,
+  data: Array<DailyHistoricalRouteData | MonthlyHistoricalRouteData>
+) {
   const start = new Date(startDate)
   const end = new Date(endDate)
+  if (
+    !Number.isFinite(start.getTime()) ||
+    !Number.isFinite(end.getTime()) ||
+    start > end
+  )
+    return []
 
   if (granularity === 'monthly') {
     // Extract all months from the data
-    const monthsSet = new Set()
+    const monthsSet = new Set<string>()
 
     data.forEach((item) => {
-      if (item.monthlyAverages) {
+      if ('monthlyAverages' in item && item.monthlyAverages) {
         item.monthlyAverages.forEach((monthData) => {
           if (monthData.month) {
             monthsSet.add(monthData.month)
@@ -179,6 +192,7 @@ function generateXAxisLabels(startDate, endDate, granularity, data) {
     // Convert to array and sort dates
     const sortedMonths = Array.from(monthsSet)
       .map((month) => new Date(month))
+      .filter((date) => Number.isFinite(date.getTime()))
       .sort((a, b) => compareAsc(a, b))
 
     // Format dates as MM/yyyy
@@ -205,6 +219,7 @@ function findMatchedEntry(
     return source.monthlyAverages.find((entry) => {
       if (!entry.month) return null
       const entryDate = new Date(entry.month)
+      if (!Number.isFinite(entryDate.getTime())) return false
       const formattedDate = format(entryDate, 'MM/yyyy')
       return formattedDate === label
     })
@@ -213,6 +228,7 @@ function findMatchedEntry(
     return source.dailyAverages.find((entry) => {
       if (!entry.date) return null
       const entryDate = new Date(entry.date)
+      if (!Number.isFinite(entryDate.getTime())) return false
       const formattedDate = format(entryDate, 'M/d/yyyy')
       return formattedDate === label
     })

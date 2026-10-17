@@ -1,10 +1,11 @@
 import CongestionChart from '@/features/charts/speedManagementTool/congestionTracker/components/CongestionTrackerChart'
 import { Box } from '@mui/material'
+import { transformCongestionTrackerData as transformChart } from '../../congestionTracker.transformer'
 
 const CongestionTrackingChartsContainer = ({
   chartData,
 }: {
-  chartData: number
+  chartData: ReturnType<typeof transformChart>
 }) => {
   const chartOptions = chartData.charts[0]
   if (!chartOptions) return null

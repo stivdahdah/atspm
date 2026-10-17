@@ -46,9 +46,7 @@ function getNumericValue(value: unknown) {
   return null
 }
 
-function getTitlePaddingVertical(
-  padding: TitleComponentOption['padding']
-) {
+function getTitlePaddingVertical(padding: TitleComponentOption['padding']) {
   if (typeof padding === 'number' && Number.isFinite(padding)) {
     return padding * 2
   }
@@ -95,9 +93,10 @@ function estimateTitleEntryBottom(entry: TitleComponentOption) {
   const top = getNumericValue(entry.top) ?? 0
   const fontSize = getTitleFontSize(entry)
   const paddingVertical = getTitlePaddingVertical(entry.padding)
-  const lineCount = String(entry.text ?? '')
-    .split('\n')
-    .filter(Boolean).length || 1
+  const lineCount =
+    String(entry.text ?? '')
+      .split('\n')
+      .filter(Boolean).length || 1
 
   return top + fontSize * 1.2 * lineCount + paddingVertical
 }
@@ -122,7 +121,7 @@ function getRequiredExportGridTop(sourceOption: EChartsOption) {
 function mergeAxisForExport(
   currentAxis: XAXisComponentOption | undefined,
   sourceAxis: XAXisComponentOption | undefined
-) {
+): XAXisComponentOption | undefined {
   if (!currentAxis) {
     return sourceAxis
   }
@@ -131,10 +130,15 @@ function mergeAxisForExport(
     return currentAxis
   }
 
-  return {
-    ...currentAxis,
-    ...sourceAxis,
-  }
+  if (sourceAxis.type === 'value' && currentAxis.type === 'value')
+    return { ...currentAxis, ...sourceAxis }
+  if (sourceAxis.type === 'category' && currentAxis.type === 'category')
+    return { ...currentAxis, ...sourceAxis }
+  if (sourceAxis.type === 'time' && currentAxis.type === 'time')
+    return { ...currentAxis, ...sourceAxis }
+  if (sourceAxis.type === 'log' && currentAxis.type === 'log')
+    return { ...currentAxis, ...sourceAxis }
+  return sourceAxis
 }
 
 function restoreSliderVisibility(
@@ -234,8 +238,20 @@ export function buildTimeSpaceExportOption(
     ...currentOption,
     animation: false,
     title: sourceOption.title ?? currentOption.title,
-    xAxis: nextXAxis,
-    dataZoom: nextDataZoom,
-    grid: nextGrid,
+    xAxis: Array.isArray(nextXAxis)
+      ? nextXAxis.filter(
+          (axis): axis is NonNullable<typeof axis> => axis != null
+        )
+      : nextXAxis,
+    dataZoom: Array.isArray(nextDataZoom)
+      ? nextDataZoom.filter(
+          (zoom): zoom is NonNullable<typeof zoom> => zoom != null
+        )
+      : nextDataZoom,
+    grid: Array.isArray(nextGrid)
+      ? nextGrid.filter(
+          (grid): grid is NonNullable<typeof grid> => grid != null
+        )
+      : nextGrid,
   }
 }

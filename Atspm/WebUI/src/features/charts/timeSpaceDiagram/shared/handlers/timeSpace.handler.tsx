@@ -345,6 +345,7 @@ function getOffsetRowBounds(
     return null
   }
 
+  if (typeof datum[0] !== 'number' && typeof datum[0] !== 'string') return null
   const pixel = chart.convertToPixel({ xAxisIndex: 0, yAxisIndex: 0 }, [
     datum[0],
     distanceValue,

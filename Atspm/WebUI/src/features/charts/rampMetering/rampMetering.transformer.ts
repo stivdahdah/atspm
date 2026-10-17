@@ -30,7 +30,7 @@ import {
   transformSeriesData,
 } from '../common/transformers'
 import { ChartType, MarkAreaData } from '../common/types'
-import { TimeSpaceDetectorEvent } from '../timeSpaceDiagram/shared/types'
+
 import { TransformedChartResponse } from '../types'
 import {
   Color,
@@ -609,7 +609,7 @@ function generateQueueSeriesData(
 }
 
 function createStartupArea(
-  events: TimeSpaceDetectorEvent[],
+  events: { initialX: string; finalX: string }[],
   startDate: string,
   endDate: string
 ): SeriesOption {

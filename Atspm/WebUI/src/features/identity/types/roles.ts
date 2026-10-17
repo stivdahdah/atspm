@@ -1,3 +1,4 @@
+import type { AuditFields } from '@/types/AuditFields'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - roles.ts
@@ -14,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-export interface Role {
+export interface Role extends AuditFields {
   id: number
   role: string
   claims: string[]

@@ -18,11 +18,12 @@ const TotalPedVolByLocationCharts = ({
     ?.map((loc) => loc.totalVolume || 0)
     .reduce((a, b) => a + b, 0)
   const percentageData = data?.map((loc) => ({
-    locationIdentifier: loc.locationIdentifier,
-    percentage: roundTo(
-      totalVolume ? ((loc.totalVolume || 0) / totalVolume) * 100 : 0,
-      0
-    ),
+    locationIdentifier: loc.locationIdentifier ?? '',
+    percentage:
+      roundTo(
+        totalVolume ? ((loc.totalVolume || 0) / totalVolume) * 100 : 0,
+        0
+      ) ?? 0,
   }))
   const pieOption = transformPieChartTransformer(percentageData || [])
   const blockOption = transformBlockChartTransformer(percentageData || [])

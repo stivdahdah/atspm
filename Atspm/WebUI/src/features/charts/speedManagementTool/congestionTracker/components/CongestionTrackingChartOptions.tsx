@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 
 interface CongestionTrackingOptionsProps {
   onOptionsChange: (options: Partial<CongestionTrackingOptions>) => void
-  sourceId: number
+  sourceId: number[]
 }
 
 const CongestionTrackingChartOptions = ({

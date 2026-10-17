@@ -1,3 +1,4 @@
+import { horizontalBounds } from '@/features/charts/common/rendererGeometry'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - timeSpaceLocationCards.ts
@@ -22,11 +23,11 @@ import {
   normalizeOffsetSeconds,
   normalizeOffsetToCycleLengthSeconds,
 } from '@/features/charts/timeSpaceDiagram/core/offsets/timeSpaceOffsets'
+import type { TimeSpaceDisplayDistanceOffset } from '@/features/charts/timeSpaceDiagram/core/types/timeSpaceCore.types'
 import type {
   RawTimeSpaceAverageData,
   TimeSpaceUnwrappedData,
 } from '@/features/charts/timeSpaceDiagram/shared/types'
-import type { TimeSpaceDisplayDistanceOffset } from '@/features/charts/timeSpaceDiagram/core/types/timeSpaceCore.types'
 import { Color } from '@/features/charts/utils'
 import type {
   CustomSeriesRenderItemParams,
@@ -401,7 +402,7 @@ export function getLocationsLabelOption(
         const [, yBottom] = api.coord([api.value(0, last), api.value(1, last)])
 
         children.push({
-          type: 'line',
+          type: 'line' as const,
           shape: { x1: xLine, y1: yTop, x2: xLine, y2: yBottom },
           style: { stroke: Color.PlanB, lineWidth: 3 },
           z2: 1,
@@ -414,7 +415,7 @@ export function getLocationsLabelOption(
       const isIgnored = Boolean(location?.isIgnoredLocation)
 
       children.push({
-        type: 'line',
+        type: 'line' as const,
         shape: { x1: xLine, y1: y, x2: gridLeft, y2: y },
         style: {
           stroke: isIgnored
@@ -497,132 +498,132 @@ export function getLocationsLabelOption(
         userAdjustedOffsetText,
         false
       )
-      const bodyChildren = isIgnored
-        ? []
-        : [
-            ...(isDeltaOffsetModified
-              ? [
-                  {
-                    type: 'rect' as const,
-                    z2: 19,
-                    shape: {
-                      x: deltaOffsetBadgeLayout.highlightX,
-                      y: deltaOffsetBadgeLayout.highlightY,
-                      width: deltaOffsetBadgeLayout.highlightWidth,
-                      height: deltaOffsetBadgeLayout.highlightHeight,
-                      r: 0,
+      const bodyChildren: NonNullable<CustomSeriesRenderItemReturn>[] =
+        isIgnored
+          ? []
+          : [
+              ...(isDeltaOffsetModified
+                ? [
+                    {
+                      type: 'rect' as const,
+                      z2: 19,
+                      shape: {
+                        x: deltaOffsetBadgeLayout.highlightX,
+                        y: deltaOffsetBadgeLayout.highlightY,
+                        width: deltaOffsetBadgeLayout.highlightWidth,
+                        height: deltaOffsetBadgeLayout.highlightHeight,
+                        r: 0,
+                      },
+                      style: {
+                        fill: deltaOffsetVisuals.highlightFill,
+                        stroke: deltaOffsetVisuals.highlightStroke,
+                        lineWidth: 1,
+                      },
                     },
-                    style: {
-                      fill: deltaOffsetVisuals.highlightFill,
-                      stroke: deltaOffsetVisuals.highlightStroke,
-                      lineWidth: 1,
-                    },
-                  },
-                ]
-              : []),
-            {
-              type: 'text' as const,
-              z2: 20,
-              style: {
-                x: textX,
-                y: topMetricRowY,
-                text: 'Programmed Offset',
-                width: offsetLabelWidth,
-                overflow: 'truncate',
-                textAlign: 'left',
-                textVerticalAlign: 'middle',
-                fill: '#64748B',
-                fontSize: 11,
-                fontWeight: 500,
+                  ]
+                : []),
+              {
+                type: 'text' as const,
+                z2: 20,
+                style: {
+                  x: textX,
+                  y: topMetricRowY,
+                  text: 'Programmed Offset',
+                  width: offsetLabelWidth,
+                  overflow: 'truncate' as const,
+                  align: 'left' as const,
+                  verticalAlign: 'middle' as const,
+                  fill: '#64748B',
+                  fontSize: 11,
+                  fontWeight: 500,
+                },
               },
-            },
-            {
-              type: 'text' as const,
-              z2: 20,
-              style: {
-                x: bodyRightX,
-                y: topMetricRowY,
-                text: programmedOffsetText,
-                width: offsetValueWidth,
-                overflow: 'truncate',
-                textAlign: 'right',
-                textVerticalAlign: 'middle',
-                fill: '#111827',
-                fontSize: 11,
-                fontWeight: 700,
+              {
+                type: 'text' as const,
+                z2: 20,
+                style: {
+                  x: bodyRightX,
+                  y: topMetricRowY,
+                  text: programmedOffsetText,
+                  width: offsetValueWidth,
+                  overflow: 'truncate' as const,
+                  align: 'right' as const,
+                  verticalAlign: 'middle' as const,
+                  fill: '#111827',
+                  fontSize: 11,
+                  fontWeight: 700,
+                },
               },
-            },
-            {
-              type: 'text' as const,
-              z2: 20,
-              style: {
-                x: textX,
-                y: middleMetricRowY,
-                text: 'User-Adjusted Offset',
-                width: offsetLabelWidth,
-                overflow: 'truncate',
-                textAlign: 'left',
-                textVerticalAlign: 'middle',
-                fill: '#64748B',
-                fontSize: 11,
-                fontWeight: 500,
+              {
+                type: 'text' as const,
+                z2: 20,
+                style: {
+                  x: textX,
+                  y: middleMetricRowY,
+                  text: 'User-Adjusted Offset',
+                  width: offsetLabelWidth,
+                  overflow: 'truncate' as const,
+                  align: 'left' as const,
+                  verticalAlign: 'middle' as const,
+                  fill: '#64748B',
+                  fontSize: 11,
+                  fontWeight: 500,
+                },
               },
-            },
-            {
-              type: 'text' as const,
-              z2: 20,
-              style: {
-                x: bodyRightX,
-                y: middleMetricRowY,
-                text: userAdjustedOffsetText,
-                width: offsetValueWidth,
-                overflow: 'truncate',
-                textAlign: 'right',
-                textVerticalAlign: 'middle',
-                fill: isDeltaOffsetModified
-                  ? deltaOffsetVisuals.valueColor
-                  : '#111827',
-                fontSize: 11,
-                fontWeight: 700,
+              {
+                type: 'text' as const,
+                z2: 20,
+                style: {
+                  x: bodyRightX,
+                  y: middleMetricRowY,
+                  text: userAdjustedOffsetText,
+                  width: offsetValueWidth,
+                  overflow: 'truncate' as const,
+                  align: 'right' as const,
+                  verticalAlign: 'middle' as const,
+                  fill: isDeltaOffsetModified
+                    ? deltaOffsetVisuals.valueColor
+                    : '#111827',
+                  fontSize: 11,
+                  fontWeight: 700,
+                },
               },
-            },
-            {
-              type: 'text' as const,
-              z2: 20,
-              style: {
-                x: textX,
-                y: bottomMetricRowY,
-                text: 'Cycle Length',
-                width: cycleLabelWidth,
-                overflow: 'truncate',
-                textAlign: 'left',
-                textVerticalAlign: 'middle',
-                fill: '#64748B',
-                fontSize: 11,
-                fontWeight: 500,
+              {
+                type: 'text' as const,
+                z2: 20,
+                style: {
+                  x: textX,
+                  y: bottomMetricRowY,
+                  text: 'Cycle Length',
+                  width: cycleLabelWidth,
+                  overflow: 'truncate' as const,
+                  align: 'left' as const,
+                  verticalAlign: 'middle' as const,
+                  fill: '#64748B',
+                  fontSize: 11,
+                  fontWeight: 500,
+                },
               },
-            },
-            {
-              type: 'text' as const,
-              z2: 20,
-              style: {
-                x: bodyRightX,
-                y: bottomMetricRowY,
-                text: cycleText,
-                width: cycleValueWidth,
-                overflow: 'truncate',
-                textAlign: 'right',
-                textVerticalAlign: 'middle',
-                fill: '#111827',
-                fontSize: 11,
-                fontWeight: 700,
+              {
+                type: 'text' as const,
+                z2: 20,
+                style: {
+                  x: bodyRightX,
+                  y: bottomMetricRowY,
+                  text: cycleText,
+                  width: cycleValueWidth,
+                  overflow: 'truncate' as const,
+                  align: 'right' as const,
+                  verticalAlign: 'middle' as const,
+                  fill: '#111827',
+                  fontSize: 11,
+                  fontWeight: 700,
+                },
               },
-            },
-          ]
+            ]
 
       children.push({
-        type: 'group',
-        z2: 2,
+        type: 'group' as const,
         children: [
           {
             type: 'rect',
@@ -657,7 +658,7 @@ export function getLocationsLabelOption(
             },
           },
           {
-            type: 'text',
+            type: 'text' as const,
             z2: 20,
             style: {
               x: textX,
@@ -668,8 +669,8 @@ export function getLocationsLabelOption(
               overflow: 'break',
               lineOverflow: 'truncate',
               lineHeight: 14,
-              textAlign: 'left',
-              textVerticalAlign: 'top',
+              align: 'left' as const,
+              verticalAlign: 'top' as const,
               rich: {
                 ident: {
                   fill: isIgnored ? '#334155' : '#111',
@@ -687,7 +688,7 @@ export function getLocationsLabelOption(
             },
           },
           {
-            type: 'line',
+            type: 'line' as const,
             z2: 20,
             shape: {
               x1: dividerX,
@@ -704,7 +705,13 @@ export function getLocationsLabelOption(
         ],
       })
 
-      return { type: 'group', children }
+      return {
+        type: 'group' as const,
+        children: children.filter(
+          (child): child is NonNullable<CustomSeriesRenderItemReturn> =>
+            child != null
+        ),
+      }
     },
     data: distanceData.map((distance, index) => {
       const location = data[index]
@@ -737,19 +744,21 @@ export function getOffsetAndProgramSplitLabel(
     type: 'custom',
     renderItem: (params: CustomSeriesRenderItemParams, api) => {
       const [, y] = api.coord([api.value(0), api.value(1)])
-      const width = (params.coordSys as { width: number }).width
+      const bounds = horizontalBounds(params.coordSys)
+      if (!bounds) return null
+      const width = bounds.width
 
       return {
-        type: 'group',
+        type: 'group' as const,
         position: [width + 140, y + 11],
         children: [
           {
-            type: 'text',
+            type: 'text' as const,
             style: {
               x: 60,
               y: 10,
-              textVerticalAlign: 'bottom',
-              textAlign: 'center',
+              verticalAlign: 'bottom' as const,
+              align: 'center' as const,
               text:
                 'Cycle Length: ' +
                 formatCycleLengthSummaryValue(api.value(2)) +
@@ -760,7 +769,7 @@ export function getOffsetAndProgramSplitLabel(
                 `Split (${primaryDirection}: ${api.value(
                   4
                 )}s | ${opposingDirection}: ${api.value(6)}s)\n`,
-              textFill: '#000',
+              fill: '#000',
               fontSize: 10,
             },
           },
@@ -832,12 +841,12 @@ export function getDistancesLabelOption(
       const y = rawY + verticalOffsetY
 
       return {
-        type: 'group',
+        type: 'group' as const,
         silent: true,
         emphasisDisabled: true,
         children: [
           {
-            type: 'line',
+            type: 'line' as const,
             z2: 30,
             shape: {
               x1: xLine,
@@ -867,7 +876,7 @@ export function getDistancesLabelOption(
             },
           },
           {
-            type: 'line',
+            type: 'line' as const,
             z2: 32,
             shape: {
               x1: dividerX,
@@ -881,30 +890,30 @@ export function getDistancesLabelOption(
             },
           },
           {
-            type: 'text',
+            type: 'text' as const,
             z2: 33,
             style: {
               x: valueCardLeft + valueCardWidth / 4,
               y,
               text: distanceText,
-              textFill: '#000',
+              fill: '#000',
               fontSize: 10,
               fontWeight: 600,
-              textAlign: 'center',
-              textVerticalAlign: 'middle',
+              align: 'center' as const,
+              verticalAlign: 'middle' as const,
             },
           },
           {
-            type: 'text',
+            type: 'text' as const,
             z2: 33,
             style: {
               x: valueCardLeft + (valueCardWidth * 3) / 4,
               y,
               text: speedText,
-              textFill: '#2B4C68',
+              fill: '#2B4C68',
               fontSize: 10,
-              textAlign: 'center',
-              textVerticalAlign: 'middle',
+              align: 'center' as const,
+              verticalAlign: 'middle' as const,
             },
           },
         ],
@@ -941,7 +950,8 @@ export function getDraggableOffsetabelOption(
       type: 'custom',
       data: dataPoint,
       renderItem: (params, api) => {
-        const coordSys = params.coordSys
+        const coordSys = horizontalBounds(params.coordSys)
+        if (!coordSys) return null
         const [, y] = api.coord([0, api.value(1) as number])
 
         const textX = coordSys.x + coordSys.width + 40
@@ -956,20 +966,20 @@ export function getDraggableOffsetabelOption(
         const lineY2 = blockTopY + (lines.length - 1) * lineGap + fontSize + 2
 
         return {
-          type: 'group',
+          type: 'group' as const,
           children: [
             {
-              type: 'line',
+              type: 'line' as const,
               shape: { x1: lineX, y1: lineY1, x2: lineX, y2: lineY2 },
               style: { stroke: '#000', lineWidth: 1 },
             },
             ...lines.map((text, index) => ({
-              type: 'text',
+              type: 'text' as const,
               style: {
                 x: textX,
                 y: blockTopY + index * lineGap,
                 text,
-                textFill: '#000',
+                fill: '#000',
                 fontSize,
               },
             })),

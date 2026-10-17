@@ -1,9 +1,9 @@
 import ApacheEChart from '@/features/charts/components/apacheEChart'
-import { TransformedDefaultResponse } from '@/features/charts/types'
+import { TransformedChartResponse } from '@/features/charts/types'
 import { Box, Paper, useTheme } from '@mui/material'
 
 export interface DefaultChartResultsProps {
-  chartData: TransformedDefaultResponse
+  chartData: TransformedChartResponse
   refs: React.RefObject<HTMLDivElement>[]
   chartComponent?: React.ComponentType<any>
 }

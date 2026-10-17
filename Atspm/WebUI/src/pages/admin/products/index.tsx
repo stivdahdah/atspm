@@ -61,7 +61,8 @@ const ProductsAdmin = () => {
     }
   }
 
-  const HandleDeleteProduct = async (id: number) => {
+  const HandleDeleteProduct = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteMutation(id)
       refetchProducts()
@@ -73,6 +74,7 @@ const ProductsAdmin = () => {
   const HandleEditProduct = async (productData: Product) => {
     const { id, manufacturer, model, webPage, notes } = productData
     try {
+      if (id == null) throw new Error('Missing product ID.')
       await editMutation({
         data: { manufacturer, model, webPage, notes },
         id,

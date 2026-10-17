@@ -25,7 +25,7 @@ import { EChartsOption } from 'echarts'
 
 export default function transformBoxPlotByLocationTransformer(
   data: PedatChartsContainerProps['data'],
-  timeUnit: string
+  timeUnit = 'Hour'
 ): EChartsOption {
   const title = {
     text: `Box Plot of Pedestrian Volume, by ${timeUnit}, by Location`,
@@ -33,13 +33,13 @@ export default function transformBoxPlotByLocationTransformer(
   }
 
   const xAxis = {
-    type: 'category',
+    type: 'category' as const,
     name: 'Location',
-    data: data?.map((d) => d.locationIdentifier),
+    data: data?.map((d) => d.locationIdentifier ?? ''),
   }
 
   const yAxis = {
-    type: 'value',
+    type: 'value' as const,
     name: 'Pedestrian Volume',
   }
 
@@ -73,16 +73,16 @@ export default function transformBoxPlotByLocationTransformer(
   const series = [
     {
       name: 'Volume Distribution',
-      type: 'boxplot',
+      type: 'boxplot' as const,
       data: data?.map((d) => ({
-        name: d.locationIdentifier,
+        name: d.locationIdentifier ?? '',
         value: [
-          d.statisticData?.min,
-          d.statisticData?.twentyFifthPercentile,
-          d.statisticData?.fiftiethPercentile,
-          d.statisticData?.seventyFifthPercentile,
-          d.statisticData?.max,
-        ],
+          d.statisticData?.min ?? null,
+          d.statisticData?.twentyFifthPercentile ?? null,
+          d.statisticData?.fiftiethPercentile ?? null,
+          d.statisticData?.seventyFifthPercentile ?? null,
+          d.statisticData?.max ?? null,
+        ].map((value) => value ?? '-'),
       })),
     },
   ]

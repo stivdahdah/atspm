@@ -1,6 +1,6 @@
+import UserModal from '@/features/identity/components/users/UserModal'
 import { Location } from '@/features/locations/types'
 import RoleModal from '@/features/roles/components/RoleModal'
-import UserModal from '@/features/identity/components/users/UserModal'
 import AddIcon from '@mui/icons-material/Add'
 import CancelIcon from '@mui/icons-material/Close'
 import DeleteIcon from '@mui/icons-material/DeleteOutlined'
@@ -71,9 +71,12 @@ interface GenericChartProps {
   onDelete(data: any): void
   onEdit(data: any): void
   onCreate(data: any): void
-  customModal?: React.ReactNode
+  customModal?: React.ReactElement
   protectedItems?: string[]
-  locations?: Location[]
+  locations?: (Location & {
+    deviceConfigurationId?: number
+    location?: { primaryName?: string; secondaryName?: string }
+  })[]
   hasEditPrivileges: boolean
   hasDeletePrivileges: boolean
 }
@@ -84,7 +87,7 @@ interface EditToolbarProps {
     newModel: (oldModel: GridRowModesModel) => GridRowModesModel
   ) => void
 }
-function EditToolbar(props: EditToolbarProps) {
+function EditToolbar() {
   return (
     <GridToolbarContainer>
       <GridToolbarColumnsButton />
@@ -108,12 +111,12 @@ function GenericAdminChart({
   hasEditPrivileges,
   hasDeletePrivileges,
 }: GenericChartProps) {
-  const [rows, setRows] = useState(data)
+  const [rows, setRows] = useState<GridRowsProp>(data)
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({})
   const [open, setOpen] = useState(false)
   const [id, setId] = useState(-1)
   const [modalOpen, setModalOpen] = useState(false)
-  const [modalData, setModalData] = useState(null)
+  const [modalData, setModalData] = useState<GridRowModel | null>(null)
   const theme = useTheme()
   const mode = theme.palette.mode
   const apiRef = useGridApiRef()
@@ -154,7 +157,7 @@ function GenericAdminChart({
     if (customModal) {
       const rowData = rows.find((row: any) => row.id === id)
       setModalOpen(true)
-      setModalData(rowData)
+      setModalData(rowData ?? null)
     } else {
       setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } })
     }
@@ -353,7 +356,6 @@ function GenericAdminChart({
           processRowUpdate={processRowUpdate}
           autoHeight
           slots={{ toolbar: EditToolbar }}
-          slotProps={{ toolbar: { baseRowType, setRows, setRowModesModel } }}
           pageSizeOptions={[{ value: 100, label: '100' }]}
           sx={{
             [`& .${gridClasses.cell}`]: {
@@ -403,8 +405,8 @@ function GenericAdminChart({
                       {listOfAssociatedLocations.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell component="th" scope="row">
-                            {item.location.primaryName} &{' '}
-                            {item.location.secondaryName}
+                            {item.location?.primaryName} &{' '}
+                            {item.location?.secondaryName}
                           </TableCell>
                         </TableRow>
                       ))}

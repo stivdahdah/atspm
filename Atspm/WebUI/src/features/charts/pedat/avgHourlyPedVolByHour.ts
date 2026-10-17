@@ -39,13 +39,13 @@ export default function transformHourlyPedVolByHourOfDay(
   }
 
   const xAxis = {
-    type: 'category',
+    type: 'category' as const,
     name: 'Hour',
     data: data.map((d) => `${d.hour}`),
   }
 
   const yAxis = {
-    type: 'value',
+    type: 'value' as const,
     name: 'Volume',
   }
 
@@ -73,7 +73,7 @@ export default function transformHourlyPedVolByHourOfDay(
 
   const series = [
     {
-      type: 'bar',
+      type: 'bar' as const,
       name: 'Average Hourly Volume',
       data: data.map((d) => d.averageVolume),
     },

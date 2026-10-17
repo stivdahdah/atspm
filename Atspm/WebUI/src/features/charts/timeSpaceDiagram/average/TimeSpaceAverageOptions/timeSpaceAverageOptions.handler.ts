@@ -14,10 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { LocationWithCoordPhases, LocationWithSequence } from '@/api/config'
 import { ToolType } from '@/features/charts/common/types'
 import type { TSBaseHandler } from '@/features/charts/timeSpaceDiagram/shared/options/timeSpaceBaseHandler'
-import { TimeSpaceAverageOptions } from '@/features/charts/timeSpaceDiagram/shared/types'
+import {
+  LocationWithCoordPhases,
+  LocationWithSequence,
+  TimeSpaceAverageOptions,
+} from '@/features/charts/timeSpaceDiagram/shared/types'
 import { Route, RouteLocation } from '@/features/routes/types'
 import { DateTimeProps, TimeOnlyProps } from '@/types/TimeProps'
 import {

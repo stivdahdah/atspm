@@ -42,7 +42,7 @@ const PerformanceMeasures = () => {
     endOfWeek(endOfMonth(startOfToday()))
   )
   const [chartType, setChartType] = useState<ChartType | null>(null)
-  const [chartOptions, setChartOptions] = useState<Partial<ChartOptions>>()
+  const [chartOptions, setChartOptions] = useState<Partial<ChartOptions>>({})
   const [startDateTime, setStartDateTime] = useState(startOfToday())
   const [endDateTime, setEndDateTime] = useState(startOfTomorrow())
 

@@ -57,22 +57,11 @@ export function recomputeTimeSpaceData<T extends TimeSpaceBaseData>(
 
       if (isIgnored(current.locationIdentifier)) {
         recomputed.push({
-          start: current.start,
-          end: current.end,
-          locationIdentifier: current.locationIdentifier,
-          locationDescription: current.locationDescription,
-          phaseType: current.phaseType,
-          distanceToNextLocation: current.distanceToNextLocation,
-          distanceToPreviousLocation: current.distanceToPreviousLocation,
-          phaseNumber: current.phaseNumber,
-          Description: current.description,
-          speed: current.speed,
-          approachId: current.approachId,
-          approachDescription: current.approachDescription,
+          ...current,
           calculatedDistanceToNext: 0,
           calculatedDistanceToPrevious: 0,
           isIgnoredLocation: true,
-        } as T)
+        })
         continue
       }
 
@@ -119,9 +108,7 @@ export function recomputeWrappedTimeSpaceData(
   }
 
   const unwrappedData = wrappedData
-    .filter(
-      (item): item is WrappedResultWithData => !!item.result
-    )
+    .filter((item): item is WrappedResultWithData => !!item.result)
     .map((item) => item.result)
 
   const recomputed = recomputeTimeSpaceData(unwrappedData, ignoredLocations)
@@ -209,11 +196,9 @@ export function addDefaultTimeSpaceValues(
 export function getPrimaryTimeSpaceLocations(
   timeSpaceData: RawTimeSpaceDiagramResponse
 ) {
-  return timeSpaceData.data
-    .filter(
-      (phase) =>
-        !!phase.result &&
-        phase.result.phaseType === 'Primary'
-    )
-    .map((phase) => phase.result.locationIdentifier)
+  return timeSpaceData.data.flatMap((phase) =>
+    phase.result?.phaseType === 'Primary'
+      ? [phase.result.locationIdentifier]
+      : []
+  )
 }

@@ -22,7 +22,7 @@ import { useQuery } from 'react-query'
 export const fetchVersionData = async (
   locationId: string | null
 ): Promise<Location[]> => {
-  const response = await configAxios.get(
+  const response = await configAxios.get<unknown, { value: Location[] }>(
     `Location/GetAllVersionsOfLocation(identifier='${locationId}')`
   )
 

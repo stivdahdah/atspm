@@ -1,5 +1,8 @@
-import { LocationWithCoordPhases, LocationWithSequence } from '@/api/config'
 import type { TimeSpaceRouteRow } from '@/features/charts/timeSpaceDiagram/shared/components/TimeSpaceRouteSelect/TimeSpaceRouteSelect'
+import {
+  LocationWithCoordPhases,
+  LocationWithSequence,
+} from '@/features/charts/timeSpaceDiagram/shared/types'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -241,9 +244,7 @@ const phaseListsMatch = (left?: number[] | null, right?: number[] | null) =>
   left.length === right.length &&
   left.every((phase, index) => phase === right[index])
 
-const getCoordinatedPhasePresetValue = (
-  phases?: number[] | null
-): string =>
+const getCoordinatedPhasePresetValue = (phases?: number[] | null): string =>
   COORDINATED_PHASE_PRESETS.find((preset) =>
     phaseListsMatch(phases, preset.phases)
   )?.value ?? CUSTOM_COORDINATED_PHASES_VALUE
@@ -502,7 +503,7 @@ const SequenceAndCoordinationComponent = ({
     location: LocationWithSequence,
     locationId: string,
     index: number,
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const currentValues =
       manualSequenceValuesByLocation[locationId] ??
@@ -555,7 +556,7 @@ const SequenceAndCoordinationComponent = ({
 
   const handleCoordPhaseManualChange = (
     locationId: string,
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     addManualCoordPhaseLocation(locationId)
     setManualCoordPhaseValuesByLocation((prev) => ({
@@ -885,10 +886,9 @@ const SequenceAndCoordinationComponent = ({
                           handleCoordPhasePresetChange(locationId, event)
                         }
                         renderValue={(value) => {
-                          const selectedPreset =
-                            COORDINATED_PHASE_PRESETS.find(
-                              (preset) => preset.value === value
-                            )
+                          const selectedPreset = COORDINATED_PHASE_PRESETS.find(
+                            (preset) => preset.value === value
+                          )
 
                           return selectedPreset?.label ?? 'Manual'
                         }}

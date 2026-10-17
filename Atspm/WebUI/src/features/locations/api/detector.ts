@@ -62,7 +62,7 @@ export function usePutDetector() {
   })
 }
 
-export function useGetDetectorComments(detectorId: string) {
+export function useGetDetectorComments(detectorId: string | number) {
   return useGetRequest<ApiResponse<Comment>>({
     route: `/DetectorComment?detectorId=${detectorId}`,
     headers,

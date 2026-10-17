@@ -1,3 +1,10 @@
+import {
+  getTimeChart,
+  getVariabilityChart,
+  type ComplianceOptions,
+  type TimeChartOptions,
+  type VariabilityOptions,
+} from './speedChartContracts'
 // #region license
 // Copyright 2026 Utah Departement of Transportation
 // for WebUI - getSMCharts.ts
@@ -27,8 +34,6 @@ import {
   postApiV1SpeedComplianceGetReportData,
   postApiV1SpeedFromImpactSegmentSegmentId,
   postApiV1SpeedOverDistanceGetReportData,
-  postApiV1SpeedOverTimeGetReportData,
-  postApiV1SpeedVariabilityGetReportData,
   postApiV1SpeedViolationsGetReportData,
 } from '@/api/speedManagement/aTSPMSpeedManagementApi'
 
@@ -39,8 +44,6 @@ import {
   SpeedComplianceOptions,
   SpeedFromImpactOptions,
   SpeedOverDistanceOptions,
-  SpeedOverTimeOptions,
-  SpeedVariabilityOptions,
   SpeedViolationsOptions,
 } from '@/api/speedManagement/aTSPMSpeedManagementApi.schemas'
 import transformDataQualityData from '@/features/charts/speedManagementTool/dataQuality/dataQuality.transformer'
@@ -86,13 +89,13 @@ type TransformedSpeedViolationsData = ReturnType<
 type TransformedDataQualityData = ReturnType<typeof transformDataQualityData>
 
 // Map chart types to options and data types
-type ChartOptionsMapping = {
+export type ChartOptionsMapping = {
   [SM_ChartType.CONGESTION_TRACKING]: CongestionTrackingOptions
-  [SM_ChartType.SPEED_OVER_TIME]: SpeedOverTimeOptions
+  [SM_ChartType.SPEED_OVER_TIME]: TimeChartOptions
   [SM_ChartType.SPEED_OVER_DISTANCE]: SpeedOverDistanceOptions
-  [SM_ChartType.SPEED_COMPLIANCE]: SpeedComplianceOptions
+  [SM_ChartType.SPEED_COMPLIANCE]: ComplianceOptions
   [SM_ChartType.DATA_QUALITY]: DataQualityOptions
-  [SM_ChartType.SPEED_VARIABILITY]: SpeedVariabilityOptions
+  [SM_ChartType.SPEED_VARIABILITY]: VariabilityOptions
   [SM_ChartType.SPEED_VIOLATIONS]: SpeedViolationsOptions
   [SM_ChartType.EFFECTIVENESS_OF_STRATEGIES]: EffectivenessOfStrategiesOptions
 }
@@ -108,22 +111,40 @@ export type SMChartsDataMapping = {
   [SM_ChartType.EFFECTIVENESS_OF_STRATEGIES]: TransformedEffectivenessOfStrategiesData
 }
 
+export type SMChartsResult = {
+  [K in SM_ChartType]: { type: K; data: SMChartsDataMapping[K] }
+}[SM_ChartType]
 type UseSMChartsOptions<TChartType extends SM_ChartType> = Omit<
-  UseQueryOptions<SMChartsDataMapping[TChartType], Error>,
+  UseQueryOptions<SMChartsResult, Error>,
   'queryKey' | 'queryFn'
 > & { enabled?: boolean }
 
 // Implementation of useSMCharts
 export function useSMCharts<TChartType extends SM_ChartType>(
   chartType: TChartType | null,
-  chartOptions: ChartOptionsMapping[TChartType] | null,
+  chartOptions: Partial<ChartOptionsMapping[SM_ChartType]> | null,
   config?: UseSMChartsOptions<TChartType>
-): UseQueryResult<SMChartsDataMapping[TChartType], Error> {
+): UseQueryResult<SMChartsResult, Error> {
   const queryFn = async (): Promise<SMChartsDataMapping[TChartType]> => {
+    if (!chartOptions)
+      throw new Error('Choose chart options before running a chart.')
+    const dates = chartOptions as Partial<SpeedComplianceOptions>
+    if (
+      chartType !== SM_ChartType.EFFECTIVENESS_OF_STRATEGIES &&
+      (!dates.startDate ||
+        !dates.endDate ||
+        !Number.isFinite(Date.parse(dates.startDate)) ||
+        !Number.isFinite(Date.parse(dates.endDate)) ||
+        Date.parse(dates.startDate) > Date.parse(dates.endDate))
+    ) {
+      throw new Error(
+        'Choose a valid start and end date before running a chart.'
+      )
+    }
     switch (chartType) {
       case SM_ChartType.SPEED_VARIABILITY: {
-        const response = await postApiV1SpeedVariabilityGetReportData(
-          chartOptions as SpeedVariabilityOptions
+        const response = await getVariabilityChart(
+          chartOptions as VariabilityOptions
         )
         return transformSpeedVariabilityData(
           response
@@ -141,15 +162,13 @@ export function useSMCharts<TChartType extends SM_ChartType>(
       }
 
       case SM_ChartType.SPEED_OVER_TIME: {
-        const response = await postApiV1SpeedOverTimeGetReportData(
-          chartOptions as SpeedOverTimeOptions
-        )
+        const response = await getTimeChart(chartOptions as TimeChartOptions)
         const impactChartOptions = {
           ...chartOptions,
-          sourceId: chartOptions.sourceId[0],
+          sourceId: (chartOptions as TimeChartOptions).sourceId?.[0],
         }
         const impactResponse = await postApiV1SpeedFromImpactSegmentSegmentId(
-          (impactChartOptions as SpeedOverTimeOptions).segmentId as string,
+          (chartOptions as TimeChartOptions).segmentId,
           impactChartOptions as SpeedFromImpactOptions
         )
         return transformSpeedOverTimeData(
@@ -173,7 +192,7 @@ export function useSMCharts<TChartType extends SM_ChartType>(
         )
         return transformSpeedComplianceData(
           response,
-          (chartOptions as SpeedComplianceOptions).customSpeedLimit
+          (chartOptions as ComplianceOptions).customSpeedLimit
         ) as SMChartsDataMapping[TChartType]
       }
 
@@ -187,10 +206,7 @@ export function useSMCharts<TChartType extends SM_ChartType>(
       }
 
       case SM_ChartType.SPEED_VIOLATIONS:
-        const speedViolationsOptions = {
-          ...chartOptions,
-          sourceId: chartOptions.sourceId[0],
-        }
+        const speedViolationsOptions = chartOptions as SpeedViolationsOptions
         const response = await postApiV1SpeedViolationsGetReportData(
           speedViolationsOptions as SpeedViolationsOptions
         )
@@ -213,9 +229,13 @@ export function useSMCharts<TChartType extends SM_ChartType>(
     }
   }
 
-  return useQuery<SMChartsDataMapping[TChartType], Error>({
+  return useQuery<SMChartsResult, Error>({
     queryKey: ['sm_charts', chartType, chartOptions],
-    queryFn,
+    queryFn: async () => {
+      const data = await queryFn()
+      // The switch above selects the transformer matching this chart type.
+      return { type: chartType, data } as SMChartsResult
+    },
     enabled: false,
     ...config,
   })

@@ -27,8 +27,7 @@ export type Watchdog = {
   Name: string
 }
 
-
-//intefaces for watchdog Dashobard 
+//intefaces for watchdog Dashobard
 export enum IssueType {
   RecordCount = 1,
   LowDetectorHits = 2,
@@ -40,72 +39,73 @@ export enum IssueType {
 }
 
 interface FirmwareData {
-  name: string;
-  counts: number;
+  name: string
+  counts: number
 }
 
 interface ModelData {
-  name: string;
-  firmware: FirmwareData[];
+  name: string
+  firmware: FirmwareData[]
 }
 
 interface ProductData {
-  name: string;
-  model: ModelData[];
+  name: string
+  model: ModelData[]
 }
 
 export interface IssueTypeGroup {
-  issueType: IssueType;
-  products: ProductData[];
-  name: string;
+  issueType: IssueType
+  products: ProductData[]
+  name: string
 }
 
 interface HardwareData {
-  name: string;
-  counts: number;
+  name: string
+  counts: number
 }
 
 interface DetectionTypeGroup {
-  detectionType: number;
-  hardware: HardwareData[];
-  name: string;
+  detectionType: number
+  hardware: HardwareData[]
+  name: string
 }
 
 interface IssueTypeData {
-  name: string;
-  counts: number;
+  name: string
+  counts: number
 }
 
 interface ControllerFirmwareData {
-  name: string;
-  issueType: IssueTypeData[];
+  name: string
+  issueType: IssueTypeData[]
 }
 
 export interface ControllerModelData {
-  name: string;
-  firmware: ControllerFirmwareData[];
+  name: string
+  firmware: ControllerFirmwareData[]
 }
 
 export interface ControllerTypeGroup {
-  name: string;
-  model: ControllerModelData[];
+  name: string
+  model: ControllerModelData[]
 }
 
 export interface WatchdogDashboardData {
-  issueTypeGroup: IssueTypeGroup[];
-  detectionTypeGroup: DetectionTypeGroup[];
-  controllerTypeGroup: ControllerTypeGroup[];
+  deviceCount?: DeviceCount[]
+  detectionTypeCount?: DetectionTypeCount[]
+  issueTypeGroup: IssueTypeGroup[]
+  detectionTypeGroup: DetectionTypeGroup[]
+  controllerTypeGroup: ControllerTypeGroup[]
 }
 
-
 export interface DeviceCount {
-  manufacturer: string;
-  model: string;
-  firmware: string;
-  count: number;
+  manufacturer: string
+  model: string
+  firmware: string
+  count: number
 }
 
 export interface DetectionTypeCount {
-  id: string;
-  count: number;
+  id: string
+  count: number
 }

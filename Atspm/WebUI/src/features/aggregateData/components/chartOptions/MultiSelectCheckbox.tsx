@@ -1,5 +1,5 @@
 import { StyledComponentHeader } from '@/components/HeaderStyling/StyledComponentHeader'
-import { Box, Checkbox, FormControlLabel, Paper } from '@mui/material'
+import { Box, Checkbox, FormControlLabel } from '@mui/material'
 
 interface MultiSelectCheckboxProps {
   itemList: string[]
@@ -48,14 +48,14 @@ export const MultiSelectCheckbox = ({
     direction === 'vertical'
       ? {
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: 'column' as const,
           justifyContent: 'space-between',
           px: 2,
         }
       : {
           display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'nowrap',
+          flexDirection: 'row' as const,
+          flexWrap: 'nowrap' as const,
           justifyContent: 'space-between',
           height: 'auto',
           px: 1,

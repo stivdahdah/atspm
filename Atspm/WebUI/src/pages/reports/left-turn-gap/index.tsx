@@ -1,4 +1,5 @@
 // LeftTurnGapReport.tsx
+import { SearchLocation as Location } from '@/api/config'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import { useLeftTurnApproaches } from '@/features/leftTurnGapReport/api/getLeftTurnApproaches'
 import { useLeftTurnGapReportDataCheck } from '@/features/leftTurnGapReport/api/getLeftTurnGapReportDataCheck'
@@ -6,7 +7,6 @@ import { useLeftTurnGapReport } from '@/features/leftTurnGapReport/api/getLTGRDa
 import LeftTurnGapReportForm from '@/features/leftTurnGapReport/components/LeftTurnGapReportForm'
 import LTGRReportView from '@/features/leftTurnGapReport/components/LTGRReportView'
 import RunCheckGrid from '@/features/leftTurnGapReport/components/RunCheckGrid'
-import { Location } from '@/features/locations/types'
 import Authorization from '@/lib/Authorization'
 import { LoadingButton } from '@mui/lab'
 import { Alert, Box } from '@mui/material'
@@ -34,7 +34,7 @@ export interface LeftTurnGapReportParams {
   getAMPMPeakHour: boolean
   get24HourPeriod: boolean
   getAMPMPeakPeriod: boolean
-  approachIds: string[]
+  approachIds: number[]
   selectedDays: number[]
 }
 
@@ -72,7 +72,7 @@ const LeftTurnGapReport = () => {
   // Fetch approaches
   const { data: approachesData, refetch: refetchApproaches } =
     useLeftTurnApproaches({
-      locationId: params.location?.id || '',
+      locationId: String(params.location?.id ?? ''),
     })
 
   useEffect(() => {
@@ -92,9 +92,9 @@ const LeftTurnGapReport = () => {
   ])
 
   const reportDataCheckBody = {
-    locationIdentifier: params.location?.locationIdentifier,
-    start: params.startDateTime,
-    end: params.endDateTime,
+    locationIdentifier: params.location?.locationIdentifier ?? '',
+    start: params.startDateTime.toISOString(),
+    end: params.endDateTime.toISOString(),
     volumePerHourThreshold: params.leftTurnVolume,
     gapOutThreshold: params.cyclesWithGapOuts,
     pedestrianThreshold: params.cyclesWithPedCalls,
@@ -103,8 +103,8 @@ const LeftTurnGapReport = () => {
 
   const reportParams = {
     locationIdentifier: params.location?.locationIdentifier || '',
-    start: params.startDateTime,
-    end: params.endDateTime,
+    start: params.startDateTime.toISOString(),
+    end: params.endDateTime.toISOString(),
     approachIds: params.approachIds,
     daysOfWeek: params.selectedDays,
     startHour: params.startHour,
@@ -152,7 +152,11 @@ const LeftTurnGapReport = () => {
       } else {
         setRunCheckSuccess(false)
         if (reportDataCheckError) {
-          setErrorMessages([reportDataCheckError.message || 'Unknown error'])
+          setErrorMessages([
+            reportDataCheckError instanceof Error
+              ? reportDataCheckError.message
+              : 'Unknown error',
+          ])
         }
       }
     })
@@ -166,7 +170,10 @@ const LeftTurnGapReport = () => {
   // Handle errors
   useEffect(() => {
     if (reportDataError) {
-      const errorMessage = reportDataError.response?.data || 'Unknown error'
+      const errorMessage =
+        reportDataError instanceof Error
+          ? reportDataError.message
+          : 'Unknown error'
       if (!errorMessages.includes(errorMessage)) {
         setErrorMessages((prevErrors) => [...prevErrors, errorMessage])
       }
@@ -236,7 +243,7 @@ const LeftTurnGapReport = () => {
         {reportData && (
           <LTGRReportView
             lTGRDataReport={reportData}
-            approaches={reportDataCheckData}
+            approaches={reportDataCheckData ?? []}
           />
         )}
       </ResponsivePageLayout>

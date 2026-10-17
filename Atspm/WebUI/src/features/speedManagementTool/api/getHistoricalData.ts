@@ -16,9 +16,9 @@
 // #endregion
 import { useQuery } from 'react-query'
 
+import { HistoricalDataResponse } from '@/features/speedManagementTool/types/historicalData'
 import { speedAxios } from '@/lib/axios'
 import { ExtractFnReturnType, QueryConfig } from '@/lib/react-query'
-import { HistoricalDataResponse } from '@/types/historicalData'
 
 export interface HistoricalDataParams {
   segmentId: string
@@ -40,10 +40,10 @@ export const getHistoricalData = async (
   }
 
   // Make the POST request with params in the body
-  const response = await speedAxios.post<HistoricalDataResponse>(
-    `api/v1/SpeedManagement/GetHistoricalSpeeds`,
-    requestBody
-  )
+  const response = await speedAxios.post<
+    HistoricalDataResponse,
+    HistoricalDataResponse
+  >(`api/v1/SpeedManagement/GetHistoricalSpeeds`, requestBody)
   return response
 }
 

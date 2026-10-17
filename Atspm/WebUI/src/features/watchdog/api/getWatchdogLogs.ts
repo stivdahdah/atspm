@@ -61,7 +61,9 @@ export interface LogEventsData {
 // React Query GET request for issue types
 export const useGetIssueTypes = () => {
   return useQuery<WatchDogIssueTypeDTO[]>('issueTypes', async () => {
-    const response = await reportsAxios.get('/api/v1/Watchdog/GetIssueTypes')
+    const response = await reportsAxios.get<unknown, WatchDogIssueTypeDTO[]>(
+      '/api/v1/Watchdog/GetIssueTypes'
+    )
     return response
   })
 }
@@ -70,7 +72,7 @@ export const useGetIssueTypes = () => {
 export const useGetWatchdogLogs = () => {
   return useMutation<LogEventsData, unknown, WatchdogReportDataRequestBody>(
     async (requestBody) => {
-      const response = await reportsAxios.post(
+      const response = await reportsAxios.post<unknown, LogEventsData>(
         '/api/v1/Watchdog/getReportData',
         requestBody,
         {

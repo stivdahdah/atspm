@@ -1,6 +1,6 @@
+import { SearchLocation as Location } from '@/api/config'
 import { ExpandLocationHandler } from '@/features/data/aggregate/handlers/expandLocationHandler'
 import SelectLocation from '@/features/locations/components/selectLocation'
-import { Location } from '@/features/locations/types'
 import {
   Box,
   Button,
@@ -15,7 +15,7 @@ import { LocationHandler } from '../handlers/locationHandler'
 import { RouteHandler } from '../handlers/routeHandler'
 import SelectedLocationsDisplay from './SelectedLocationsDisplay'
 
-type Handler = RouteHandler & LocationHandler & Partial<ExpandLocationHandler>
+type Handler = RouteHandler & Partial<LocationHandler & ExpandLocationHandler>
 
 interface RouteSelectProps {
   handler: Handler
@@ -79,7 +79,8 @@ export const RouteSelect = ({
                   variant="contained"
                   color="success"
                   onClick={() =>
-                    selectedLocation && handler.changeLocation(selectedLocation)
+                    selectedLocation &&
+                    handler.changeLocation?.(selectedLocation)
                   }
                   sx={{ marginBottom: 1 }}
                 >

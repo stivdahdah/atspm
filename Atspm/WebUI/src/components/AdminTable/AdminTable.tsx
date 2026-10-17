@@ -27,8 +27,8 @@ import React, { cloneElement, useMemo, useState } from 'react'
 
 interface BaseObj {
   [key: string]: unknown
-  id: string | number
-  name: string
+  id?: string | number
+  name?: string | null
   created?: string | null
   createdBy?: string | null
   modified?: string | null
@@ -64,7 +64,7 @@ interface Cell<T> {
 
 interface AdminChartProps<T extends BaseObj> {
   cells: Cell<T>[]
-  data: T[]
+  data?: T[]
   pageName: string
   marginTop?: number | string
   hasEditPrivileges?: boolean
@@ -81,7 +81,7 @@ type Order = 'asc' | 'desc'
 
 const AdminTable = <T extends BaseObj>({
   cells,
-  data,
+  data = [],
   pageName,
   marginTop,
   hasEditPrivileges,
@@ -160,22 +160,26 @@ const AdminTable = <T extends BaseObj>({
 
   const sortedData = useMemo(
     () =>
-      [...data].sort((a, b) => {
-        let aValue = a[orderBy] as string | number | null
-        let bValue = b[orderBy] as string | number | null
+      data
+        .filter(
+          (row) => typeof row.id === 'string' || typeof row.id === 'number'
+        )
+        .sort((a, b) => {
+          let aValue = a[orderBy] as string | number | null
+          let bValue = b[orderBy] as string | number | null
 
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          aValue = aValue.toLowerCase()
-          bValue = bValue.toLowerCase()
-        }
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            aValue = aValue.toLowerCase()
+            bValue = bValue.toLowerCase()
+          }
 
-        if (orderBy === '') return 0
-        if (!aValue) return 1
-        if (!bValue) return -1
-        if (aValue < bValue) return order === 'asc' ? -1 : 1
-        if (aValue > bValue) return order === 'asc' ? 1 : -1
-        return 0
-      }),
+          if (orderBy === '') return 0
+          if (!aValue) return 1
+          if (!bValue) return -1
+          if (aValue < bValue) return order === 'asc' ? -1 : 1
+          if (aValue > bValue) return order === 'asc' ? 1 : -1
+          return 0
+        }),
     [data, order, orderBy]
   )
 
@@ -183,7 +187,7 @@ const AdminTable = <T extends BaseObj>({
   if (deleteModal) {
     deleteModalWithId = cloneElement(deleteModal, {
       id: selectedRow?.id,
-      name: selectedRow?.name,
+      name: selectedRow?.name ?? '',
       open: isDeleteModalOpen,
       selectedRow: selectedRow ?? undefined,
       onClose: handleClose,

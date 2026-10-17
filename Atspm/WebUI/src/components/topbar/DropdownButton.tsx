@@ -10,8 +10,8 @@ const DropDownButton = ({
   disabled,
 }: {
   title: string
-  icon: JSX.Element
-  menuItems: { name: string; icon?: JSX.Element; link: string }[]
+  icon: React.ReactNode
+  menuItems: { name: string; icon?: React.ReactNode; link: string | null }[]
   disabled?: boolean
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
@@ -63,7 +63,10 @@ const DropDownButton = ({
         onClose={handleClose}
       >
         {menuItems.map((item) => (
-          <MenuItem key={item.name} onClick={() => handleNavigation(item.link)}>
+          <MenuItem
+            key={item.name}
+            onClick={() => item.link && handleNavigation(item.link)}
+          >
             <Typography
               sx={{
                 display: 'flex',

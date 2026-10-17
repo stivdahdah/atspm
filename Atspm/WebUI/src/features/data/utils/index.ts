@@ -25,7 +25,7 @@ export const formatData = (data: CompressedDataBase[], type: string) => {
     return JSON.stringify(data)
   }
   if (type === 'text/csv' || type === 'application/xml') {
-    const eventLogData = data.flatMap((d) => d.data)
+    const eventLogData = data.flatMap((d) => d.data ?? [])
     if (eventLogData.length === 0) return ''
 
     const headers = Object.keys(eventLogData[0])
@@ -65,7 +65,7 @@ export const formatData = (data: CompressedDataBase[], type: string) => {
       return xml
     }
   }
-  return data
+  return JSON.stringify(data)
 }
 
 export const generateFilename = (

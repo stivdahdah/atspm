@@ -33,7 +33,9 @@ const WatchdogSummaryReport = () => {
     toUTCDateStamp(endDateTime)
   )
   const data = {
-    ...dashboardData,
+    issueTypeGroup: dashboardData?.issueTypeGroup ?? [],
+    detectionTypeGroup: dashboardData?.detectionTypeGroup ?? [],
+    controllerTypeGroup: dashboardData?.controllerTypeGroup ?? [],
     deviceCount,
     detectionTypeCount,
   }

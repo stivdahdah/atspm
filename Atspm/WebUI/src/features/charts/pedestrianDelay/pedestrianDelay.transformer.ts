@@ -104,7 +104,7 @@ function transformData(data: RawPedestrianDelayData) {
     {
       name: 'Delay by Cycle Length',
       position: 'right',
-      axisLabel: { formatter: (val) => `${Math.round(val)}%` },
+      axisLabel: { formatter: (val: number) => `${Math.round(val)}%` },
       nameGap: 50,
       min: 0,
     }

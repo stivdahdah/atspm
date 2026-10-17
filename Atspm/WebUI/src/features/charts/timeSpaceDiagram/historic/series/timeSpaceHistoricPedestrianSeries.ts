@@ -14,9 +14,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { Color } from '@/features/charts/utils'
 import { RawTimeSpaceHistoricData } from '@/features/charts/timeSpaceDiagram/shared/types'
 import { PedestrianInterval } from '@/features/charts/timingAndActuation/types'
+import { Color } from '@/features/charts/utils'
 import { CustomSeriesRenderItemReturn, SeriesOption } from 'echarts'
 
 const PEDESTRIAN_LINE_WIDTH = 0.8
@@ -101,8 +101,8 @@ function createPedestrianIntervalShape(
     stroke: Color.Black,
     lineWidth: PEDESTRIAN_LINE_WIDTH,
     fill: 'none',
-    lineCap: 'round',
-    lineJoin: 'round',
+    lineCap: 'round' as const,
+    lineJoin: 'round' as const,
   }
   const boundaryTick = {
     type: 'line' as const,

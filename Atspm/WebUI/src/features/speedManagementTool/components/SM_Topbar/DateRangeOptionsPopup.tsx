@@ -97,7 +97,9 @@ export default function DateRangeOptionsPopup() {
               views={['month', 'year']}
               format="MMM yyyy"
               value={isEndDateValid ? parsedEndDate : null}
-              onChange={handleEndDateChange}
+              onChange={(date) => {
+                if (date) handleEndDateChange(date)
+              }}
               sx={{ width: '200px' }}
               // disable current month
               maxDate={subMonths(new Date(), 1)}

@@ -87,7 +87,11 @@ export default function transformWatchdogControllerTypeData(
     tooltip: {
       trigger: 'item',
       formatter: (params) => {
-        const { data, treePathInfo } = params
+        const point = Array.isArray(params) ? params[0] : params
+        const treePathInfo =
+          'treePathInfo' in point && Array.isArray(point.treePathInfo)
+            ? point.treePathInfo
+            : []
         const depth = treePathInfo.length - 1
 
         // Determine the layer type based on the depth in the hierarchy
@@ -99,7 +103,7 @@ export default function transformWatchdogControllerTypeData(
         else if (depth === 4) layer = 'Issue Type'
 
         // Display layer, name, and value
-        return `${layer}: ${data.name}<br/>Count: ${data.value || 'N/A'}`
+        return `${layer}: ${point.name}<br/>Count: ${point.value ?? 'N/A'}`
       },
     },
     series: [
@@ -132,6 +136,7 @@ export default function transformWatchdogControllerTypeData(
   return {
     sunburst: chart,
     legendData: legendData,
+    showUnconfiguredData,
   }
 }
 

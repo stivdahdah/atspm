@@ -383,9 +383,9 @@ export const ReportDisplayComponent = (props: Props) => {
       const document = printIframe.contentDocument
       if (document) {
         const { default: html2pdf } = await import('html2pdf.js')
-        const html = document.getElementsByClassName('test')[0]
-        const exporter = new html2pdf(html)
-        await exporter.getPdf(true)
+        const html = document.querySelector<HTMLElement>('.test')
+        if (!html) return
+        await html2pdf().from(html).save()
       }
     },
     pageStyle: `

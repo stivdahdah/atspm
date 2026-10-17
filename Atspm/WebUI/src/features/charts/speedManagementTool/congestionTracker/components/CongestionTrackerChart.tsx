@@ -1,14 +1,16 @@
 import { ChartType } from '@/features/charts/common/types'
 import { transformCongestionTrackerData } from '@/features/charts/speedManagementTool/congestionTracker/congestionTracker.transformer'
 import { ToggleButton, ToggleButtonGroup } from '@mui/material'
-import type { ECharts, EChartsOption, SetOptionOpts } from 'echarts'
+import type { ECharts, SetOptionOpts } from 'echarts'
 import { init } from 'echarts'
 import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 export interface CongestionChartProps {
   id: string
-  option: EChartsOption
+  option: NonNullable<
+    ReturnType<typeof transformCongestionTrackerData>['charts'][number]
+  >
   chartType?: ChartType
   style?: CSSProperties
   settings?: SetOptionOpts
@@ -75,6 +77,7 @@ export default function CongestionChart({
       option.response,
       newView
     )
+    if (!updatedOption.charts[0]) return
     chartInstance.current?.setOption(updatedOption.charts[0], {
       replaceMerge: ['title'],
     })

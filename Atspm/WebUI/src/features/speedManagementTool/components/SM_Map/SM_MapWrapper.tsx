@@ -37,23 +37,12 @@ const SpeedManagementMap = dynamic(() => import('./SM_Map'), {
   ssr: false,
 })
 
-type Coords = [number, number] | [number, number][]
-
-function isLonLatPair(c: Coords): c is [number, number] {
-  return (
-    Array.isArray(c) &&
-    c.length === 2 &&
-    typeof c[0] === 'number' &&
-    typeof c[1] === 'number'
-  )
-}
-
-function swapCoordinates(coords: Coords): Coords {
-  if (isLonLatPair(coords)) {
-    const [x, y] = coords
-    return [y, x]
-  }
-  return coords.map(swapCoordinates) as [number, number][]
+function swapCoordinates(coords: number[][]): [number, number][] {
+  return coords
+    .filter(
+      (c) => c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1])
+    )
+    .map(([x, y]) => [y, x])
 }
 
 const SM_MapWrapper = () => {
@@ -100,11 +89,11 @@ const SM_MapWrapper = () => {
 
   const handleOptionClick = () => {
     setSubmittedRouteSpeedRequest(routeSpeedRequest)
-    if (routeSpeedRequest.sourceId === DataSource.ATSPM) {
+    if (routeSpeedRequest.sourceId?.[0] === DataSource.ATSPM) {
       setMediumMin(80)
       setMediumMax(300)
       setSliderMax(500)
-    } else if (routeSpeedRequest.sourceId === DataSource.PeMS) {
+    } else if (routeSpeedRequest.sourceId?.[0] === DataSource.PeMS) {
       setMediumMin(150)
       setMediumMax(400)
       setSliderMax(600)
@@ -124,11 +113,16 @@ const SM_MapWrapper = () => {
       speedLimitData?.features?.map((feature) => {
         return {
           ...feature,
+          type: 'Feature' as const,
           geometry: {
             ...feature.geometry,
+            type: 'LineString' as const,
             coordinates: swapCoordinates(feature.geometry.coordinates),
           },
-          properties: feature.properties,
+          properties: {
+            ...feature.properties,
+            name: feature.properties.route_id,
+          },
         }
       }) || [],
     [speedLimitData]

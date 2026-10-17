@@ -1,6 +1,5 @@
 import {
   useDeleteApiV1RolesRoleName,
-  useGetApiV1Roles,
   usePostApiV1Roles,
 } from '@/api/identity/atspmAuthenticationApi'
 import AdminTable from '@/components/AdminTable/AdminTable'
@@ -8,6 +7,7 @@ import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
 import { useFlags } from '@/feature-flags/FeatureFlagContext'
 import { useAddRoleClaims } from '@/features/identity/api/addRoleClaims'
+import { useGetRoles } from '@/features/identity/api/getRoles'
 import {
   PageNames,
   useUserHasClaim,
@@ -25,7 +25,7 @@ const RolesAdmin = () => {
   const hasRolesDeleteClaim = useUserHasClaim('Role:Delete')
   const { addNotification } = useNotificationStore()
 
-  const { data: roles, isLoading, refetch: refetchRoles } = useGetApiV1Roles()
+  const { data: roles, isLoading, refetch: refetchRoles } = useGetRoles()
 
   const { mutateAsync: createMutation } = usePostApiV1Roles()
   const { mutateAsync: deleteMutation } = useDeleteApiV1RolesRoleName()
@@ -102,7 +102,8 @@ const RolesAdmin = () => {
     protectedRoles.push('SpeedConfigurationAdmin')
   }
 
-  const HandleDeleteRole = async (roleName: string) => {
+  const HandleDeleteRole = async (roleName: string | number) => {
+    if (typeof roleName !== 'string') return
     if (protectedRoles.includes(roleName)) {
       return
     }
@@ -189,7 +190,7 @@ const RolesAdmin = () => {
       id: index,
       role: role.role,
     }))
-    .sort((a: Role, b: Role) => a.role.localeCompare(b.role))
+    .sort((a, b) => a.role.localeCompare(b.role))
 
   const filteredDefaultRoles = builtInRoles.map((roleObj, index: number) => {
     return {

@@ -6,6 +6,7 @@ import {
   usePatchJurisdictionFromKey,
   usePostJurisdiction,
 } from '@/api/config'
+import type { SearchLocation } from '@/api/config/config-api.schemas'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -59,6 +60,7 @@ const JurisdictionsAdmin = () => {
   }
 
   const HandleEditJurisdiction = async (jurisdictionData: Jurisdiction) => {
+    if (jurisdictionData.id == null) return
     try {
       await editMutation({
         data: jurisdictionData,
@@ -72,7 +74,8 @@ const JurisdictionsAdmin = () => {
     }
   }
 
-  const HandleDeleteJurisdiction = async (id: number) => {
+  const HandleDeleteJurisdiction = async (id: string | number) => {
+    if (typeof id !== 'number') return
     try {
       await deleteMutation({ key: id })
       refetchJurisdictions()
@@ -89,8 +92,8 @@ const JurisdictionsAdmin = () => {
 
   const filterAssociatedObjects = (
     jurisdictionId: number,
-    objects: Location[]
-  ): { id: number; name: string }[] => {
+    objects: SearchLocation[]
+  ) => {
     const associatedLocations = objects.filter((object) => {
       return object.jurisdictionId === jurisdictionId
     })

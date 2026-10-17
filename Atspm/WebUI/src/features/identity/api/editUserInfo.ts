@@ -14,46 +14,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { identityAxios } from '@/lib/axios'
-import { QueryConfig } from '@/lib/react-query'
+import { identityRequest } from '@/lib/axios'
 import { useNotificationStore } from '@/stores/notifications'
-import Cookies from 'js-cookie'
-import { useMutation } from 'react-query'
-import UserDto from '../types/userDto'
-
-const userToken = Cookies.get('token')
-
-const editUserInfo = async (userInfo: UserDto): Promise<UserDto> => {
-  const result = await identityAxios.put('/Profile', userInfo, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${userToken}`,
+import { useMutation, type UseMutationOptions } from 'react-query'
+export interface ProfileUpdate {
+  firstName: string
+  lastName: string
+  agency: string
+  email: string
+  phoneNumber?: string
+}
+export async function editUserInfo(userInfo: ProfileUpdate): Promise<void> {
+  const { firstName, lastName, agency, email, phoneNumber } = userInfo
+  await identityRequest<void>({
+    url: '/Profile',
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: {
+      firstName,
+      lastName,
+      agency,
+      email,
+      ...(phoneNumber !== undefined ? { phoneNumber } : {}),
     },
   })
-  return result.data
 }
-
-export const useEditUserInfo = (config?: QueryConfig<typeof editUserInfo>) => {
+export function useEditUserInfo(
+  config?: UseMutationOptions<void, unknown, ProfileUpdate>
+) {
   const addNotification = useNotificationStore((state) => state.addNotification)
   return useMutation(editUserInfo, {
     ...config,
-    onSuccess: (data) => {
-      addNotification({
-        type: 'success',
-        title: 'Profile updated',
-      })
-      if (config?.onSuccess) {
-        config.onSuccess(data)
-      }
+    onSuccess: (data, variables, context) => {
+      addNotification({ type: 'success', title: 'Profile updated' })
+      config?.onSuccess?.(data, variables, context)
     },
-    onError: (error) => {
-      addNotification({
-        type: 'error',
-        title: 'Failed to update profile',
-      })
-      if (config?.onError) {
-        config.onError(error)
-      }
+    onError: (error, variables, context) => {
+      addNotification({ type: 'error', title: 'Failed to update profile' })
+      config?.onError?.(error, variables, context)
     },
   })
 }

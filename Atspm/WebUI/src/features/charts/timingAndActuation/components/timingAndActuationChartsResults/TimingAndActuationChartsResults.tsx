@@ -64,7 +64,7 @@ export default function TimingAndActuationChartsResults({
                   ? theme.palette.background.highlight
                   : 'white',
               borderLeft: getDirectionAccentBorder(
-                chartWrapper.chart.displayProps.approachDescription
+                chartWrapper.chart.displayProps?.approachDescription
               ),
             }}
           >
@@ -76,7 +76,8 @@ export default function TimingAndActuationChartsResults({
               style={{
                 width: '100%',
                 height:
-                  chartWrapper.chart.displayProps.amountOfChannels * 30 +
+                  (chartWrapper.chart.displayProps?.amountOfChannels ?? 0) *
+                    30 +
                   150 +
                   'px',
                 position: 'relative',

@@ -2,10 +2,12 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import {
   Autocomplete,
+  AutocompleteRenderOptionState,
   Box,
   Button,
   Checkbox,
   Paper,
+  PaperProps,
   TextField,
 } from '@mui/material'
 import React, { memo, useCallback } from 'react'
@@ -91,7 +93,7 @@ const MultiSelectAutocomplete = <T,>({
     [onChange]
   )
   const renderPaper = useCallback(
-    (paperProps) => (
+    (paperProps: PaperProps) => (
       <CustomPaper
         {...paperProps}
         onSelectAll={() => onChange(null, options)}
@@ -101,7 +103,11 @@ const MultiSelectAutocomplete = <T,>({
     [value, options, onChange]
   )
   const renderOption = useCallback(
-    (props, option, { selected }) => {
+    (
+      props: React.HTMLAttributes<HTMLLIElement> & { key?: React.Key },
+      option: T,
+      { selected }: AutocompleteRenderOptionState
+    ) => {
       const { key, ...optionProps } = props
       return (
         <li key={key} {...optionProps}>
@@ -163,4 +169,4 @@ const MultiSelectAutocomplete = <T,>({
   )
 }
 
-export default memo(MultiSelectAutocomplete)
+export default memo(MultiSelectAutocomplete) as typeof MultiSelectAutocomplete

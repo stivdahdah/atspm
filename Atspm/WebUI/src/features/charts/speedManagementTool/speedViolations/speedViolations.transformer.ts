@@ -25,10 +25,10 @@ import {
   createTooltip,
   createYAxis,
 } from '@/features/charts/common/transformers'
+import { createSpeedManagementTitle } from '@/features/charts/speedManagementTool/createSpeedManagementTitle'
 import { ExtendedEChartsOption } from '@/features/charts/types'
 import { Color, formatChartDateTimeRange } from '@/features/charts/utils'
 import { SM_ChartType } from '@/features/speedManagementTool/api/getSMCharts'
-import { createSpeedManagementTitle } from '@/features/charts/speedManagementTool/createSpeedManagementTitle'
 
 type DailySpeedViolationDto = {
   date: string
@@ -61,7 +61,7 @@ export default function transformSpeedViolationsData(
       const chartOptions = transformSegmentData(segment)
       return chartOptions ? { chart: chartOptions } : null
     })
-    .filter(Boolean)
+    .filter((chart): chart is NonNullable<typeof chart> => chart !== null)
 
   return {
     type: SM_ChartType.SPEED_VIOLATIONS,
@@ -71,7 +71,7 @@ export default function transformSpeedViolationsData(
 
 function transformSegmentData(
   segment: SpeedViolationsDto
-): ExtendedEChartsOption | null {
+): (ExtendedEChartsOption & { response: SpeedViolationsDto }) | null {
   const dataPoints = segment.dailySpeedViolationsDto
 
   if (!dataPoints || dataPoints.length === 0) return null
@@ -186,18 +186,19 @@ function transformSegmentData(
     }
   )
 
-  const chartOptions: ExtendedEChartsOption = {
-    title,
-    tooltip,
-    toolbox,
-    legend,
-    grid,
-    xAxis,
-    yAxis,
-    dataZoom,
-    series,
-    response: segment,
-  }
+  const chartOptions: ExtendedEChartsOption & { response: SpeedViolationsDto } =
+    {
+      title,
+      tooltip,
+      toolbox,
+      legend,
+      grid,
+      xAxis,
+      yAxis,
+      dataZoom,
+      series,
+      response: segment,
+    }
 
   return chartOptions
 }
